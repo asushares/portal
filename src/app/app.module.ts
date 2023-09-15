@@ -14,6 +14,7 @@ import { BrowserComponent } from './browser/browser.component';
 
 import { BackendService } from './backend/backend.service';
 import { BuilderComponent } from './builder/builder.component';
+import { ConsentService } from './consent/consent.service';
 
 
 @NgModule({
@@ -31,7 +32,8 @@ import { BuilderComponent } from './builder/builder.component';
         BuilderComponent
     ],   // components and directives
     providers: [
-        BackendService
+        BackendService,
+        ConsentService
         // { provide: 'Window', useValue: window }
     ],                    // products
     bootstrap: [AppComponent]     // root component

@@ -4,6 +4,8 @@ import { Injectable } from "@angular/core";
 import { HttpHeaders } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+import { Bundle } from "fhir/r5";
+import { Patient } from "fhir/r5";
 
 
 @Injectable()
@@ -41,6 +43,7 @@ export class BackendService {
 	sessionsUrl(): string {
 		return this.url + BackendService.SESSIONS_PATH;
 	}
+
 
 	// status() {
 	// 	let status = this.http.get<Status>(this.statusUrl(), { headers: this.requestOptions(true) }).pipe(map(res => res));
