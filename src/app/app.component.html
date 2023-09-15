@@ -1,0 +1,61 @@
+<nav class="navbar navbar-expand-lg" aria-label="Marketplace navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" [routerLink]="['/']"><i class="bi-fire"></i> Consent Manager</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample05" aria-controls="navbarsExample05" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExample05">
+
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
+                    <a class="nav-link" [routerLink]="['/']">
+                        <i class="bi-eye"></i> Browser
+                    </a>
+                </li>
+
+                <li class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
+                    <a class="nav-link" [routerLink]="['/builder']">
+                        <i class="bi-plus-circle"></i> Builder
+                    </a>
+                </li>
+
+            </ul>
+
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <!-- <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false"><i
+                            class="bi-box-arrow-in-right"></i> Todo</a>
+                    <ul id="loginDropdown" class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" ><i class="bi-person"></i>
+                                Profile</a>
+                        </li>
+                    </ul>
+                </li> -->
+
+                <li class="nav-item dropdown" [routerLinkActive]="'active'">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown05" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi-book"></i> Documentation
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdown05">
+                        <li><a class="dropdown-item" href="https://www.asushares.com" target="_blank"><i class="bi-globe"></i> ASU SHARES Home</a></li>
+                        <li><a class="dropdown-item" href="https://www.github.com/asushares" target="_blank"><i class="bi-github"></i> GitHub</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item" [routerLinkActive]="'active'">
+                    <a class="nav-link" href="https://www.asushares.com/contact/" target="_blank">
+                        <i class="bi-chat"></i> Leave Feedback
+                    </a>
+                </li>
+            </ul>
+
+            <!-- <form>
+                <input class="form-control" type="text" placeholder="Search" aria-label="Search">
+            </form> -->
+        </div>
+    </div>
+</nav>
+<router-outlet></router-outlet>
