@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { Bundle, Patient } from 'fhir/r5';
+import { Bundle, Consent, Patient } from 'fhir/r4';
 import { Observable } from 'rxjs';
 import { BackendService } from '../backend/backend.service';
 
@@ -19,8 +19,8 @@ export class ConsentService extends BaseService {
     return this.backendService.url + ConsentService.CONSENT_PATH;
   }
 
-  index(): Observable<Bundle<Patient>> {
-    let b = this.http.get<Bundle<Patient>>(this.url(), { headers: this.headers() });
+  index(): Observable<Bundle<Consent>> {
+    let b = this.http.get<Bundle<Consent>>(this.url(), { headers: this.headers() });
     return b;
   }
 }
