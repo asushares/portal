@@ -221,54 +221,46 @@
                 </div>
             </div>
 
-            <section class="mt-4">
-                <h2>Provisions</h2>
-                <div *ngFor="let p of consent.provision">
-                    <h4>Actors</h4>
-                    <div *ngFor="let actor of p.actor">
-                        <h6>Roles</h6>                
-                        <div *ngIf="actor.role">
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_actor_reference" [(ngModel)]="actor.reference!.reference" disabled />
-                                <label for="consent_provision_actor_reference">Reference</label>
-                            </div>
-    
-                            <div *ngFor="let coding of actor.role.coding">
-                                <div class="form-floating">
-                                    <input class="form-control form-control-sm" type="text"
-                                        name="consent_provision_actor_role_coding_system" [(ngModel)]="coding.system" />
-                                    <label for="consent_provision_actor_role_coding_system">System</label>
-                                </div>
-                                <div class="form-floating">
-                                    <input class="form-control form-control-sm" type="text"
-                                        name="consent_provision_actor_role_coding_code" [(ngModel)]="coding.code" />
-                                    <label for="consent_provision_actor_role_coding_code">Code</label>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <h4>Actions</h4>
-                    <div *ngFor="let cc of p.action">
-                        <div *ngFor="let coding of cc.coding">
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_action_coding_system" [(ngModel)]="coding.system" />
-                                <label for="consent_provision_action_coding_system">System</label>
-                            </div>
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_action_coding_code" [(ngModel)]="coding.code" />
-                                <label for="consent_provision_action_coding_code">Code</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </div>
 
         <div class="col-md-6">
+
+
+            <section class="mt-4">
+                <h2>Categories <button class="btn btn-sm btn-primary" (click)="createCategory()"><span
+                            class="bi bi-plus-circle">
+                            Add</span></button></h2>
+                <div *ngFor="let cat of consent.category" class="codeableConceptCard">
+                    <codeable-concept [codeableConcept]="cat"></codeable-concept>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+                        <div *ngIf="consent.category" class="btn-group btn-group-sm">
+                            <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
+                                *ngIf="canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
+                                *ngIf="canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
+                                    class="bi bi-trash"></span> Delete Category</a>
+                        </div>
+
+                        <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
+                                class="bi bi-trash"></span> Delete Category</button> -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <div class="row p-3">
+
+
+        <div class="col-md-6">
+
             <section class="mt-4">
                 <h2>Medical Information</h2>
                 <div class="form-check mt-3">
@@ -330,34 +322,6 @@
                 </div>
             </section>
 
-
-            <section class="mt-4">
-                <h2>Categories <button class="btn btn-sm btn-primary" (click)="createCategory()"><span
-                            class="bi bi-plus-circle">
-                            Add</span></button></h2>
-                <div *ngFor="let cat of consent.category" class="codeableConceptCard">
-                    <codeable-concept [codeableConcept]="cat"></codeable-concept>
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-
-                        <div *ngIf="consent.category" class="btn-group btn-group-sm">
-                            <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
-                                *ngIf="canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
-                            <a class="btn btn-small btn-primary disabled"
-                                *ngIf="!canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
-                            <a class="btn btn-small btn-primary disabled"
-                                *ngIf="!canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
-                            <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
-                                *ngIf="canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
-                            <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
-                                    class="bi bi-trash"></span> Delete Category</a>
-                        </div>
-
-                        <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
-                                class="bi bi-trash"></span> Delete Category</button> -->
-                    </div>
-                </div>
-            </section>
-
             <section id="preview">
                 <button class="btn btn-sm btn-primary" (click)="downloadConsentJsonFile()"><span class="bi-save"></span>
                     Download FHIR Consent</button>
@@ -367,5 +331,78 @@
                 <!-- <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
             </section>
         </div>
+
+        <div class="col-md-6">
+
+            <section class="mt-4">
+                <h2>Consent Provisions</h2>
+                <div *ngFor="let p of consent.provision">
+                    <h4>Actors</h4>
+                    <div *ngFor="let actor of p.actor">
+                        <h6>Roles</h6>
+                        <div *ngIf="actor.role">
+                            <div class="form-floating">
+                                <input class="form-control form-control-sm" type="text"
+                                    name="consent_provision_actor_reference" [(ngModel)]="actor.reference!.reference"
+                                    disabled />
+                                <label for="consent_provision_actor_reference">Reference</label>
+                            </div>
+
+                            <div *ngFor="let coding of actor.role.coding">
+                                <div class="form-floating">
+                                    <input class="form-control form-control-sm" type="text"
+                                        name="consent_provision_actor_role_coding_system" [(ngModel)]="coding.system" />
+                                    <label for="consent_provision_actor_role_coding_system">System</label>
+                                </div>
+                                <div class="form-floating">
+                                    <input class="form-control form-control-sm" type="text"
+                                        name="consent_provision_actor_role_coding_code" [(ngModel)]="coding.code" />
+                                    <label for="consent_provision_actor_role_coding_code">Code</label>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <h4>Actions</h4>
+                    <div *ngFor="let cc of p.action">
+                        <div *ngFor="let coding of cc.coding">
+                            <div class="form-floating">
+                                <input class="form-control form-control-sm" type="text"
+                                    name="consent_provision_action_coding_system" [(ngModel)]="coding.system" />
+                                <label for="consent_provision_action_coding_system">System</label>
+                            </div>
+                            <div class="form-floating">
+                                <input class="form-control form-control-sm" type="text"
+                                    name="consent_provision_action_coding_code" [(ngModel)]="coding.code" />
+                                <label for="consent_provision_action_coding_code">Code</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h4>Purposes</h4>
+                    <div *ngFor="let purpose of p.purpose">
+                        <!-- <div *ngFor="let coding of purpose.code"> -->
+                        <div class="row mt-2">
+
+                            <div class="form-floating col-sm-6">
+                                <input class="form-control form-control-sm" type="text"
+                                    name="consent_provision_purpose_coding_system" [(ngModel)]="purpose.system" />
+                                <label for="consent_provision_purpose_coding_system">System</label>
+                            </div>
+                            <div class="form-floating col-sm-6">
+                                <input class="form-control form-control-sm" type="text"
+                                    name="consent_provision_purpose_coding_code" [(ngModel)]="purpose.code" />
+                                <label for="consent_provision_purpose_coding_code">Code</label>
+                            </div>
+                        </div>
+                        <!-- </div> -->
+                    </div>
+
+                </div>
+            </section>
+        </div>
+
     </div>
+
 </div>

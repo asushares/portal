@@ -94,7 +94,19 @@ export class BuilderComponent extends BaseComponent {
               "code": "access"
             }
           ]
-        }]
+        }],
+        purpose:  [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+            "code": "TREAT",
+            "display": "treatment"
+          },
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+            "code": "ETREAT",
+            "display": "Emergency Treatment"
+          }
+        ]
       }]
     };
     return c;
