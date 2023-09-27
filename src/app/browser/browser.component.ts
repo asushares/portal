@@ -1,3 +1,5 @@
+// Author: Preston Lee
+
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
 import { Bundle, BundleEntry, Consent, Patient } from 'fhir/r5';

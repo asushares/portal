@@ -1,18 +1,19 @@
 // Author: Preston Lee
 
 import { Component } from '@angular/core';
-import { Bundle, Consent, Organization, Patient } from 'fhir/r5';
+import { Bundle, CodeableConcept, Consent, Organization, Patient } from 'fhir/r5';
 
-import * as YAML from 'yaml';
-
+import { v4 as uuidv4 } from 'uuid';
 import { FhirService } from '../fhir.service';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'app-builder',
   templateUrl: './builder.component.html',
   styleUrls: ['./builder.component.scss']
 })
-export class BuilderComponent {
+export class BuilderComponent extends BaseComponent {
+
 
 
   consent: Consent = this.template();
@@ -37,6 +38,7 @@ export class BuilderComponent {
   purpose!: { treatment: boolean, research: boolean, none: boolean };
 
   constructor(protected fhirService: FhirService) {
+    super();
     this.reset();
   }
 
@@ -44,11 +46,56 @@ export class BuilderComponent {
     let c: Consent = {
       resourceType: 'Consent',
       status: 'draft',
-      provision: [],
       decision: 'permit',
-      category: [],
+      category: [
+        {
+          id: uuidv4(),
+          text: 'Privacy Consent',
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/consentscope",
+              "code": "patient-privacy",
+              "display": "Privacy Consent"
+            }
+          ]
+        },
+        {
+          id: uuidv4(),
+          text: 'LOINC Consent Document',
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "59284-6",
+              "display": 'Consent Document'
+            }
+          ]
+        }
+      ],
       grantor: [],
-      controller: []
+      controller: [],
+      provision: [{
+        actor: [{
+          reference: {
+            reference: ''
+          },
+          role: {
+            coding: [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+                "code": "IRCP"
+              }
+            ]
+          }
+        }],
+        action: [{
+          coding: [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/consentaction",
+              "code": "access"
+            }
+          ]
+        }]
+      }]
     };
     return c;
   }
@@ -174,6 +221,20 @@ export class BuilderComponent {
 
   updatePurpose() {
 
+  }
+
+  createCategory() {
+    this.consent.category?.push({ id: uuidv4() });
+  }
+
+  deleteCategory(cc: CodeableConcept) {
+    if (this.consent.category) {
+      for (let i = 0; i < this.consent.category?.length; i++) {
+        if (this.consent.category[i].id === cc.id) {
+          this.consent.category.splice(i, 1);
+        }
+      }
+    }
   }
 
 }

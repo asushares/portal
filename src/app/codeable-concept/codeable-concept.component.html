@@ -1,0 +1,50 @@
+<div class="codeableConcept" *ngIf="codeableConcept">
+    <div class="form-floating">
+        <input class="form-control" type="text" name="codeable_concept_text" [(ngModel)]="codeableConcept.text" />
+        <label for="codeable_concept_text">Text</label>
+    </div>
+
+    <h4 class="mt-4">Codings <button class="btn btn-sm btn-primary" (click)="createCoding()"><span
+                class="bi bi-plus-circle"> Add</span></button>
+    </h4>
+    <div *ngFor="let coding of codeableConcept.coding" class="row coding">
+
+        <!-- <div class="col-sm-12">
+        </div> -->
+        <div class="col-sm-6">
+
+            <div class="form-floating mt-2">
+                <input class="form-control" type="text" id="codeable_concept_coding_code" [(ngModel)]="coding.code" />
+                <label for="codeable_concept_coding_code">Code</label>
+            </div>
+            <div class="form-floating mt-2">
+                <input class="form-control" type="text" name="codeable_concept_coding_display"
+                    [(ngModel)]="coding.display" />
+                <label for="codeable_concept_coding_display">Display Text</label>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-floating mt-2">
+                <input class="form-control" type="text" id="codeable_concept_coding_system"
+                    [(ngModel)]="coding.system" />
+                <label for="codeable_concept_coding_system">Code System Identifier</label>
+            </div>
+            <div *ngIf="codeableConcept.coding" class="btn-group">
+                <a class="btn btn-small btn-primary" (click)="moveUp(coding, codeableConcept.coding)"
+                    *ngIf="canMoveUp(coding, codeableConcept.coding)"><span class="bi bi-chevron-up"></span></a>
+                <a class="btn btn-small btn-primary disabled" *ngIf="!canMoveUp(coding, codeableConcept.coding)"><span
+                        class="bi bi-chevron-up"></span></a>
+                <a class="btn btn-small btn-primary disabled" *ngIf="!canMoveDown(coding, codeableConcept.coding)"><span
+                        class="bi bi-chevron-down"></span></a>
+                <a class="btn btn-small btn-primary" (click)="moveDown(coding, codeableConcept.coding)"
+                    *ngIf="canMoveDown(coding, codeableConcept.coding)"><span class="bi bi-chevron-down"></span></a>
+                <a class="btn btn-small btn-outline-danger" (click)="deleteCoding(coding)"><span
+                        class="bi bi-trash"></span></a>
+            </div>
+        </div>
+
+
+    </div>
+
+
+</div>

@@ -18,6 +18,7 @@ import { BackendService } from './backend/backend.service';
 import { BuilderComponent } from './builder/builder.component';
 import { ConsentService } from './consent/consent.service';
 import { FhirService } from './fhir.service';
+import { CodeableConceptComponent } from './codeable-concept/codeable-concept.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { FhirService } from './fhir.service';
     declarations: [
         AppComponent,
         BrowserComponent,
-        BuilderComponent
+        BuilderComponent,
+        CodeableConceptComponent
     ],   // components and directives
     providers: [
         BackendService,
