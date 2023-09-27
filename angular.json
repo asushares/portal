@@ -32,8 +32,9 @@
                         "styles": [
                             "node_modules/bootstrap-icons/font/bootstrap-icons.css",
                             "node_modules/ngx-toastr/toastr.css",
-                            "src/simplex.min.css",
-                            "src/styles.scss"
+                            "src/lux.min.css",
+                            "src/styles.scss",
+                            "node_modules/prismjs/themes/prism.css"
                         ],
                         "scripts": [
                             "node_modules/jquery/dist/jquery.min.js",

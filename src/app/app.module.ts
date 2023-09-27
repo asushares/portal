@@ -1,3 +1,5 @@
+// Author: Preston Lee
+
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, NO_ERRORS_SCHEMA }      from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +17,7 @@ import { BrowserComponent } from './browser/browser.component';
 import { BackendService } from './backend/backend.service';
 import { BuilderComponent } from './builder/builder.component';
 import { ConsentService } from './consent/consent.service';
+import { FhirService } from './fhir.service';
 
 
 @NgModule({
@@ -33,7 +36,8 @@ import { ConsentService } from './consent/consent.service';
     ],   // components and directives
     providers: [
         BackendService,
-        ConsentService
+        ConsentService,
+        FhirService
         // { provide: 'Window', useValue: window }
     ],                    // products
     bootstrap: [AppComponent]     // root component

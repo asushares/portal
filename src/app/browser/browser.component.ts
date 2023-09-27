@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
-import { Bundle, BundleEntry, Consent, Patient } from 'fhir/r4';
+import { Bundle, BundleEntry, Consent, Patient } from 'fhir/r5';
 
 @Component({
   selector: 'app-browser',

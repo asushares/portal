@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { Bundle, Consent, Patient } from 'fhir/r4';
+import { Bundle, Consent, Patient } from 'fhir/r5';
 import { Observable } from 'rxjs';
 import { BackendService } from '../backend/backend.service';
 

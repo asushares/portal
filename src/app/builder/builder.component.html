@@ -1,1 +1,299 @@
-<p>TODO Builder</p>
+<div id="builder" class="container-fluid">
+
+
+    <div class="row p-3">
+
+        <div class="col-md-6">
+            <section class="mt-4">
+
+
+                <h1>Patient Consent Builder
+                    <button class="btn btn-sm btn-primary" (click)="reset()"><span class="bi-save"></span> Reset
+                        Form</button>
+                </h1>
+                <p class="form-text">This form guides you through creation of the consent documents used by a provider
+                    organization to determine what information may be shared with whom.</p>
+            </section>
+            <!-- <small>For FHIR R4</small> -->
+
+
+            <!-- 
+        <button class="btn btn-sm btn-primary" (click)="addPatientSubject()" *ngIf="!consent.subject"><span
+                class="bi-save"></span> Add Patient Subject</button> -->
+            <section class="mt-4">
+
+                <h2>Subject of Consent</h2>
+                <div class="form-floating" *ngIf="!consent.subject">
+                    <div class="input-group">
+
+                        <input class="form-control" type="text" name="consent_subject_search_text"
+                            [(ngModel)]="patientSearchText" (change)="patientSearch(patientSearchText)" />
+                        <!-- <label for="consent_subject_search_text">Search</label> -->
+                        <button class="btn btn-outline btn-primary" type="button"
+                            (click)="patientSearch(patientSearchText)" [disabled]="patientSearchText == ''">
+                            <span *ngIf="!patientSearching" class="bi bi-search"></span>
+                            <span *ngIf="patientSearching" class="bi bi-hourglass-split"></span>
+                            Search</button>
+
+                    </div>
+                    <small class="form-text">Search for a patient whose records will be the subject of this
+                        consent.</small>
+                </div>
+
+                <table *ngIf="patientList && !patientSelected" class="table table-condensed table-striped">
+                    <thead>
+                        <tr>
+                            <td>Name</td>
+                            <td>ID</td>
+                            <td>Birth Date</td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let p of patientList.entry">
+                            <td><span *ngFor="let n of p.resource?.name">
+                                    {{n.family || '(Unknown)'}}, <span *ngFor="let g of n.given">{{g}} </span>
+                                </span>
+                            </td>
+                            <td>{{p.resource?.id}}</td>
+                            <td>{{p.resource?.birthDate}}</td>
+                            <td><button *ngIf="p.resource" class="btn btn-sm btn-primary"
+                                    (click)="selectPatientSubject(p.resource)"><span class="bi-save"></span>
+                                    Select</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="form-floating" *ngIf="patientSelected">
+                    <div *ngIf="patientSelected.name" class="input-group">
+
+                        <input class="form-control" type="text" name="consent_subject_patient_selected_name"
+                            [(ngModel)]="patientSelected.name[0]!.given + ' ' + patientSelected.name[0]!.family"
+                            disabled />
+                        <button class="btn btn-outline btn-primary" (click)="removeSubject()"
+                            *ngIf="consent.subject"><span class="bi bi-trash"></span> Remove</button>
+                    </div>
+                    <small class="form-text">Patient whose records this consent document applies :
+                        {{patientSelected.id}}</small>
+                </div>
+
+            </section>
+
+            <section class="mt-4">
+                <h2>Enforcing Organization</h2>
+                <div class="form-floating">
+                    <div class="input-group">
+
+                        <input class="form-control" type="text" name="consent_subject_search_text"
+                            [(ngModel)]="organizationSearchText" (change)="organizationSearch(patientSearchText)" />
+                        <!-- <label for="consent_subject_search_text">Search</label> -->
+                        <button class="btn btn-outline btn-primary" type="button"
+                            (click)="organizationSearch(patientSearchText)" [disabled]="organizationSearchText == ''">
+
+                            <span *ngIf="!organizationSearching" class="bi bi-search"></span>
+                            <span *ngIf="organizationSearching" class="bi bi-hourglass-split"></span>
+                            Search</button>
+
+                    </div>
+                    <small class="form-text">Search for organizations to whom this consent should be used for directing
+                        the elements of the subject's medical records to be exposed or redacted.</small>
+                </div>
+
+                <div *ngIf="organizationList" id="organizationSearchResults" class="mt-4">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button class="btn btn-sm btn-outline-primary" type="button"
+                            (click)="organizationList = null"><span class="bi bi-x-circle"></span>
+                            Close Results</button>
+                    </div>
+                    <table *ngIf="organizationList" class="table table-condensed table-striped">
+                        <thead>
+                            <tr>
+                                <td>Name</td>
+                                <td>ID</td>
+                                <td></td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let o of organizationList.entry">
+                                <td><span>{{o.resource?.name}}</span>
+                                </td>
+                                <td>{{o.resource?.id}}</td>
+                                <td><button *ngIf="o.resource && !isSelectedOrganization(o.resource)"
+                                        class="btn  btn-outline-primary" (click)="selectOrganization(o.resource)"><span
+                                            class="bi bi-plus-circle"></span> </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div *ngIf="consent.controller && consent.controller.length > 0" class="mt-2">
+                    <h4>Selected Entities</h4>
+                    <table class="table table-condensed table-striped">
+                        <!-- <thead>
+                            <tr>
+                                <td>Name</td>
+                                <td>Reference ID</td>
+                                <td></td>
+                            </tr>
+                        </thead> -->
+                        <tbody>
+                            <tr *ngFor="let o of consent.controller">
+                                <td>{{organizationForReference(o.reference!)?.name}}</td>
+                                <td><span>{{o.reference}}</span>
+                                </td>
+                                <td><button *ngIf="o.reference" class="btn btn-sm btn-primary"
+                                        (click)="removeOrganization(organizationForReference(o.reference)!)"><span
+                                            class="bi-trash"></span>
+                                        Remove</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <section class="mt-4">
+                <h2>Type</h2>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="form-floating mt-2">
+                            <select class="form-control form-control-sm" [(ngModel)]="consent.decision">
+                                <option value="permit" [selected]="consent.decision == 'permit'">Permit</option>
+                                <option value="deny" [selected]="consent.decision == 'deny'">Deny</option>
+                            </select>
+                            <label for="consent_provision_type">Provision Type</label>
+                            <!-- <small class="form-text">May affect user device behavior.</small> -->
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+
+                        <div class="form-floating mt-2">
+                            <select class="form-control form-control-sm" [(ngModel)]="consent.status">
+                                <option value="draft" [selected]="consent.status == 'draft'">Draft</option>
+                                <option value="active" [selected]="consent.status == 'active'">Active</option>
+                                <option value="inactive" [selected]="consent.status == 'inactive'">Inactive</option>
+                                <option value="not-done" [selected]="consent.status == 'not-done'">Rejected</option>
+                                <option value="entered-in-error" [selected]="consent.status == 'entered-in-error'">
+                                    Enterered in
+                                    Error
+                                </option>
+                                <option value="unknown" [selected]="consent.status == 'unknown'">Unknown</option>
+                            </select>
+                            <label for="consent_status">Status</label>
+                            <!-- <small class="form-text">May affect user device behavior.</small> -->
+                        </div>
+                    </div>
+                </div>
+
+
+            </section>
+
+
+
+            <div class="mt-4">
+                <button class="btn btn-sm btn-primary" (click)="addPeriod()" *ngIf="!consent.period"><span
+                        class="bi-save"></span> Add Period</button>
+            </div>
+            <div *ngIf="consent.period" class="row mt-4">
+                <h2>Effective Period
+                    <button class="btn btn-sm btn-primary" (click)="removePeriod()" *ngIf="consent.period"><span
+                            class="bi-save"></span> Remove Period</button>
+                </h2>
+                <div class="col-sm-6">
+                    <div class="form-floating" *ngIf="consent.period">
+                        <input class="form-control form-control-sm" type="text" name="consent_provision_period_start"
+                            *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period!.start" />
+                        <label for="consent_provision_period_start">Start</label>
+                        <small class="form-text">Begins at this date and time.</small>
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div class="form-floating" *ngIf="consent.period">
+                        <input class="form-control form-control-sm" type="text" name="consent_provision_period_end"
+                            *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period!.end" />
+                        <label for="consent_provision_period_end">End</label>
+                        <small class="form-text">Ends at this date and time.</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-6">
+            <section class="mt-4">
+                <h2>Medical Information</h2>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="medical_domestic_violence"
+                        [(ngModel)]="medicalInformation.domesticViolence" (change)="updateMedicalInformation()"
+                        required />
+                    <label class="form-check-label" for="medical_domestic_violence">Domestic Violence</label>
+                    <br />
+                    <small class="form-text">Includes TODO</small>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="medical_genetic_information"
+                        [(ngModel)]="medicalInformation.geneticInformation" (change)="updateMedicalInformation()"
+                        required />
+                    <label class="form-check-label" for="medical_genetic_information">Genetic Information</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="medical_mental_health"
+                        [(ngModel)]="medicalInformation.mentalHealth" (change)="updateMedicalInformation()" required />
+                    <label class="form-check-label" for="medical_mental_health">Mental Health</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="medical_sexual_and_reproductive"
+                        [(ngModel)]="medicalInformation.sexualAndReproductive" (change)="updateMedicalInformation()"
+                        required />
+                    <label class="form-check-label" for="medical_sexual_and_reproductive">Sexual &amp; Reproductive
+                        Health</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="medical_substance_use"
+                        [(ngModel)]="medicalInformation.substanceUse" (change)="updateMedicalInformation()" required />
+                    <label class="form-check-label" for="medical_substance_use">Substance Use</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+            </section>
+
+            <section class="mt-4">
+                <h2>Purpose of Use</h2>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="purpose_treatment"
+                        [(ngModel)]="purpose.treatment" (change)="updatePurpose()" required />
+                    <label class="form-check-label" for="purpose_treatment">Treatment</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="purpose_research" [(ngModel)]="purpose.research"
+                        (change)="updatePurpose()" required />
+                    <label class="form-check-label" for="purpose_research">Research</label>
+                    <br />
+                    <small class="form-text">Lorem ipsum TODO</small>
+                </div>
+            </section>
+
+
+            <section id="preview">
+                <button class="btn btn-sm btn-primary" (click)="downloadConsentJsonFile()"><span class="bi-save"></span>
+                    Download FHIR Consent</button>
+                <!-- <pre><code class="language-json" >{{prettyConsentJson()}}
+                    </code>
+                </pre> -->
+                <!-- <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
+            </section>
+        </div>
+    </div>
+</div>

@@ -1,12 +1,16 @@
 {{consentService.url()}}
-<br/>
-<code *ngIf="bundle" class="language-json">
-    {{formatBundle()}}
+<br />
 
+<div *ngIf="bundle">
+    <pre>
+    <code class="language-json">
+        {{formatBundle()}}    
+    </code>
+    </pre>
     <table class="table table-striped table-condensed">
         <thead>
             <tr>
-                <th>Patient</th>
+                <th>Subject</th>
                 <th>Status</th>
                 <th>Category</th>
                 <th>Organization</th>
@@ -15,28 +19,28 @@
         </thead>
         <tbody>
             <tr *ngFor="let c of bundle.entry">
-                <td>{{c.resource?.patient?.display}}</td>
+                <td>{{c.resource?.subject?.display}}</td>
                 <td>{{c.resource?.status}}</td>
                 <td>
                     <p *ngFor="let cc of c.resource?.category">
-                    <span *ngFor="let coding of cc.coding">
-                        {{coding.code}}
-                        ({{coding.system}})
-                    </span>
+                        <span *ngFor="let coding of cc.coding">
+                            {{coding.code}}
+                            ({{coding.system}})
+                        </span>
                     </p>
                     <!-- {{
                     displayCategories(c)
                 }}-->
-            </td> 
+                </td>
                 <td>
-                    <p *ngFor="let org of c.resource?.organization">
-                        {{org.reference}}
+                    <p *ngFor="let g of c.resource?.grantee">
+                        {{g.display}}
                     </p>
                 </td>
-                <td>{{c.resource}}</td>
+                <td>{{c.resource?.provision}}</td>
                 <td>{{c.resource}}</td>
                 <td>{{c.resource}}</td>
             </tr>
         </tbody>
     </table>
-</code>
+</div>
