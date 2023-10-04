@@ -28,6 +28,10 @@ export class ConsentService extends BaseService {
 		return this.backendService.url + '/Consent/' + id;
 	}
 
+	get(id: string) {
+		return this.http.get<Consent>(this.urlFor(id), { headers: this.backendService.headers() });
+	}
+	
 	post(consent: Consent) {
 		return this.http.post<Consent>(this.url(), JSON.stringify(consent), { headers: this.backendService.headers() });
 	}

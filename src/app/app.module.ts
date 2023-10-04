@@ -20,10 +20,11 @@ import { ToasterComponent } from './toaster/toaster.component';
 
 import { BackendService } from './backend/backend.service';
 import { ConsentService } from './consent/consent.service';
-import { FhirService } from './fhir.service';
+import { OrganizationService } from './organization.service';
 import { SettingsService } from './settings/settings.service';
 
 import { ToastService } from './toast/toast.service';
+import { PatientService } from './patient.service';
 
 
 @NgModule({
@@ -44,8 +45,9 @@ import { ToastService } from './toast/toast.service';
     ],   // components and directives
     providers: [
         BackendService,
+        OrganizationService,
         ConsentService,
-        FhirService,
+        PatientService,
         SettingsService,
         ToastService
         // { provide: 'Window', useValue: window }

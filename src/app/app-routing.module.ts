@@ -8,6 +8,7 @@ import { SettingsComponent } from './settings/settings.component';
 const routes: Routes = [
   { path: '', component: BrowserComponent },
   { path: 'builder', component: BuilderComponent },
+  { path: 'builder/:consent_id', component: BuilderComponent },
   {path: 'settings', component: SettingsComponent}
 ]
 

@@ -47,9 +47,11 @@
                     <section class="mt-4">
 
 
-                        <h1><span *ngIf="mode == 'create'">New</span><span *ngIf="mode == 'update'">Update</span>
+                        <h1>
+                            <span *ngIf="mode == 'create'">New</span><span *ngIf="mode == 'update'">Update</span>
                             Consent Form
-                            <button class="btn btn-sm btn-primary" (click)="reset()"><span class="bi-save"></span> Reset
+                            <button *ngIf="mode == 'create'" class="btn btn-sm btn-primary" (click)="reset()"><span
+                                    class="bi-save"></span> Reset
                                 Form</button>
                         </h1>
                         <p class="form-text">This form guides you through creation of the consent documents used by a
@@ -214,8 +216,8 @@
                             <div class="col-sm-6">
                                 <div class="form-floating mt-2">
                                     <select class="form-control form-control-sm" [(ngModel)]="consent.decision">
-                                        <option value="permit" [selected]="consent.decision == 'permit'">Permit</option>
-                                        <option value="deny" [selected]="consent.decision == 'deny'">Deny</option>
+                                        <option value="permit" [selected]="'permit'">Permit</option>
+                                        <option value="deny" [selected]="'deny'">Deny</option>
                                     </select>
                                     <label for="consent_provision_type">Provision Type</label>
                                     <small class="form-text">Selecting "Deny" will prevent access except as explicitly
@@ -294,7 +296,7 @@
                 <h2>Consent Provisions</h2>
                 <div *ngFor="let p of consent.provision">
 
-
+<!-- 
                     <div class="mt-4" *ngIf="p.id">
                         <h3>Medical Information</h3>
                         <div class="form-check mt-3">
@@ -342,8 +344,8 @@
                             <br />
                             <small class="form-text">Lorem ipsum TODO</small>
                         </div>
-                    </div>
-
+                    </div> -->
+<!-- 
                     <div class="mt-4">
                         <h3>Purpose of Use</h3>
                         <div class="form-check mt-3">
@@ -407,7 +409,6 @@
 
                     <h4>Purposes</h4>
                     <div *ngFor="let purpose of p.purpose">
-                        <!-- <div *ngFor="let coding of purpose.code"> -->
                         <div class="row mt-2">
 
                             <div class="form-floating col-sm-6">
@@ -421,12 +422,11 @@
                                 <label for="consent_provision_purpose_coding_code">Code</label>
                             </div>
                         </div>
-                        <!-- </div> -->
                     </div>
 
-
+-->
                 </div>
-            </section>
+            </section> 
         </div>
 
         <div class="tab-pane " id="advanced-tab-pane" role="tabpanel" aria-labelledby="advanced-tab" tabindex="0">
@@ -474,16 +474,16 @@
 
         <div class="tab-pane " id="fhir-tab-pane" role="tabpanel" aria-labelledby="fhir-tab" tabindex="0">
 
-                    <section id="preview">
-                        <button class="btn btn-sm btn-primary" (click)="downloadConsentJsonFile()"><span
-                                class="bi-download"></span>
-                            Download FHIR Consent Resource Document</button>
-                        <pre><code class="language-json" >{{prettyConsentJson()}}
+            <section id="preview">
+                <button class="btn btn-sm btn-primary" (click)="downloadConsentJsonFile()"><span
+                        class="bi-download"></span>
+                    Download FHIR Consent Resource Document</button>
+                <pre><code class="language-json" >{{prettyConsentJson()}}
                     </code>
                 </pre>
-                        <!-- <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
-                    </section>
-            
+                <!-- <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
+            </section>
+
         </div>
     </div>
 

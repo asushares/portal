@@ -4,10 +4,12 @@ import { Component } from '@angular/core';
 import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patient } from 'fhir/r5';
 
 import { v4 as uuidv4 } from 'uuid';
-import { FhirService } from '../fhir.service';
+import { OrganizationService } from '../organization.service';
 import { BaseComponent } from '../base/base.component';
 import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
+import { ActivatedRoute } from '@angular/router';
+import { PatientService } from '../patient.service';
 
 @Component({
   selector: 'app-builder',
@@ -94,9 +96,65 @@ export class BuilderComponent extends BaseComponent {
   //   { category: 'substanceUse', act_code: 'SUB' }
   // ]
 
-  constructor(protected fhirService: FhirService, protected consentService: ConsentService, protected toastService: ToastService) {
+  constructor(public route: ActivatedRoute, protected organizationService: OrganizationService, protected patientService: PatientService, protected consentService: ConsentService, protected toastService: ToastService) {
     super();
-    this.reset();
+    this.route.paramMap.subscribe(pm => {
+      let c_id = pm.get('consent_id')!;
+      if (c_id) {
+        this.mode = 'update';
+        this.consentService.get(c_id).subscribe({
+          next: c => {
+            this.consent = c;
+            this.repairConsent();
+
+            // this.consent = Object.assign({}, this.consent, c);
+            // console.log("MERGED");
+            // console.log(this.consent);
+
+            this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
+            console.log("Loading patient...");
+            console.log(this.consent);
+            const subject_ref = this.consent?.subject?.reference;
+            if (subject_ref) {
+              if (subject_ref.startsWith('Patient')) {
+                let p_id = subject_ref.replace('Patient/', '');
+                this.patientService.get(p_id).subscribe({
+                  next: p => {
+                    this.patientSelected = p;
+                    console.log('Loaded patient: ' + p.id);
+
+                  }
+                });
+              }
+            }
+            const ref = this.consent?.controller?.forEach(n => {
+              console.log("Loading organization...");
+
+              let o_id = n.reference?.replace('Organization/', '');
+              this.organizationService.get(o_id!).subscribe({
+                next: o => {
+                  console.log('Loaded organization: ' + o.id);
+
+                  this.organizationSelected.push(o);
+                }
+              })
+            });
+
+          },
+          error: error => {
+            this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
+            this.reset();
+          }
+        })
+      } else {
+        this.reset();
+      }
+    });
+  }
+
+  repairConsent() {
+    // this.consent.provision = this.consent.provision || [];
+    // this.consent.grantor = this.consent.grantor || [];
   }
 
   save() {
@@ -104,11 +162,13 @@ export class BuilderComponent extends BaseComponent {
       next: oo => {
         console.log(oo);
         this.toastService.showSuccessToast('Consent Created', 'Saved as consent id: ' + oo.id);
-        
-        this.consent = Object.assign({}, oo, this.consent);
+
+        this.consent = oo;
+        this.repairConsent();
+        // this.consent = Object.assign({}, oo, this.consent);
         this.mode = 'update';
-        console.log('MERGED: ' + JSON.stringify(this.consent, null, "\t"));
-        
+        // console.log('MERGED: ' + JSON.stringify(this.consent, null, "\t"));
+
       }, error: error => {
         console.log(error);
         console.log(error.error);
@@ -161,7 +221,7 @@ export class BuilderComponent extends BaseComponent {
           ]
         }
       ],
-      grantor: [],
+      // grantor: [],
       controller: [],
       provision: [{
         id: uuidv4(),
@@ -239,7 +299,7 @@ export class BuilderComponent extends BaseComponent {
 
   patientSearch(text: string) {
     this.patientSearching = true;
-    this.fhirService.patientSearch(this.patientSearchText).subscribe(b => {
+    this.patientService.search(this.patientSearchText).subscribe(b => {
       this.patientList = b;
       this.patientSearching = false;
     });
@@ -262,7 +322,7 @@ export class BuilderComponent extends BaseComponent {
 
   organizationSearch(text: string) {
     this.organizationSearching = true;
-    this.fhirService.organizationSearch(this.organizationSearchText).subscribe(b => {
+    this.organizationService.search(this.organizationSearchText).subscribe(b => {
       this.organizationList = b;
       this.organizationSearching = false;
     });
