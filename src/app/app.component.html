@@ -1,3 +1,5 @@
+<toaster></toaster>
+
 <nav class="navbar navbar-expand-lg" aria-label="Marketplace navbar">
     <div class="container-fluid">
         <a class="navbar-brand" [routerLink]="['/']"><i class="bi-fire"></i> Consent Manager</a>
@@ -43,6 +45,11 @@
                         <li><a class="dropdown-item" href="https://www.asushares.com" target="_blank"><i class="bi-globe"></i> ASU SHARES Home</a></li>
                         <li><a class="dropdown-item" href="https://www.github.com/asushares" target="_blank"><i class="bi-github"></i> GitHub</a></li>
                     </ul>
+                </li>
+                <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
+                    <a class="nav-link" [routerLink]="['/settings']">
+                        <i class="bi-gear"></i> Settings
+                    </a>
                 </li>
 
                 <li class="nav-item" [routerLinkActive]="'active'">

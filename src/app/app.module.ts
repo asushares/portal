@@ -6,19 +6,24 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {ToastrModule} from 'ngx-toastr';
 
 import { AppRoutingModule } from './app-routing.module';
 
 import {AppComponent} from './app.component';
 
 import { BrowserComponent } from './browser/browser.component';
+import { BuilderComponent } from './builder/builder.component';
+import { CodeableConceptComponent } from './codeable-concept/codeable-concept.component';
+import { SettingsComponent } from './settings/settings.component';
+import { ToastComponent } from './toast/toast.component';
+import { ToasterComponent } from './toaster/toaster.component';
 
 import { BackendService } from './backend/backend.service';
-import { BuilderComponent } from './builder/builder.component';
 import { ConsentService } from './consent/consent.service';
 import { FhirService } from './fhir.service';
-import { CodeableConceptComponent } from './codeable-concept/codeable-concept.component';
+import { SettingsService } from './settings/settings.service';
+
+import { ToastService } from './toast/toast.service';
 
 
 @NgModule({
@@ -26,20 +31,23 @@ import { CodeableConceptComponent } from './codeable-concept/codeable-concept.co
 		AppRoutingModule,
         BrowserModule,
         FormsModule,
-        HttpClientModule,
-		BrowserAnimationsModule, // For Toaster
-        ToastrModule.forRoot()
+        HttpClientModule
 	],
     declarations: [
         AppComponent,
         BrowserComponent,
         BuilderComponent,
-        CodeableConceptComponent
+        CodeableConceptComponent,
+        SettingsComponent,
+        ToastComponent,
+        ToasterComponent
     ],   // components and directives
     providers: [
         BackendService,
         ConsentService,
-        FhirService
+        FhirService,
+        SettingsService,
+        ToastService
         // { provide: 'Window', useValue: window }
     ],                    // products
     bootstrap: [AppComponent]     // root component

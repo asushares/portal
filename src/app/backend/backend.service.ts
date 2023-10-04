@@ -24,10 +24,10 @@ export class BackendService {
 		this.url = (window as any)["CONSENT_BUILDER_DEFAULT_FHIR_URL"];
 	}
 
-
-	public requestOptions(includeBearerToken: boolean): HttpHeaders {
-		var headers = new HttpHeaders({ 'Accept': 'application/json' });
-		if (includeBearerToken) {
+	public includeBearerToken: boolean = false;
+	public headers(): HttpHeaders {
+		var headers = new HttpHeaders({ 'Content-Type': 'application/json', 'Accept': 'application/json' });
+		if (this.includeBearerToken) {
 			let jwt = localStorage.getItem(BackendService.LOCAL_STORAGE_JWT_KEY);
 			if (jwt) {
 				headers = headers.set('Authorization', 'Bearer ' + jwt);
@@ -46,7 +46,7 @@ export class BackendService {
 
 
 	// status() {
-	// 	let status = this.http.get<Status>(this.statusUrl(), { headers: this.requestOptions(true) }).pipe(map(res => res));
+	// 	let status = this.http.get<Status>(this.statusUrl(), { headers: this.headers(true) }).pipe(map(res => res));
 	// 	return status;
 	// }
 }

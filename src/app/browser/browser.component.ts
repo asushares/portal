@@ -3,6 +3,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
 import { Bundle, BundleEntry, Consent, Patient } from 'fhir/r5';
+import { ToastService } from '../toast/toast.service';
 
 @Component({
   selector: 'app-browser',
@@ -17,8 +18,7 @@ export class BrowserComponent implements OnInit {
 
   public bundle: Bundle<Consent> | null = null;
 
-  constructor(protected consentService: ConsentService) {
-
+  constructor(protected consentService: ConsentService, protected toastService: ToastService) {
   }
 
   ngOnInit() {
@@ -40,6 +40,35 @@ export class BrowserComponent implements OnInit {
     let json = JSON.stringify(this.bundle, null, "\t");
     console.log(json);
     return json;
+  }
+
+  removeConsent(consent: Consent) {
+    let index = -1;
+    if (this.bundle?.entry) {
+      this.bundle?.entry?.forEach((n, i) => {
+        if (consent.id == this.bundle!.entry![i].resource?.id) {
+          index = i;
+        }
+      })
+      if (index >= 0) {
+        this.bundle!.entry!.splice(index, 1);
+      }
+    }
+
+  }
+
+  delete(consent: Consent) {
+    this.consentService.delete(consent).subscribe({
+      next: oo => {
+        console.log(oo);
+        this.removeConsent(consent);
+        this.toastService.showSuccessToast('Consent Deleted', 'The consent has been deleted.');
+      }, error: error => {
+        console.log(error);
+        console.log(error.error);
+        this.toastService.showErrorToast('Consent Deletion Failed', 'The server refused to delete the consent document.');
+      }
+    });
   }
 
 

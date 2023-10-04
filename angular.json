@@ -31,7 +31,6 @@
                         ],
                         "styles": [
                             "node_modules/bootstrap-icons/font/bootstrap-icons.css",
-                            "node_modules/ngx-toastr/toastr.css",
                             "src/lux.min.css",
                             "src/styles.scss",
                             "node_modules/prismjs/themes/prism.css"

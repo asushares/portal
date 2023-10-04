@@ -1,11 +1,13 @@
 // Author: Preston Lee
 
 import { Component } from '@angular/core';
-import { Bundle, CodeableConcept, Consent, Organization, Patient } from 'fhir/r5';
+import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patient } from 'fhir/r5';
 
 import { v4 as uuidv4 } from 'uuid';
 import { FhirService } from '../fhir.service';
 import { BaseComponent } from '../base/base.component';
+import { ToastService } from '../toast/toast.service';
+import { ConsentService } from '../consent/consent.service';
 
 @Component({
   selector: 'app-builder',
@@ -14,7 +16,7 @@ import { BaseComponent } from '../base/base.component';
 })
 export class BuilderComponent extends BaseComponent {
 
-
+  mode: 'create' | 'update' = 'create';
 
   consent: Consent = this.template();
 
@@ -28,25 +30,113 @@ export class BuilderComponent extends BaseComponent {
   organizationSelected: Organization[] = [];
   organizationSearching: boolean = false;
 
-  medicalInformation!: {
-    domesticViolence: boolean,
-    geneticInformation: boolean,
-    mentalHealth: boolean,
-    sexualAndReproductive: boolean,
-    substanceUse: boolean
-  };
-  purpose!: { treatment: boolean, research: boolean, none: boolean };
+  medicalInformation = this.templateMedicalInformation();
 
-  constructor(protected fhirService: FhirService) {
+  templateMedicalInformation() {
+    let t: {
+      [key: string]: {
+        domesticViolence: {
+          enabled: boolean,
+          act_code: 'VIO'
+        }, geneticInformation: {
+          enabled: boolean,
+          act_code: 'GEN'
+        }, mentalHealth: {
+          enabled: boolean,
+          act_code: 'MENT'
+        }, sexualAndReproductive: {
+          enabled: boolean,
+          act_code: 'SEX'
+        }, substanceUse: {
+          enabled: boolean,
+          act_code: 'SUB'
+        }
+      }
+    } = {};
+    this.consent.provision?.forEach(p => {
+      t[p.id!] = {
+        domesticViolence: {
+          enabled: true,
+          act_code: 'VIO'
+        }, geneticInformation: {
+          enabled: true,
+          act_code: 'GEN'
+        }, mentalHealth: {
+          enabled: true,
+          act_code: 'MENT'
+        }, sexualAndReproductive: {
+          enabled: true,
+          act_code: 'SEX'
+        }, substanceUse: {
+          enabled: false,
+          act_code: 'SUB'
+        }
+      }
+    });
+    return t;
+  }
+
+  // purpose!: { treatment: boolean, research: boolean };
+  purpose = this.templatePurpose();
+
+  templatePurpose() {
+    return {
+      treatment: { enabled: true, act_code: 'T1' },
+      research: { enabled: true, act_code: 'T2' }
+    }
+  }
+
+  // medicalInformationMap = [
+  //   { category: 'domesticViolence', act_code: 'VIO' },
+  //   { category: 'geneticInformation', act_code: 'GEN' },
+  //   { category: 'mentalHealth', act_code: 'MENT' },
+  //   { category: 'sexualAndReproductive', act_code: 'SEX' },
+  //   { category: 'substanceUse', act_code: 'SUB' }
+  // ]
+
+  constructor(protected fhirService: FhirService, protected consentService: ConsentService, protected toastService: ToastService) {
     super();
     this.reset();
+  }
+
+  save() {
+    this.consentService.post(this.consent).subscribe({
+      next: oo => {
+        console.log(oo);
+        this.toastService.showSuccessToast('Consent Created', 'Saved as consent id: ' + oo.id);
+        
+        this.consent = Object.assign({}, oo, this.consent);
+        this.mode = 'update';
+        console.log('MERGED: ' + JSON.stringify(this.consent, null, "\t"));
+        
+      }, error: error => {
+        console.log(error);
+        console.log(error.error);
+        this.toastService.showErrorToast('Consent Creation Failed', 'The server refused to create the consent document.');
+      }
+    });
+  }
+
+  update() {
+    this.consentService.put(this.consent).subscribe({
+      next: oo => {
+        console.log(oo);
+        this.toastService.showSuccessToast('Consent Updated', 'Updated consent id: ' + oo.id);
+        this.mode = 'update';
+      },
+      error: error => {
+        console.log(error);
+        console.log(error.error);
+        this.toastService.showErrorToast('Consent Update Failed', 'The server refused to update the consent document.');
+      }
+    });
   }
 
   template() {
     let c: Consent = {
       resourceType: 'Consent',
       status: 'draft',
-      decision: 'permit',
+      decision: 'deny',
       category: [
         {
           id: uuidv4(),
@@ -74,6 +164,7 @@ export class BuilderComponent extends BaseComponent {
       grantor: [],
       controller: [],
       provision: [{
+        id: uuidv4(),
         actor: [{
           reference: {
             reference: ''
@@ -95,7 +186,8 @@ export class BuilderComponent extends BaseComponent {
             }
           ]
         }],
-        purpose:  [
+        securityLabel: [],
+        purpose: [
           {
             "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
             "code": "TREAT",
@@ -112,6 +204,29 @@ export class BuilderComponent extends BaseComponent {
     return c;
   }
 
+  // templateMedicalInformation() {
+  //   let medicalInformation = {
+  //     domesticViolence: true,
+  //     geneticInformation: true,
+  //     mentalHealth: true,
+  //     sexualAndReproductive: true,
+  //     substanceUse: false
+  //   };
+  //   return this.medicalInformation;
+  // }
+
+  reset() {
+    this.consent = this.template();
+    this.mode = 'create';
+    this.removeSubject();
+    this.organizationList = null;
+    this.organizationSelected = [];
+    this.medicalInformation = this.templateMedicalInformation();
+    this.purpose = this.templatePurpose();
+    // this.toastService.showSuccessToast("Form Reset", "Go for it!");
+    console.log('Reset complete.');
+  }
+
   addPeriod() {
     // if (this.consent.provision) {
     this.consent.period = { start: Date.now().toString(), end: Date.now().toString() };
@@ -120,20 +235,6 @@ export class BuilderComponent extends BaseComponent {
 
   removePeriod() {
     delete this.consent.period;
-  }
-  reset() {
-    this.consent = this.template();
-    this.removeSubject();
-    this.organizationList = null;
-    this.organizationSelected = [];
-    this.medicalInformation = {
-      domesticViolence: true,
-      geneticInformation: true,
-      mentalHealth: true,
-      sexualAndReproductive: true,
-      substanceUse: false
-    };
-    this.purpose = { treatment: true, research: true, none: false };
   }
 
   patientSearch(text: string) {
@@ -225,13 +326,48 @@ export class BuilderComponent extends BaseComponent {
     a.click();
   }
 
-  updateMedicalInformation() {
-    // console.log(this.medicalInformation.domesticViolence);
-    // this.consent.
+  // medicalInformationEnabledFor(provision_id: string, category: string) {
+  //   let enabled = false;
+  //   // keyof type this.be
+  //   this.medicalInformation[provision_id].forEach(n => {
+  //     if (n.category == category) {
+  //       enabled = n.enabled;
+  //     }
+  //   })
+  //   return enabled;
+  // }
 
+  updateMedicalInformation(cp: ConsentProvision) {
+    if (cp.id && cp.securityLabel) {
+      Object.entries(this.medicalInformation[cp.id]).forEach(([k, n]) => {
+        // let n = Object.v this.medicalInformation[cp.id!];
+
+        if (n.enabled) {
+          let found = false;
+          cp.securityLabel?.forEach(sl => {
+            if (n.act_code == sl.code) {
+              found = true;
+            }
+          });
+          if (!found) {
+            cp.securityLabel?.push({ code: n.act_code, system: 'FIXME-ActCode', display: 'FIXME-' + n.act_code });
+          }
+        } else { // disabled
+          let foundAt = -1;
+          for (let i = 0; i < cp.securityLabel!.length; i++) {
+            if (n.act_code == cp.securityLabel![i].code) {
+              foundAt = i;
+            }
+            if (foundAt >= 0) {
+              cp.securityLabel?.splice(foundAt, 1);
+            }
+          }
+        }
+      });
+    }
   }
 
-  updatePurpose() {
+  updatePurpose(p: ConsentProvision) {
 
   }
 

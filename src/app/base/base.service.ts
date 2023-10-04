@@ -13,9 +13,6 @@ export abstract class BaseService {
   constructor(protected backendService: BackendService, protected http: HttpClient) {
   }
 
-  headers(): HttpHeaders {
-    return this.backendService.requestOptions(true);
-  }
 
   formatErrors(errors: { [field: string]: Array<string> }): string[] {
     let formatted: string[] = [];

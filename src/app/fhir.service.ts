@@ -1,11 +1,16 @@
 // Author: Preston Lee
 
-import { HttpClient } from '@angular/common/http';
-import { Bundle, Organization, Patient } from 'fhir/r5';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Bundle, Consent, OperationOutcome, Organization, Patient } from 'fhir/r5';
 import { BaseService } from './base/base.service';
 import { BackendService } from './backend/backend.service';
 
 export class FhirService extends BaseService {
+
+    headers(){
+        let headers: HttpHeaders = new HttpHeaders({'Content-Type' : 'application/json'});
+        return headers;
+    }
     organizationUrl() {
         return this.backendService.url + '/Organization';
     }
