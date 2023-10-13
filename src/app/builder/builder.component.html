@@ -293,148 +293,211 @@
 
         <div class="tab-pane " id="provisions-tab-pane" role="tabpanel" aria-labelledby="provisions-tab" tabindex="0">
             <section class="mt-4">
-                <h2>Consent Provisions</h2>
-                <div *ngFor="let p of consent.provision">
+                <h2>Consent Provisions
+                    <button class="btn btn-sm btn-primary" (click)="addProvision()"><span class="bi-plus-circle"></span>
+                        Add Provision</button>
+                </h2>
+                <div class="provision mt-4 p-2" *ngFor="let p of consent.provision">
 
-<!-- 
-                    <div class="mt-4" *ngIf="p.id">
-                        <h3>Medical Information</h3>
-                        <div class="form-check mt-3">
-                            {{medicalInformation[p.id].sexualAndReproductive}}
-                            <input class="form-check-input" type="checkbox" id="medical_domestic_violence"
-                                [(ngModel)]="medicalInformation[p.id].domesticViolence"
-                                (change)="updateMedicalInformation(p)" required />
-                            <label class="form-check-label" for="medical_domestic_violence">Domestic
-                                Violence</label>
-                            <br />
-                            <small class="form-text">Includes TODO</small>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+                        <div *ngIf="consent.category" class="btn-group btn-group-sm">
+                            <a class="btn btn-small btn-primary" (click)="moveUp(p, consent.provision!)"
+                                *ngIf="canMoveUp(p, consent.provision!)"><span
+                                    class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveUp(p, consent.provision!)"><span
+                                    class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveDown(p, consent.provision!)"><span
+                                    class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-primary" (click)="moveDown(p, consent.provision!)"
+                                *ngIf="canMoveDown(p, consent.provision!)"><span
+                                    class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-outline-danger" (click)="removeProvision(p)"><span
+                                    class="bi bi-trash"></span> Delete Provision</a>
                         </div>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="medical_genetic_information"
-                                [(ngModel)]="medicalInformation[p.id].geneticInformation"
-                                (change)="updateMedicalInformation(p)" required />
-                            <label class="form-check-label" for="medical_genetic_information">Genetic
-                                Information</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="medical_mental_health"
-                                [(ngModel)]="medicalInformation[p.id].mentalHealth"
-                                (change)="updateMedicalInformation(p)" required />
-                            <label class="form-check-label" for="medical_mental_health">Mental Health</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="medical_sexual_and_reproductive"
-                                [(ngModel)]="medicalInformation[p.id].sexualAndReproductive"
-                                (change)="updateMedicalInformation(p)" required />
-                            <label class="form-check-label" for="medical_sexual_and_reproductive">Sexual &amp;
-                                Reproductive
-                                Health</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="medical_substance_use"
-                                [(ngModel)]="medicalInformation[p.id].substanceUse"
-                                (change)="updateMedicalInformation(p)" required />
-                            <label class="form-check-label" for="medical_substance_use">Substance Use</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
-                    </div> -->
-<!-- 
-                    <div class="mt-4">
-                        <h3>Purpose of Use</h3>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="purpose_treatment"
-                                [(ngModel)]="purpose.treatment" (change)="updatePurpose(p)" required />
-                            <label class="form-check-label" for="purpose_treatment">Treatment</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
-                        <div class="form-check mt-3">
-                            <input class="form-check-input" type="checkbox" id="purpose_research"
-                                [(ngModel)]="purpose.research" (change)="updatePurpose(p)" required />
-                            <label class="form-check-label" for="purpose_research">Research</label>
-                            <br />
-                            <small class="form-text">Lorem ipsum TODO</small>
-                        </div>
+
+                        <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
+                        class="bi bi-trash"></span> Delete Category</button> -->
                     </div>
 
-                    <h4>Actors</h4>
-                    <div *ngFor="let actor of p.actor">
-                        <h6>Roles</h6>
-                        <div *ngIf="actor.role">
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_actor_reference" [(ngModel)]="actor.reference!.reference"
-                                    disabled />
-                                <label for="consent_provision_actor_reference">Reference</label>
-                            </div>
+                    <!-- <button class="btn btn-sm btn-danger" (click)="removeProvision(p)"><span class="bi-trash"></span>
+                        Remove Provision</button> -->
 
-                            <div *ngFor="let coding of actor.role.coding">
-                                <div class="form-floating">
-                                    <input class="form-control form-control-sm" type="text"
-                                        name="consent_provision_actor_role_coding_system" [(ngModel)]="coding.system" />
-                                    <label for="consent_provision_actor_role_coding_system">System</label>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="mt-4" *ngIf="p.id && medicalInformation[p.id]">
+                                <h3>Medical Information</h3>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_domestic_violence-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].domesticViolence.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_domestic_violence-' + p.id">Domestic
+                                        Violence</label>
+                                    <br />
+                                    <small class="form-text">Possible indicators of physical or mental harm by violence
+                                        of a
+                                        domestic nature.</small>
                                 </div>
-                                <div class="form-floating">
-                                    <input class="form-control form-control-sm" type="text"
-                                        name="consent_provision_actor_role_coding_code" [(ngModel)]="coding.code" />
-                                    <label for="consent_provision_actor_role_coding_code">Code</label>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_genetic_information-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].geneticInformation.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label"
+                                        [for]="'medical_genetic_information-' + p.id">Genetic
+                                        Information</label>
+                                    <br />
+                                    <small class="form-text">Genomic and molecular data that may indicate, for example,
+                                        susceptability to heritable disease.</small>
+                                </div>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_mental_health-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].mentalHealth.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_mental_health-' + p.id">Mental
+                                        Health</label>
+                                    <br />
+                                    <small class="form-text">As distinct from physical health, may also include
+                                        behavioral
+                                        disabilities and disorders</small>
+                                </div>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_sexual_and_reproductive-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].sexualAndReproductive.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label"
+                                        [for]="'medical_sexual_and_reproductive-' + p.id">Sexual
+                                        &amp;
+                                        Reproductive
+                                        Health</label>
+                                    <br />
+                                    <small class="form-text">Information related to sexuality and reproductive
+                                        health</small>
+                                </div>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_substance_use-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].substanceUse.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_substance_use-' + p.id">Substance
+                                        Use</label>
+                                    <br />
+                                    <small class="form-text">Records pertaining to drugs and alcohol.</small>
                                 </div>
                             </div>
                         </div>
 
-                    </div>
-
-                    <h4>Actions</h4>
-                    <div *ngFor="let cc of p.action">
-                        <div *ngFor="let coding of cc.coding">
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_action_coding_system" [(ngModel)]="coding.system" />
-                                <label for="consent_provision_action_coding_system">System</label>
-                            </div>
-                            <div class="form-floating">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_action_coding_code" [(ngModel)]="coding.code" />
-                                <label for="consent_provision_action_coding_code">Code</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h4>Purposes</h4>
-                    <div *ngFor="let purpose of p.purpose">
-                        <div class="row mt-2">
-
-                            <div class="form-floating col-sm-6">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_purpose_coding_system" [(ngModel)]="purpose.system" />
-                                <label for="consent_provision_purpose_coding_system">System</label>
-                            </div>
-                            <div class="form-floating col-sm-6">
-                                <input class="form-control form-control-sm" type="text"
-                                    name="consent_provision_purpose_coding_code" [(ngModel)]="purpose.code" />
-                                <label for="consent_provision_purpose_coding_code">Code</label>
+                        <div class="col-sm-6">
+                            <div class="mt-4" *ngIf="p.id && purpose[p.id]">
+                                <h3>Purpose of Use</h3>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'purpose_treatment-' + p.id"
+                                        [(ngModel)]="purpose[p.id].treatment.enabled" (change)="updatePurpose(p)"
+                                        required />
+                                    <label class="form-check-label" [for]="'purpose_treatment-'+ p.id">Treatment</label>
+                                    <br />
+                                    <small class="form-text">For the purposes of providing or supporing care.</small>
+                                </div>
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'purpose_research-'+ p.id"
+                                        [(ngModel)]="purpose[p.id].research.enabled" (change)="updatePurpose(p)"
+                                        required />
+                                    <label class="form-check-label" [for]="'purpose_research-'+ p.id">Research</label>
+                                    <br />
+                                    <small class="form-text">Scientific and academic research intended to benefit
+                                        others.</small>
+                                </div>
                             </div>
                         </div>
                     </div>
 
--->
+                    <div class="row mt-4">
+                        <div class="col-sm-6">
+                            <h4>Actors</h4>
+                            <div *ngFor="let actor of p.actor">
+                                <h6>Roles</h6>
+                                <div *ngIf="actor.role">
+                                    <div *ngIf="actor.reference" class="form-floating">
+                                        <input class="form-control form-control-sm" type="text"
+                                            name="consent_provision_actor_reference"
+                                            [(ngModel)]="actor.reference.reference" disabled />
+                                        <label for="consent_provision_actor_reference">Reference</label>
+                                    </div>
+
+                                    <div *ngFor="let coding of actor.role.coding">
+                                        <div class="form-floating">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_actor_role_coding_system"
+                                                [(ngModel)]="coding.system" />
+                                            <label for="consent_provision_actor_role_coding_system">System</label>
+                                        </div>
+                                        <div class="form-floating">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_actor_role_coding_code"
+                                                [(ngModel)]="coding.code" />
+                                            <label for="consent_provision_actor_role_coding_code">Code</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+
+                            <div>
+                                <h4>Actions</h4>
+                                <div *ngFor="let cc of p.action">
+                                    <div *ngFor="let coding of cc.coding">
+                                        <div class="form-floating">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_action_coding_system"
+                                                [(ngModel)]="coding.system" />
+                                            <label for="consent_provision_action_coding_system">System</label>
+                                        </div>
+                                        <div class="form-floating">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_action_coding_code" [(ngModel)]="coding.code" />
+                                            <label for="consent_provision_action_coding_code">Code</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- <h4>Purposes</h4>
+                                <div *ngFor="let purpose of p.purpose">
+                                    <div class="row mt-2">
+
+                                        <div class="form-floating col-sm-6">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_purpose_coding_system"
+                                                [(ngModel)]="purpose.system" />
+                                            <label for="consent_provision_purpose_coding_system">System</label>
+                                        </div>
+                                        <div class="form-floating col-sm-6">
+                                            <input class="form-control form-control-sm" type="text"
+                                                name="consent_provision_purpose_coding_code"
+                                                [(ngModel)]="purpose.code" />
+                                            <label for="consent_provision_purpose_coding_code">Code</label>
+                                        </div>
+                                    </div>
+                                </div> -->
+
+                            </div>
+                        </div>
+                    </div>
+
+
                 </div>
-            </section> 
+            </section>
         </div>
 
         <div class="tab-pane " id="advanced-tab-pane" role="tabpanel" aria-labelledby="advanced-tab" tabindex="0">
             <div class="row">
 
                 <div class="col-md-6">
-
-
                     <section class="mt-4">
                         <h2>Categories <button class="btn btn-sm btn-primary" (click)="createCategory()"><span
                                     class="bi bi-plus-circle">
@@ -473,15 +536,14 @@
         </div>
 
         <div class="tab-pane " id="fhir-tab-pane" role="tabpanel" aria-labelledby="fhir-tab" tabindex="0">
-
             <section id="preview">
                 <button class="btn btn-sm btn-primary" (click)="downloadConsentJsonFile()"><span
                         class="bi-download"></span>
                     Download FHIR Consent Resource Document</button>
-                <pre><code class="language-json" >{{prettyConsentJson()}}
+                <!-- <pre><code class="language-json" >{{prettyConsentJson()}}
                     </code>
-                </pre>
-                <!-- <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
+                </pre> -->
+                <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea>
             </section>
 
         </div>

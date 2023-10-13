@@ -32,9 +32,9 @@ export class BuilderComponent extends BaseComponent {
   organizationSelected: Organization[] = [];
   organizationSearching: boolean = false;
 
-  medicalInformation = this.templateMedicalInformation();
+  medicalInformation = this.loadConsentProvisionsMedicalInformation();
 
-  templateMedicalInformation() {
+  loadConsentProvisionsMedicalInformation() {
     let t: {
       [key: string]: {
         domesticViolence: {
@@ -42,59 +42,111 @@ export class BuilderComponent extends BaseComponent {
           act_code: 'VIO'
         }, geneticInformation: {
           enabled: boolean,
-          act_code: 'GEN'
+          act_code: 'GDIS'
         }, mentalHealth: {
           enabled: boolean,
-          act_code: 'MENT'
+          act_code: 'MENCAT'
         }, sexualAndReproductive: {
           enabled: boolean,
           act_code: 'SEX'
         }, substanceUse: {
           enabled: boolean,
-          act_code: 'SUB'
+          act_code: 'ETH'
         }
       }
     } = {};
     this.consent.provision?.forEach(p => {
+      if (!p.id) {
+        console.log("PROVISION ID IS NOT SET!");
+
+      }
       t[p.id!] = {
         domesticViolence: {
-          enabled: true,
+          enabled: false,
           act_code: 'VIO'
         }, geneticInformation: {
-          enabled: true,
-          act_code: 'GEN'
+          enabled: false,
+          act_code: 'GDIS'
         }, mentalHealth: {
-          enabled: true,
-          act_code: 'MENT'
+          enabled: false,
+          act_code: 'MENCAT'
         }, sexualAndReproductive: {
-          enabled: true,
+          enabled: false,
           act_code: 'SEX'
         }, substanceUse: {
           enabled: false,
-          act_code: 'SUB'
+          act_code: 'ETH'
         }
       }
+      p.securityLabel?.forEach(sl => {
+        switch (sl.code) {
+          case t[p.id!].domesticViolence.act_code:
+            t[p.id!].domesticViolence.enabled = true;
+            break;
+
+          case t[p.id!].geneticInformation.act_code:
+            t[p.id!].geneticInformation.enabled = true;
+            break;
+
+          case t[p.id!].mentalHealth.act_code:
+            t[p.id!].mentalHealth.enabled = true;
+            break;
+
+          case t[p.id!].sexualAndReproductive.act_code:
+            t[p.id!].sexualAndReproductive.enabled = true;
+            break;
+
+          case t[p.id!].substanceUse.act_code:
+            t[p.id!].substanceUse.enabled = true;
+            break;
+
+          default:
+            break;
+        }
+        // t[p.id!].for
+      })
     });
+    this.medicalInformation = t;
     return t;
   }
 
-  // purpose!: { treatment: boolean, research: boolean };
-  purpose = this.templatePurpose();
+  purpose = this.loadConsentProvisionsPurposes();
 
-  templatePurpose() {
-    return {
-      treatment: { enabled: true, act_code: 'T1' },
-      research: { enabled: true, act_code: 'T2' }
-    }
+  loadConsentProvisionsPurposes() {
+    let t: {
+      [key: string]: {
+        treatment: { enabled: boolean, act_code: 'HIPAAConsentCD' },
+        research: { enabled: boolean, act_code: 'RESEARCH' }
+      }
+    } = {};
+    this.consent.provision?.forEach(p => {
+      if (!p.id) {
+        console.log("PROVISION ID IS NOT SET!");
+
+      }
+      t[p.id!] = {
+        treatment: { enabled: false, act_code: 'HIPAAConsentCD' },
+        research: { enabled: false, act_code: 'RESEARCH' }
+      }
+      p.purpose?.forEach(pur => {
+        console.log("PUR " + pur.code);
+        switch (pur.code) {
+          case t[p.id!].research.act_code:
+            t[p.id!].research.enabled = true;
+            break;
+          case t[p.id!].treatment.act_code:
+            t[p.id!].treatment.enabled = true;
+            break;
+          default:
+            break;
+        }
+      })
+
+    });
+    this.purpose = t;
+    return t;
   }
 
-  // medicalInformationMap = [
-  //   { category: 'domesticViolence', act_code: 'VIO' },
-  //   { category: 'geneticInformation', act_code: 'GEN' },
-  //   { category: 'mentalHealth', act_code: 'MENT' },
-  //   { category: 'sexualAndReproductive', act_code: 'SEX' },
-  //   { category: 'substanceUse', act_code: 'SUB' }
-  // ]
 
   constructor(public route: ActivatedRoute, protected organizationService: OrganizationService, protected patientService: PatientService, protected consentService: ConsentService, protected toastService: ToastService) {
     super();
@@ -104,9 +156,9 @@ export class BuilderComponent extends BaseComponent {
         this.mode = 'update';
         this.consentService.get(c_id).subscribe({
           next: c => {
-            this.consent = c;
-            this.repairConsent();
-
+            this.consent = this.repairConsent(c);
+            this.loadConsentProvisionsMedicalInformation();
+            this.loadConsentProvisionsPurposes();
             // this.consent = Object.assign({}, this.consent, c);
             // console.log("MERGED");
             // console.log(this.consent);
@@ -152,9 +204,17 @@ export class BuilderComponent extends BaseComponent {
     });
   }
 
-  repairConsent() {
+  repairConsent(c: Consent) {
+    c.provision?.forEach(cp => {
+      cp.securityLabel = cp.securityLabel || [];
+      cp.purpose = cp.purpose || [];
+      // cp.actor?.forEach(a => {
+
+      // })
+    });
     // this.consent.provision = this.consent.provision || [];
     // this.consent.grantor = this.consent.grantor || [];
+    return c;
   }
 
   save() {
@@ -163,8 +223,7 @@ export class BuilderComponent extends BaseComponent {
         console.log(oo);
         this.toastService.showSuccessToast('Consent Created', 'Saved as consent id: ' + oo.id);
 
-        this.consent = oo;
-        this.repairConsent();
+        this.consent = this.repairConsent(oo);
         // this.consent = Object.assign({}, oo, this.consent);
         this.mode = 'update';
         // console.log('MERGED: ' + JSON.stringify(this.consent, null, "\t"));
@@ -223,43 +282,7 @@ export class BuilderComponent extends BaseComponent {
       ],
       // grantor: [],
       controller: [],
-      provision: [{
-        id: uuidv4(),
-        actor: [{
-          reference: {
-            reference: ''
-          },
-          role: {
-            coding: [
-              {
-                "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
-                "code": "IRCP"
-              }
-            ]
-          }
-        }],
-        action: [{
-          coding: [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/consentaction",
-              "code": "access"
-            }
-          ]
-        }],
-        securityLabel: [],
-        purpose: [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
-            "code": "TREAT",
-            "display": "treatment"
-          },
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
-            "code": "ETREAT",
-            "display": "Emergency Treatment"
-          }
-        ]
-      }]
+      provision: [this.templateProvision()]
     };
     return c;
   }
@@ -281,8 +304,8 @@ export class BuilderComponent extends BaseComponent {
     this.removeSubject();
     this.organizationList = null;
     this.organizationSelected = [];
-    this.medicalInformation = this.templateMedicalInformation();
-    this.purpose = this.templatePurpose();
+    this.medicalInformation = this.loadConsentProvisionsMedicalInformation();
+    this.purpose = this.loadConsentProvisionsPurposes();
     // this.toastService.showSuccessToast("Form Reset", "Go for it!");
     console.log('Reset complete.');
   }
@@ -398,19 +421,22 @@ export class BuilderComponent extends BaseComponent {
   // }
 
   updateMedicalInformation(cp: ConsentProvision) {
+
     if (cp.id && cp.securityLabel) {
       Object.entries(this.medicalInformation[cp.id]).forEach(([k, n]) => {
+        console.log('CLICK ' + k);
         // let n = Object.v this.medicalInformation[cp.id!];
 
         if (n.enabled) {
           let found = false;
-          cp.securityLabel?.forEach(sl => {
+          cp.securityLabel!.forEach(sl => {
             if (n.act_code == sl.code) {
               found = true;
             }
           });
           if (!found) {
-            cp.securityLabel?.push({ code: n.act_code, system: 'FIXME-ActCode', display: 'FIXME-' + n.act_code });
+            console.log("ENABLING " + n.act_code);
+            cp.securityLabel!.push({ code: n.act_code, system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', display: n.act_code });
           }
         } else { // disabled
           let foundAt = -1;
@@ -419,16 +445,49 @@ export class BuilderComponent extends BaseComponent {
               foundAt = i;
             }
             if (foundAt >= 0) {
+              console.log("DISABLED " + n.act_code);
               cp.securityLabel?.splice(foundAt, 1);
             }
           }
         }
       });
     }
+    console.log(this.consent);
+
   }
 
-  updatePurpose(p: ConsentProvision) {
-
+  updatePurpose(cp: ConsentProvision) {
+    if (!cp.purpose) {
+      cp.purpose = [];
+    }
+    if (cp.id && cp.purpose) {
+      Object.entries(this.purpose[cp.id]).forEach(([k, n]) => {
+        if (n.enabled) {
+          let found = false;
+          cp.purpose?.forEach(pur => {
+            // console.log("DEBUG" +pur.code);
+            if (n.act_code == pur.code) {
+              found = true;
+            }
+          });
+          if (!found) {
+            console.log("ENABLING " + n.act_code);
+            cp.purpose?.push({ code: n.act_code, system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', display: n.act_code });
+          }
+        } else { // disabled
+          let foundAt = -1;
+          for (let i = 0; i < cp.purpose!.length; i++) {
+            if (n.act_code == cp.purpose![i].code) {
+              foundAt = i;
+            }
+            if (foundAt >= 0) {
+              console.log("DISABLED " + n.act_code);
+              cp.purpose?.splice(foundAt, 1);
+            }
+          }
+        }
+      });
+    }
   }
 
   createCategory() {
@@ -443,6 +502,64 @@ export class BuilderComponent extends BaseComponent {
         }
       }
     }
+  }
+
+  templateProvision(): ConsentProvision {
+    return {
+      id: uuidv4(),
+      actor: [{
+        reference: {
+          reference: ''
+        },
+        role: {
+          coding: [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+              "code": "IRCP"
+            }
+          ]
+        }
+      }],
+      action: [{
+        coding: [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/consentaction",
+            "code": "access"
+          }
+        ]
+      }],
+      securityLabel: [],
+      purpose: [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+          "code": "RESEARCH",
+          "display": "RESEARCH"
+        }
+      ]
+    }
+  }
+
+  addProvision() {
+    this.consent.provision?.push(this.templateProvision());
+    this.loadConsentProvisionsMedicalInformation();
+    this.loadConsentProvisionsPurposes();
+  }
+
+  removeProvision(cp: ConsentProvision) {
+    if (this.consent.provision) {
+      let at = -1;
+      for (let i = 0; i < this.consent.provision.length; i++) {
+        if (this.consent.provision[i].id == cp.id) {
+          at = i;
+          break;
+        }
+      }
+      if (at >= 0) {
+        this.consent.provision.splice(at, 1);
+      }
+    }
+    this.loadConsentProvisionsMedicalInformation();
+    this.loadConsentProvisionsPurposes();
   }
 
 }

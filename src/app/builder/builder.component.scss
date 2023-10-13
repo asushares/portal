@@ -20,4 +20,15 @@
     .form-check label {
         cursor: pointer;
     }
+
+    .provision {
+        border: 1px solid #999;
+    }
+
+    #preview {
+        textarea {
+            width: 100%;
+            height: 100%;
+        }
+    }
 }
