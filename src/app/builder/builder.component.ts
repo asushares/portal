@@ -205,6 +205,7 @@ export class BuilderComponent extends BaseComponent {
   }
 
   repairConsent(c: Consent) {
+    c.controller = c.controller || [];
     c.provision?.forEach(cp => {
       cp.securityLabel = cp.securityLabel || [];
       cp.purpose = cp.purpose || [];
