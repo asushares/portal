@@ -1,6 +1,8 @@
 # Consent Manager
 
-FHIR Consent resource management UI for visually browsing, creating, and maintaining Consent-related FHIR documents.
+FHIR Consent resource administration an dmanagement UI for visually browsing, creating, and maintaining Consent-related FHIR documents.
+
+Only support the FHIR R5 specification.
 
 # Attribution
 
