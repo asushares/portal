@@ -31,8 +31,8 @@
                         ],
                         "styles": [
                             "node_modules/bootstrap-icons/font/bootstrap-icons.css",
-                            "src/lux.min.css",
-                            "src/styles.scss",
+                            "src/app/stylesheets/sandstone.min.css",
+                            "src/app/stylesheets/styles.scss",
                             "node_modules/prismjs/themes/prism.css"
                         ],
                         "scripts": [

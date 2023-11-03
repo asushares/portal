@@ -336,7 +336,8 @@
                                         [for]="'medical_behavioral_health-' + p.id">Behavioral
                                         Health</label>
                                     <br />
-                                    <small class="form-text">All manner of behavioral disabilities and disorders.</small>
+                                    <small class="form-text">All manner of behavioral disabilities and
+                                        disorders.</small>
                                 </div>
 
                                 <div class="form-check mt-3">
@@ -347,28 +348,32 @@
                                     <label class="form-check-label"
                                         [for]="'medical_demographics-' + p.id">Demographics</label>
                                     <br />
-                                    <small class="form-text">General ethnic, social, and environmental background.</small>
+                                    <small class="form-text">General ethnic, social, and environmental
+                                        background.</small>
                                 </div>
 
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox"
-                                        [id]="'medical_diagnoses-' + p.id"
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_diagnoses-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].diagnoses.enabled"
                                         (change)="updateMedicalInformation(p)" required />
                                     <label class="form-check-label"
                                         [for]="'medical_diagnoses-' + p.id">Diagnoses</label>
                                     <br />
-                                    <small class="form-text">Medically recognized conditions you have experienced.</small>
+                                    <small class="form-text">Medically recognized conditions you have
+                                        experienced.</small>
                                 </div>
 
 
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox" [id]="'medical_disabilities-' + p.id"
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_disabilities-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].disabilities.enabled"
                                         (change)="updateMedicalInformation(p)" required />
-                                    <label class="form-check-label" [for]="'medical_disabilities-' + p.id">Disabilities</label>
+                                    <label class="form-check-label"
+                                        [for]="'medical_disabilities-' + p.id">Disabilities</label>
                                     <br />
-                                    <small class="form-text">Physical or mental conditions limiting movement, sense, or activity.</small>
+                                    <small class="form-text">Physical or mental conditions limiting movement, sense, or
+                                        activity.</small>
                                 </div>
 
                                 <div class="form-check mt-3">
@@ -382,20 +387,23 @@
                                 </div>
 
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox" [id]="'medical_infectious_diseases-' + p.id"
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_infectious_diseases-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].infectiousDiseases.enabled"
                                         (change)="updateMedicalInformation(p)" required />
-                                    <label class="form-check-label" [for]="'medical_infectious_diseases-' + p.id">Infectious Diseases
-                                        </label>
+                                    <label class="form-check-label"
+                                        [for]="'medical_infectious_diseases-' + p.id">Infectious Diseases
+                                    </label>
                                     <br />
                                     <small class="form-text">Past or present transmissible ailments.</small>
                                 </div>
-                                
+
                                 <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox" [id]="'medical_medications-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].medications.enabled"
                                         (change)="updateMedicalInformation(p)" required />
-                                    <label class="form-check-label" [for]="'medical_medications-' + p.id">Medications</label>
+                                    <label class="form-check-label"
+                                        [for]="'medical_medications-' + p.id">Medications</label>
                                     <br />
                                     <small class="form-text">Drugs prescribed to you.</small>
                                 </div>
@@ -416,13 +424,15 @@
                                 </div>
 
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox" [id]="'medical_social_determinants-' + p.id"
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_social_determinants-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].socialDeterminants.enabled"
                                         (change)="updateMedicalInformation(p)" required />
                                     <label class="form-check-label" [for]="'medical_social_determinants-' + p.id">
                                         Social Determinents of Health</label>
                                     <br />
-                                    <small class="form-text">Environmental and contextual factors that may impact your health.</small>
+                                    <small class="form-text">Environmental and contextual factors that may impact your
+                                        health.</small>
                                 </div>
 
                                 <div class="form-check mt-3">
@@ -432,7 +442,8 @@
                                     <label class="form-check-label" [for]="'medical_violence-' + p.id">
                                         Violence</label>
                                     <br />
-                                    <small class="form-text">Indicators of possible physical or mental harm by violence.</small>
+                                    <small class="form-text">Indicators of possible physical or mental harm by
+                                        violence.</small>
                                 </div>
                                 <!-- <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox"
@@ -550,44 +561,44 @@
         </div>
 
         <div class="tab-pane " id="advanced-tab-pane" role="tabpanel" aria-labelledby="advanced-tab" tabindex="0">
-            <div class="row">
+            <section class="mt-4">
+                <!-- <div class="col-md-12"> -->
+                <h2>Categories <button class="btn btn-sm btn-primary" (click)="createCategory()"><span
+                            class="bi bi-plus-circle">
+                            Add</span></button></h2>
+                <!-- </div> -->
+                <!-- <div class="col-md-6"> -->
 
-                <div class="col-md-6">
-                    <section class="mt-4">
-                        <h2>Categories <button class="btn btn-sm btn-primary" (click)="createCategory()"><span
-                                    class="bi bi-plus-circle">
-                                    Add</span></button></h2>
-                        <div *ngFor="let cat of consent.category" class="codeableConceptCard">
-                            <codeable-concept [codeableConcept]="cat"></codeable-concept>
-                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <div *ngFor="let cat of consent.category" class="codeableConceptCard mt-2">
+                    <!-- <div class="row"> -->
+                        <codeable-concept [codeableConcept]="cat"></codeable-concept>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
 
-                                <div *ngIf="consent.category" class="btn-group btn-group-sm">
-                                    <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
-                                        *ngIf="canMoveUp(cat, consent.category)"><span
-                                            class="bi bi-chevron-up"></span></a>
-                                    <a class="btn btn-small btn-primary disabled"
-                                        *ngIf="!canMoveUp(cat, consent.category)"><span
-                                            class="bi bi-chevron-up"></span></a>
-                                    <a class="btn btn-small btn-primary disabled"
-                                        *ngIf="!canMoveDown(cat, consent.category)"><span
-                                            class="bi bi-chevron-down"></span></a>
-                                    <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
-                                        *ngIf="canMoveDown(cat, consent.category)"><span
-                                            class="bi bi-chevron-down"></span></a>
-                                    <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
-                                            class="bi bi-trash"></span> Delete Category</a>
-                                </div>
-
-                                <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
-                                class="bi bi-trash"></span> Delete Category</button> -->
+                            <div *ngIf="consent.category" class="btn-group btn-group-sm">
+                                <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
+                                    *ngIf="canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                                <a class="btn btn-small btn-primary disabled"
+                                    *ngIf="!canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                                <a class="btn btn-small btn-primary disabled"
+                                    *ngIf="!canMoveDown(cat, consent.category)"><span
+                                        class="bi bi-chevron-down"></span></a>
+                                <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
+                                    *ngIf="canMoveDown(cat, consent.category)"><span
+                                        class="bi bi-chevron-down"></span></a>
+                                <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
+                                        class="bi bi-trash"></span> Delete Category</a>
                             </div>
-                        </div>
-                    </section>
 
+                            <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
+                                class="bi bi-trash"></span> Delete Category</button> -->
+                        </div>
+                    <!-- </div> -->
+
+                    <!-- </div> -->
+                    <!-- <div class="col-md-6">
+                </div> -->
                 </div>
-                <div class="col-md-6">
-                </div>
-            </div>
+            </section>
         </div>
 
         <div class="tab-pane " id="fhir-tab-pane" role="tabpanel" aria-labelledby="fhir-tab" tabindex="0">
