@@ -255,9 +255,11 @@
 
                     </section>
                     <section>
-                        <div class="mt-4">
-                            <button class="btn btn-sm btn-primary" (click)="addPeriod()" *ngIf="!consent.period"><span
+                        <div class="mt-4" *ngIf="!consent.period">
+                            <button class="btn btn-sm btn-primary" (click)="addPeriod()"><span
                                     class="bi-save"></span> Add Period</button>
+                                    <br/>
+                                    <span class="form-text">No date range restriction is currently set.</span>
                         </div>
                         <div *ngIf="consent.period" class="row mt-4">
                             <h2>Effective Period
@@ -266,21 +268,21 @@
                             </h2>
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="input form-control form-control-sm date datepicker-input" type="text"
+                                    <input class="input form-control form-control-sm date datepicker-input" type="text" 
                                         name="consent_provision_period_start"
                                         *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period.start" (click)="pickPeriodStart()">
                                     <label for="consent_provision_period_start">Start</label>
-                                    <small class="form-text">Begins at this date and time.</small>
+                                    <small class="form-text">Begins at this date in yyyy-mm-dd format.</small>
                                 </div>
                             </div>
 
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="form-control form-control-sm date datepicker-input" type="text"
+                                    <input class="form-control form-control-sm date datepicker-input" type="text" placeholder="yyyy-mm-dd"
                                         name="consent_provision_period_end" *ngIf="consent.provision && consent.period"
                                         [(ngModel)]="consent.period!.end" (click)="pickPeriodEnd()" />
                                     <label for="consent_provision_period_end">End</label>
-                                    <small class="form-text">Ends at this date and time.</small>
+                                    <small class="form-text">Ends at this date in yyyy-mm-dd format.</small>
                                 </div>
                             </div>
                         </div>

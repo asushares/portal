@@ -409,35 +409,35 @@ export class BuilderComponent extends BaseComponent {
   }
 
   pickPeriodStart() {
-    let el = document.querySelector('input[name="consent_provision_period_start"]');
-    if (el) {
-      console.log("Creating period start date picker...");
-      const datepicker = new Datepicker(el as HTMLElement, {
-        format: 'yyyy-mm-dd',
-        autohide: true,
-        todayButton: true,
-      });
-      datepicker.show();
-    } else {
-      console.log("Period start input field not found.");
-
-    }
+    // let el = document.querySelector('input[name="consent_provision_period_start"]');
+    // if (el) {
+    //   console.log("Creating period start date picker...");
+    //   const datepicker = new Datepicker(el as HTMLElement, {
+    //     format: 'yyyy-mm-dd',
+    //     autohide: true,
+    //     todayButton: true,
+      
+    //   });
+    //   datepicker.show();
+    //   datepicker.
+    // } else {
+    //   console.log("Period start input field not found.");
+    // }
   }
 
   pickPeriodEnd() {
-    let el = document.querySelector('input[name="consent_provision_period_end"]');
-    if (el) {
-      console.log("Creating period end date picker...");
-      const datepicker = new Datepicker(el as HTMLElement, {
-        format: 'yyyy-mm-dd',
-        autohide: true,
-        todayButton: true,
-      });
-      datepicker.show();
-    } else {
-      console.log("Period end input field not found.");
-
-    }
+    // let el = document.querySelector('input[name="consent_provision_period_end"]');
+    // if (el) {
+    //   console.log("Creating period end date picker...");
+    //   const datepicker = new Datepicker(el as HTMLElement, {
+    //     format: 'yyyy-mm-dd',
+    //     autohide: true,
+    //     todayButton: true,
+    //   });
+    //   datepicker.show();
+    // } else {
+    //   console.log("Period end input field not found.");
+    // }
   }
 
   patientSearch(text: string) {

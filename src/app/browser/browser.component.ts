@@ -2,8 +2,10 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
-import { Bundle, BundleEntry, Consent } from 'fhir/r5';
+import { Bundle, BundleEntry, Consent, Organization, Patient } from 'fhir/r5';
 import { ToastService } from '../toast/toast.service';
+import { PatientService } from '../patient.service';
+import { OrganizationService } from '../organization.service';
 
 @Component({
   selector: 'app-browser',
@@ -12,13 +14,31 @@ import { ToastService } from '../toast/toast.service';
 })
 export class BrowserComponent implements OnInit {
 
+  nameFor(p: Patient): any {
+    let name = '(None)';
+    if (p.name && p.name.length > 0) {
+      let tmp = [];
+      if (p.name[0].given) {
+        tmp.push(...p.name[0].given);
+      }
+      if (p.name[0].family) {
+        tmp.push(p.name[0].family);
+      }
+      name = tmp.join(' ');
+    }
+    return name;
+  }
+
   displayCategories(be: BundleEntry<Consent>) {
     return be.resource?.category?.map(cc => { cc.text }).join(', ');
   }
 
   public bundle: Bundle<Consent> | null = null;
 
-  constructor(protected consentService: ConsentService, protected toastService: ToastService) {
+  public patientSummaries: { [key: string]: Patient } = {};
+  public organizationSummaries: { [key: string]: Organization } = {};
+
+  constructor(protected consentService: ConsentService, protected patientService: PatientService, protected organizationService: OrganizationService, protected toastService: ToastService) {
   }
 
   ngOnInit() {
@@ -31,6 +51,38 @@ export class BrowserComponent implements OnInit {
       // FIXME Remove these lines once real data is available on the server
       // this.bundle.entry = [];
       // this.bundle.entry.push({resource: BrowserComponent.CONSENT_1});
+      if (this.bundle.entry) {
+        this.bundle.entry.forEach(e => {
+
+          // Cache the names of the patients
+          if (e.resource?.subject?.reference) {
+            let ref = e.resource?.subject?.reference;
+            if (ref.match('^Patient/')) {
+              let id = ref.substring('Patient/'.length);
+              this.patientService.summary(id).subscribe(p => {
+                this.patientSummaries[ref] = p;
+                // console.log('Patient summary returned: ');
+                // console.log(p);
+              });
+            }
+          }
+
+          // Cache the names of the Organizations
+          if (e.resource?.controller) {
+            e.resource.controller.forEach(c => {
+              let ref = c.reference;
+              if (ref && ref.match('^Organization/')) {
+                let id = ref.substring('Organization/'.length);
+                this.organizationService.summary(id).subscribe(o => {
+                  this.organizationSummaries[ref!] = o;
+                  // console.log('Organization summary returned: ');
+                  // console.log(o);
+                });
+              }
+            });
+          }
+        });
+      }
       console.log(this.bundle);
 
     })

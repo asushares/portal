@@ -26,7 +26,7 @@ export class OrganizationService extends BaseService {
 	get(id: string) {
 		return this.http.get<Organization>(this.urlFor(id), { headers: this.backendService.headers() });
 	}
-	
+
 	post(organization: Organization) {
 		return this.http.post<Organization>(this.url(), JSON.stringify(organization), { headers: this.backendService.headers() });
 	}
@@ -39,8 +39,12 @@ export class OrganizationService extends BaseService {
 		return this.http.delete<Organization>(this.urlFor(organization.id!), { headers: this.backendService.headers() });
 	}
 
-    search(text: string) {
-        return this.http.get<Bundle<Organization>>(this.url() + '?phonetic=' + text);
-    }
+	search(text: string) {
+		return this.http.get<Bundle<Organization>>(this.url() + '?phonetic=' + text);
+	}
+
+	summary(id: string) {
+		return this.http.get<Organization>(this.urlFor(id) + '?_summary=true');
+	}
 
 }
