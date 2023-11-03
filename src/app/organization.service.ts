@@ -1,10 +1,10 @@
 // Author: Preston Lee
 
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Bundle, Consent, OperationOutcome, Organization } from 'fhir/r5';
+import { Bundle, Organization } from 'fhir/r5';
 import { BaseService } from './base/base.service';
-import { BackendService } from './backend/backend.service';
+import { Injectable } from '@angular/core';
 
+@Injectable()
 export class OrganizationService extends BaseService {
 
 

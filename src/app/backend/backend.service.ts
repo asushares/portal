@@ -3,9 +3,6 @@
 import { Injectable } from "@angular/core";
 import { HttpHeaders } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
-import { map } from 'rxjs/operators';
-import { Bundle } from "fhir/r5";
-import { Patient } from "fhir/r5";
 
 
 @Injectable()

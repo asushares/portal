@@ -1,10 +1,11 @@
 // Author: Preston Lee
 
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Bundle, Patient, OperationOutcome, Organization } from 'fhir/r5';
+import { Bundle, Patient } from 'fhir/r5';
 import { BaseService } from './base/base.service';
-import { BackendService } from './backend/backend.service';
+import { Injectable } from '@angular/core';
 
+
+@Injectable()
 export class PatientService extends BaseService {
 
 

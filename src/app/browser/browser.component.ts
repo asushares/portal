@@ -2,7 +2,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
-import { Bundle, BundleEntry, Consent, Patient } from 'fhir/r5';
+import { Bundle, BundleEntry, Consent } from 'fhir/r5';
 import { ToastService } from '../toast/toast.service';
 
 @Component({

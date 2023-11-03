@@ -17,9 +17,11 @@ export class CodeableConceptComponent extends BaseComponent {
   @Input() codeableConcept: CodeableConcept | null = null;
 
   createCoding() {
-    this.codeableConcept!.coding!.push({id: uuidv4(), system: '', code: '', display: '' });
-    console.log("added");
-
+    if(this.codeableConcept) {
+        this.codeableConcept.coding = this.codeableConcept.coding || [];
+        this.codeableConcept.coding.push({id: uuidv4(), system: '', code: '', display: '' });
+        console.log("added");
+      }
   }
 
   deleteCoding(coding: Coding) {

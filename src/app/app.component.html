@@ -3,11 +3,12 @@
 <nav class="navbar navbar-expand-lg" aria-label="Marketplace navbar">
     <div class="container-fluid">
         <a class="navbar-brand" [routerLink]="['/']"><i class="bi-fire"></i> Consent Manager</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample05" aria-controls="navbarsExample05" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+            aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarsExample05">
+        <div class="collapse navbar-collapse" id="navbarCollapse">
 
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
@@ -36,14 +37,20 @@
                         </li>
                     </ul>
                 </li> -->
+                
 
+                
                 <li class="nav-item dropdown" [routerLinkActive]="'active'">
-                    <a class="nav-link dropdown-toggle" href="#" id="dropdown05" data-bs-toggle="dropdown" aria-expanded="false">
+
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownDocumentation" data-bs-toggle="dropdown"
+                        aria-expanded="false">
                         <i class="bi-book"></i> Documentation
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="dropdown05">
-                        <li><a class="dropdown-item" href="https://www.asushares.com" target="_blank"><i class="bi-globe"></i> ASU SHARES Home</a></li>
-                        <li><a class="dropdown-item" href="https://www.github.com/asushares" target="_blank"><i class="bi-github"></i> GitHub</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownDocumentation">
+                        <li><a class="dropdown-item" href="https://www.asushares.com" target="_blank"><i
+                                    class="bi-globe"></i> ASU SHARES Home</a></li>
+                        <li><a class="dropdown-item" href="https://www.github.com/asushares" target="_blank"><i
+                                    class="bi-github"></i> GitHub</a></li>
                     </ul>
                 </li>
                 <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
