@@ -266,10 +266,9 @@
                             </h2>
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="form-control form-control-sm" type="text"
+                                    <input class="input form-control form-control-sm date datepicker-input" type="text"
                                         name="consent_provision_period_start"
-                                        *ngIf="consent.provision && consent.period"
-                                        [(ngModel)]="consent.period!.start" />
+                                        *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period.start" (click)="pickPeriodStart()">
                                     <label for="consent_provision_period_start">Start</label>
                                     <small class="form-text">Begins at this date and time.</small>
                                 </div>
@@ -277,9 +276,9 @@
 
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="form-control form-control-sm" type="text"
+                                    <input class="form-control form-control-sm date datepicker-input" type="text"
                                         name="consent_provision_period_end" *ngIf="consent.provision && consent.period"
-                                        [(ngModel)]="consent.period!.end" />
+                                        [(ngModel)]="consent.period!.end" (click)="pickPeriodEnd()" />
                                     <label for="consent_provision_period_end">End</label>
                                     <small class="form-text">Ends at this date and time.</small>
                                 </div>
@@ -571,27 +570,25 @@
 
                 <div *ngFor="let cat of consent.category" class="codeableConceptCard mt-2">
                     <!-- <div class="row"> -->
-                        <codeable-concept [codeableConcept]="cat"></codeable-concept>
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <codeable-concept [codeableConcept]="cat"></codeable-concept>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
 
-                            <div *ngIf="consent.category" class="btn-group btn-group-sm">
-                                <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
-                                    *ngIf="canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
-                                <a class="btn btn-small btn-primary disabled"
-                                    *ngIf="!canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
-                                <a class="btn btn-small btn-primary disabled"
-                                    *ngIf="!canMoveDown(cat, consent.category)"><span
-                                        class="bi bi-chevron-down"></span></a>
-                                <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
-                                    *ngIf="canMoveDown(cat, consent.category)"><span
-                                        class="bi bi-chevron-down"></span></a>
-                                <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
-                                        class="bi bi-trash"></span> Delete Category</a>
-                            </div>
-
-                            <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
-                                class="bi bi-trash"></span> Delete Category</button> -->
+                        <div *ngIf="consent.category" class="btn-group btn-group-sm">
+                            <a class="btn btn-small btn-primary" (click)="moveUp(cat, consent.category)"
+                                *ngIf="canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveUp(cat, consent.category)"><span class="bi bi-chevron-up"></span></a>
+                            <a class="btn btn-small btn-primary disabled"
+                                *ngIf="!canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-primary" (click)="moveDown(cat, consent.category)"
+                                *ngIf="canMoveDown(cat, consent.category)"><span class="bi bi-chevron-down"></span></a>
+                            <a class="btn btn-small btn-outline-danger" (click)="deleteCategory(cat)"><span
+                                    class="bi bi-trash"></span> Delete Category</a>
                         </div>
+
+                        <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
+                                class="bi bi-trash"></span> Delete Category</button> -->
+                    </div>
                     <!-- </div> -->
 
                     <!-- </div> -->

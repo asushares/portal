@@ -10,6 +10,7 @@ import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute } from '@angular/router';
 import { PatientService } from '../patient.service';
+import { Datepicker } from 'vanillajs-datepicker';
 
 @Component({
   selector: 'app-builder',
@@ -393,12 +394,50 @@ export class BuilderComponent extends BaseComponent {
 
   addPeriod() {
     // if (this.consent.provision) {
-    this.consent.period = { start: Date.now().toString(), end: Date.now().toString() };
+    // const now = new Date();
+    // const today_str = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDay();
+    const tomorrow = new Date(Date.now() + (24 * 60 * 60 * 1000));
+    tomorrow.toDateString()
+    const tomorrow_str = tomorrow.getFullYear() + '-' + tomorrow.getMonth() + '-' + tomorrow.getDay();
+    this.consent.period = { start: new Date().toISOString().split('T')[0], end: tomorrow.toISOString().split('T')[0] };
+
     // }
   }
 
   removePeriod() {
     delete this.consent.period;
+  }
+
+  pickPeriodStart() {
+    let el = document.querySelector('input[name="consent_provision_period_start"]');
+    if (el) {
+      console.log("Creating period start date picker...");
+      const datepicker = new Datepicker(el as HTMLElement, {
+        format: 'yyyy-mm-dd',
+        autohide: true,
+        todayButton: true,
+      });
+      datepicker.show();
+    } else {
+      console.log("Period start input field not found.");
+
+    }
+  }
+
+  pickPeriodEnd() {
+    let el = document.querySelector('input[name="consent_provision_period_end"]');
+    if (el) {
+      console.log("Creating period end date picker...");
+      const datepicker = new Datepicker(el as HTMLElement, {
+        format: 'yyyy-mm-dd',
+        autohide: true,
+        todayButton: true,
+      });
+      datepicker.show();
+    } else {
+      console.log("Period end input field not found.");
+
+    }
   }
 
   patientSearch(text: string) {
