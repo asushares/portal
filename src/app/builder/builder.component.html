@@ -303,17 +303,13 @@
 
                         <div *ngIf="consent.category" class="btn-group btn-group-sm">
                             <a class="btn btn-small btn-primary" (click)="moveUp(p, consent.provision!)"
-                                *ngIf="canMoveUp(p, consent.provision!)"><span
-                                    class="bi bi-chevron-up"></span></a>
+                                *ngIf="canMoveUp(p, consent.provision!)"><span class="bi bi-chevron-up"></span></a>
                             <a class="btn btn-small btn-primary disabled"
-                                *ngIf="!canMoveUp(p, consent.provision!)"><span
-                                    class="bi bi-chevron-up"></span></a>
+                                *ngIf="!canMoveUp(p, consent.provision!)"><span class="bi bi-chevron-up"></span></a>
                             <a class="btn btn-small btn-primary disabled"
-                                *ngIf="!canMoveDown(p, consent.provision!)"><span
-                                    class="bi bi-chevron-down"></span></a>
+                                *ngIf="!canMoveDown(p, consent.provision!)"><span class="bi bi-chevron-down"></span></a>
                             <a class="btn btn-small btn-primary" (click)="moveDown(p, consent.provision!)"
-                                *ngIf="canMoveDown(p, consent.provision!)"><span
-                                    class="bi bi-chevron-down"></span></a>
+                                *ngIf="canMoveDown(p, consent.provision!)"><span class="bi bi-chevron-down"></span></a>
                             <a class="btn btn-small btn-outline-danger" (click)="removeProvision(p)"><span
                                     class="bi bi-trash"></span> Delete Provision</a>
                         </div>
@@ -329,42 +325,81 @@
                         <div class="col-sm-6">
                             <div class="mt-4" *ngIf="p.id && medicalInformation[p.id]">
                                 <h3>Medical Information</h3>
+
+
                                 <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox"
-                                        [id]="'medical_domestic_violence-' + p.id"
-                                        [(ngModel)]="medicalInformation[p.id].domesticViolence.enabled"
-                                        (change)="updateMedicalInformation(p)" required />
-                                    <label class="form-check-label" [for]="'medical_domestic_violence-' + p.id">Domestic
-                                        Violence</label>
-                                    <br />
-                                    <small class="form-text">Possible indicators of physical or mental harm by violence
-                                        of a
-                                        domestic nature.</small>
-                                </div>
-                                <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox"
-                                        [id]="'medical_genetic_information-' + p.id"
-                                        [(ngModel)]="medicalInformation[p.id].geneticInformation.enabled"
+                                        [id]="'medical_behavioral_health-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].behavioralHealth.enabled"
                                         (change)="updateMedicalInformation(p)" required />
                                     <label class="form-check-label"
-                                        [for]="'medical_genetic_information-' + p.id">Genetic
-                                        Information</label>
+                                        [for]="'medical_behavioral_health-' + p.id">Behavioral
+                                        Health</label>
+                                    <br />
+                                    <small class="form-text">All manner of behavioral disabilities and disorders.</small>
+                                </div>
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_demographics-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].demographics.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label"
+                                        [for]="'medical_demographics-' + p.id">Demographics</label>
+                                    <br />
+                                    <small class="form-text">General ethnic, social, and environmental background.</small>
+                                </div>
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox"
+                                        [id]="'medical_diagnoses-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].diagnoses.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label"
+                                        [for]="'medical_diagnoses-' + p.id">Diagnoses</label>
+                                    <br />
+                                    <small class="form-text">Medically recognized conditions you have experienced.</small>
+                                </div>
+
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_disabilities-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].disabilities.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_disabilities-' + p.id">Disabilities</label>
+                                    <br />
+                                    <small class="form-text">Physical or mental conditions limiting movement, sense, or activity.</small>
+                                </div>
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_genetics-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].genetics.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_genetics-' + p.id">Genetics</label>
                                     <br />
                                     <small class="form-text">Genomic and molecular data that may indicate, for example,
                                         susceptability to heritable disease.</small>
                                 </div>
+
                                 <div class="form-check mt-3">
-                                    <input class="form-check-input" type="checkbox"
-                                        [id]="'medical_mental_health-' + p.id"
-                                        [(ngModel)]="medicalInformation[p.id].mentalHealth.enabled"
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_infectious_diseases-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].infectiousDiseases.enabled"
                                         (change)="updateMedicalInformation(p)" required />
-                                    <label class="form-check-label" [for]="'medical_mental_health-' + p.id">Mental
-                                        Health</label>
+                                    <label class="form-check-label" [for]="'medical_infectious_diseases-' + p.id">Infectious Diseases
+                                        </label>
                                     <br />
-                                    <small class="form-text">As distinct from physical health, may also include
-                                        behavioral
-                                        disabilities and disorders</small>
+                                    <small class="form-text">Past or present transmissible ailments.</small>
                                 </div>
+                                
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_medications-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].medications.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_medications-' + p.id">Medications</label>
+                                    <br />
+                                    <small class="form-text">Drugs prescribed to you.</small>
+                                </div>
+
                                 <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox"
                                         [id]="'medical_sexual_and_reproductive-' + p.id"
@@ -377,9 +412,29 @@
                                         Health</label>
                                     <br />
                                     <small class="form-text">Information related to sexuality and reproductive
-                                        health</small>
+                                        health.</small>
                                 </div>
+
                                 <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_social_determinants-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].socialDeterminants.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_social_determinants-' + p.id">
+                                        Social Determinents of Health</label>
+                                    <br />
+                                    <small class="form-text">Environmental and contextual factors that may impact your health.</small>
+                                </div>
+
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" [id]="'medical_violence-' + p.id"
+                                        [(ngModel)]="medicalInformation[p.id].violence.enabled"
+                                        (change)="updateMedicalInformation(p)" required />
+                                    <label class="form-check-label" [for]="'medical_violence-' + p.id">
+                                        Violence</label>
+                                    <br />
+                                    <small class="form-text">Indicators of possible physical or mental harm by violence.</small>
+                                </div>
+                                <!-- <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox"
                                         [id]="'medical_substance_use-' + p.id"
                                         [(ngModel)]="medicalInformation[p.id].substanceUse.enabled"
@@ -388,7 +443,7 @@
                                         Use</label>
                                     <br />
                                     <small class="form-text">Records pertaining to drugs and alcohol.</small>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
 

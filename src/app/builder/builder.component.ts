@@ -37,22 +37,50 @@ export class BuilderComponent extends BaseComponent {
   loadConsentProvisionsMedicalInformation() {
     let t: {
       [key: string]: {
-        domesticViolence: {
+        behavioralHealth: {
           enabled: boolean,
-          act_code: 'VIO'
-        }, geneticInformation: {
+          act_code: 'BH'
+        },
+        demographics: {
+          enabled: boolean,
+          act_code: 'DEMO'
+        },
+        diagnoses: {
+          enabled: boolean,
+          act_code: 'DIA'
+        },
+        disabilities: {
+          enabled: boolean,
+          act_code: 'DIS'
+        },
+        genetics: {
           enabled: boolean,
           act_code: 'GDIS'
-        }, mentalHealth: {
+        },
+        infectiousDiseases: {
           enabled: boolean,
-          act_code: 'MENCAT'
-        }, sexualAndReproductive: {
+          act_code: 'DISEASE'
+        },
+        medications: {
+          enabled: boolean,
+          act_code: 'ACMED'
+        },
+        sexualAndReproductive: {
           enabled: boolean,
           act_code: 'SEX'
-        }, substanceUse: {
+        },
+        socialDeterminants: {
           enabled: boolean,
-          act_code: 'ETH'
+          act_code: 'SOCIAL'
+        },
+        violence: {
+          enabled: boolean,
+          act_code: 'VIO'
         }
+        // substanceUse: {
+        //   enabled: boolean,
+        //   act_code: 'ETH'
+        // }
       }
     } = {};
     this.consent.provision?.forEach(p => {
@@ -61,44 +89,96 @@ export class BuilderComponent extends BaseComponent {
 
       }
       t[p.id!] = {
-        domesticViolence: {
+        behavioralHealth: {
           enabled: false,
-          act_code: 'VIO'
-        }, geneticInformation: {
+          act_code: 'BH'
+        },
+        demographics: {
+          enabled: false,
+          act_code: 'DEMO'
+        },
+        diagnoses: {
+          enabled: false,
+          act_code: 'DIA'
+        },
+        disabilities: {
+          enabled: false,
+          act_code: 'DIS'
+        },
+        genetics: {
           enabled: false,
           act_code: 'GDIS'
-        }, mentalHealth: {
+        },
+        infectiousDiseases: {
           enabled: false,
-          act_code: 'MENCAT'
-        }, sexualAndReproductive: {
+          act_code: 'DISEASE'
+        },
+        medications: {
+          enabled: false,
+          act_code: 'ACMED'
+        },
+        sexualAndReproductive: {
           enabled: false,
           act_code: 'SEX'
-        }, substanceUse: {
+        },
+        socialDeterminants: {
           enabled: false,
-          act_code: 'ETH'
+          act_code: 'SOCIAL'
+        },
+        violence: {
+          enabled: false,
+          act_code: 'VIO'
         }
+        // substanceUse: {
+        //   enabled: false,
+        //   act_code: 'ETH'
+        // }
       }
       p.securityLabel?.forEach(sl => {
         switch (sl.code) {
-          case t[p.id!].domesticViolence.act_code:
-            t[p.id!].domesticViolence.enabled = true;
+          case t[p.id!].behavioralHealth.act_code:
+            t[p.id!].behavioralHealth.enabled = true;
             break;
 
-          case t[p.id!].geneticInformation.act_code:
-            t[p.id!].geneticInformation.enabled = true;
+          case t[p.id!].demographics.act_code:
+            t[p.id!].demographics.enabled = true;
             break;
 
-          case t[p.id!].mentalHealth.act_code:
-            t[p.id!].mentalHealth.enabled = true;
+          case t[p.id!].diagnoses.act_code:
+            t[p.id!].diagnoses.enabled = true;
+            break;
+
+          case t[p.id!].disabilities.act_code:
+            t[p.id!].disabilities.enabled = true;
+            break;
+
+          case t[p.id!].genetics.act_code:
+            t[p.id!].genetics.enabled = true;
+            break;
+
+          case t[p.id!].infectiousDiseases.act_code:
+            t[p.id!].infectiousDiseases.enabled = true;
+            break;
+
+          case t[p.id!].medications.act_code:
+            t[p.id!].medications.enabled = true;
             break;
 
           case t[p.id!].sexualAndReproductive.act_code:
             t[p.id!].sexualAndReproductive.enabled = true;
             break;
 
-          case t[p.id!].substanceUse.act_code:
-            t[p.id!].substanceUse.enabled = true;
+          case t[p.id!].socialDeterminants.act_code:
+            t[p.id!].socialDeterminants.enabled = true;
             break;
+
+          case t[p.id!].violence.act_code:
+            t[p.id!].violence.enabled = true;
+            break;
+
+          // case t[p.id!].substanceUse.act_code:
+          //   t[p.id!].substanceUse.enabled = true;
+          //   break;
 
           default:
             break;
@@ -290,9 +370,9 @@ export class BuilderComponent extends BaseComponent {
 
   // templateMedicalInformation() {
   //   let medicalInformation = {
-  //     domesticViolence: true,
-  //     geneticInformation: true,
-  //     mentalHealth: true,
+  //     violence: true,
+  //     genetics: true,
+  //     behavioralHealth: true,
   //     sexualAndReproductive: true,
   //     substanceUse: false
   //   };
