@@ -116,7 +116,7 @@ export class BuilderComponent extends BaseComponent {
         },
         medications: {
           enabled: false,
-          act_code: 'GRDIS'
+          act_code: 'DRGIS'
         },
         sexualAndReproductive: {
           enabled: false,
