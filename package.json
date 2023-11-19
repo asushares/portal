@@ -1,6 +1,6 @@
 {
-    "name": "consent-builder",
-    "version": "0.8.1",
+    "name": "@asushares/consent-builder",
+    "version": "0.8.2",
     "scripts": {
         "ng": "ng",
         "start": "envsubst < src/assets/configuration.template.js > src/assets/configuration.js && ng serve",
