@@ -336,8 +336,8 @@ export class BuilderComponent extends BaseComponent {
   template() {
     let c: Consent = {
       resourceType: 'Consent',
-      status: 'draft',
-      decision: 'deny',
+      status: 'active',
+      decision: 'permit',
       category: [
         {
           id: uuidv4(),

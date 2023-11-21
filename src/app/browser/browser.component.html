@@ -16,6 +16,8 @@
                 <th>Effective Period</th>
                 <th>Type</th>
                 <th>Controller Parties</th>
+                <th>Updated</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -25,9 +27,10 @@
                 <td>
                     <div *ngIf="c.resource?.subject?.reference">
                         <b>
-                            <span  *ngIf="patientSummaries[c.resource!.subject!.reference!]" [innerText]="nameFor(patientSummaries[c.resource!.subject!.reference!])"></span>
+                            <span *ngIf="patientSummaries[c.resource!.subject!.reference!]"
+                                [innerText]="nameFor(patientSummaries[c.resource!.subject!.reference!])"></span>
                         </b>
-                        - 
+                        -
                         {{c.resource!.subject!.reference}}
                     </div>
                 </td>
@@ -50,14 +53,16 @@
                 <td>
                     <p *ngFor="let g of c.resource?.controller">
                         <b>
-                            <span  *ngIf="g.reference && organizationSummaries[g.reference]" [innerText]="organizationSummaries[g.reference].name"></span>
+                            <span *ngIf="g.reference && organizationSummaries[g.reference]"
+                                [innerText]="organizationSummaries[g.reference].name"></span>
                         </b>
-                        - 
+                        -
                         {{g.reference}}
                     </p>
                 </td>
                 <!-- <td>{{c.resource?.provision}}</td> -->
 
+                <td>{{c.resource?.meta?.lastUpdated}}</td>
                 <td><button *ngIf="c.resource" class="btn btn-danger" role="button" (click)="delete(c.resource)"><span
                             class="bi bi-trash"> </span></button></td>
             </tr>
