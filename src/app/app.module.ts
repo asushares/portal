@@ -25,6 +25,8 @@ import { SettingsService } from './settings/settings.service';
 
 import { ToastService } from './toast/toast.service';
 import { PatientService } from './patient.service';
+import { SandboxComponent } from './sandbox/sandbox.component';
+import { CdsService } from './cds/cds.service';
 
 
 @NgModule({
@@ -40,6 +42,7 @@ import { PatientService } from './patient.service';
         BuilderComponent,
         CodeableConceptComponent,
         SettingsComponent,
+        SandboxComponent,
         ToastComponent,
         ToasterComponent
     ],   // components and directives
@@ -49,6 +52,7 @@ import { PatientService } from './patient.service';
         ConsentService,
         PatientService,
         SettingsService,
+        CdsService,
         ToastService
         // { provide: 'Window', useValue: window }
     ],                    // products

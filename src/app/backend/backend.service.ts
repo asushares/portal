@@ -9,6 +9,7 @@ import { HttpClient } from '@angular/common/http';
 export class BackendService {
 
 	public url: string; // | null = null; // BackendService.DEFAULT_SERVER_URL;
+	public cdsUrl: string;
 
 	public static STATUS_PATH: string = '/status';
 	public static SESSIONS_PATH: string = '/sessions';
@@ -19,6 +20,7 @@ export class BackendService {
 	constructor(protected http: HttpClient) {
 		// this.configuration = readFileSync(BackendService.CONFIGURATION_PATH).toJSON();
 		this.url = (window as any)["CONSENT_BUILDER_DEFAULT_FHIR_URL"];
+		this.cdsUrl = (window as any)["CONSENT_CDS_ROOT_URL"];
 	}
 
 	public includeBearerToken: boolean = false;

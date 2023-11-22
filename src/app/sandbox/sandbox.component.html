@@ -1,0 +1,31 @@
+<div id="sandbox" class="container">
+
+    <div class="row">
+        <div class="col-sm-12">
+            <h1><span class="bi bi-code"></span> Consent CDS Testing Sandbox</h1>
+            <span class="text-muted">
+                CDS Hook URL: {{hookUrl()}}
+            </span>
+
+        </div>
+        <div class="col-sm-6">
+            <h2>Request Payload <button class="btn btn-primary" (click)="submit()"><span class="bi bi-upload"></span>
+                    Invoke CDS Hook</button>
+            </h2>
+            <!-- <pre><code class="language-json" >{{bundleString}}
+            </code>
+            </pre> -->
+            <textarea class="language-json" [ngModel]="bundleString"></textarea>
+        </div>
+        <div class="col-sm-6">
+            <h2>Response</h2>
+            <i *ngIf="!response">(request not yet submitted)</i>
+        </div>
+        <div class="col-sm-6">
+
+        </div>
+        <div class="col-sm-6">
+
+        </div>
+    </div>
+</div>

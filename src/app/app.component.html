@@ -24,6 +24,12 @@
                     </a>
                 </li>
 
+                <li *ngIf="settingsService.settings.developer" class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
+                    <a class="nav-link" [routerLink]="['/sandbox']">
+                        <i class="bi-code"></i> Testing Sandbox
+                    </a>
+                </li>
+
             </ul>
 
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">

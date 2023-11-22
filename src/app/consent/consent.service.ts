@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
 import { Bundle, Consent } from 'fhir/r5';
 import { Observable } from 'rxjs';
+import { ConsentSearchField } from './consent.search.field';
 
 @Injectable({
 	providedIn: 'root'
@@ -13,13 +14,18 @@ export class ConsentService extends BaseService {
 	// constructor(protected backendService: BackendService) { 
 	//   super();
 	// }
+	public sort: ConsentSearchField = ConsentSearchField.LastUpdated;
+	public order: 'asc' | 'desc' = 'asc';
 
 	url(): string {
 		return this.backendService.url + ConsentService.CONSENT_PATH;
 	}
 
+	sortParameter() {
+return		`_sort=${this.order == 'asc' ? '' : '-'}${this.sort}`;
+	}
 	index(): Observable<Bundle<Consent>> {
-		let b = this.http.get<Bundle<Consent>>(this.url(), { headers: this.backendService.headers() });
+		let b = this.http.get<Bundle<Consent>>(this.url() + "?" + this.sortParameter(), { headers: this.backendService.headers() });
 		return b;
 	}
 
@@ -30,7 +36,7 @@ export class ConsentService extends BaseService {
 	get(id: string) {
 		return this.http.get<Consent>(this.urlFor(id), { headers: this.backendService.headers() });
 	}
-	
+
 	post(consent: Consent) {
 		return this.http.post<Consent>(this.url(), JSON.stringify(consent), { headers: this.backendService.headers() });
 	}

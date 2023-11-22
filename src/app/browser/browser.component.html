@@ -1,23 +1,51 @@
 <!-- {{consentService.url()}} -->
 <br />
 
-<div *ngIf="bundle">
+<div *ngIf="bundle" id="browser">
     <!-- <pre>
     <code class="language-json">
         {{formatBundle()}}    
     </code>
     </pre> -->
+
     <table class="table table-striped table-condensed">
         <thead>
             <tr>
-                <th>Consent ID</th>
-                <th>Subject</th>
-                <th>Status</th>
-                <th>Effective Period</th>
-                <th>Type</th>
-                <th>Controller Parties</th>
-                <th>Updated</th>
-                <th>Actions</th>
+                <th class="sortable" (click)="sortBy(sortTypes.ID)">
+                    Consent ID
+                    <span *ngIf="currentSort() == sortTypes.ID" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                        [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                </th>
+                <th class="sortable" (click)="sortBy(sortTypes.Subject)">
+                    Subject
+                    <span *ngIf="currentSort() == sortTypes.Subject" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                </th>
+                <th class="sortable" (click)="sortBy(sortTypes.Status)">
+                    Status
+                    <span *ngIf="currentSort() == sortTypes.Status" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+
+                </th>
+                <th>Effective Period
+
+                </th>
+                <th>
+                    Type
+                </th>
+                <th class="sortable" (click)="sortBy(sortTypes.Controller)">
+                    Controller Parties
+                    <span *ngIf="currentSort() == sortTypes.Controller" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                        [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                </th>
+                <th class="sortable" (click)="sortBy(sortTypes.LastUpdated)">
+                    Updated
+                    <span *ngIf="currentSort() == sortTypes.LastUpdated" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                        [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                </th>
+                <th>
+                    Actions
+                </th>
             </tr>
         </thead>
         <tbody>

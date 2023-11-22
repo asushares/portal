@@ -6,6 +6,7 @@ import { Bundle, BundleEntry, Consent, Organization, Patient } from 'fhir/r5';
 import { ToastService } from '../toast/toast.service';
 import { PatientService } from '../patient.service';
 import { OrganizationService } from '../organization.service';
+import { ConsentSearchField } from '../consent/consent.search.field';
 
 @Component({
   selector: 'app-browser',
@@ -13,6 +14,21 @@ import { OrganizationService } from '../organization.service';
   styleUrls: ['./browser.component.scss']
 })
 export class BrowserComponent implements OnInit {
+ 
+  public sortTypes = ConsentSearchField;
+
+  currentSort() {
+    return this.consentService.sort;
+  }
+
+  currentOrder() {
+    return this.consentService.order;
+  }
+  sortBy(field: ConsentSearchField) {
+    this.consentService.sort = field;
+    this.consentService.order = this.consentService.order == 'asc' ? 'desc' : 'asc';
+    this.reload();
+  }
 
   nameFor(p: Patient): any {
     let name = '(None)';
