@@ -27,6 +27,7 @@ import { ToastService } from './toast/toast.service';
 import { PatientService } from './patient.service';
 import { SandboxComponent } from './sandbox/sandbox.component';
 import { CdsService } from './cds/cds.service';
+import { ProvisionComponent } from './provision/provision.component';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { CdsService } from './cds/cds.service';
         CodeableConceptComponent,
         SettingsComponent,
         SandboxComponent,
+        ProvisionComponent,
         ToastComponent,
         ToasterComponent
     ],   // components and directives

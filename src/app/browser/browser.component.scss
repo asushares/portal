@@ -1,4 +1,11 @@
 #browser {
+    select {
+        display: inline;
+        width: fit-content;
+    }
+    .pager {
+        display: inline;
+    }
     th.sortable:hover {
         cursor: pointer;
     }

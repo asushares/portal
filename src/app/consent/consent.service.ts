@@ -16,16 +16,19 @@ export class ConsentService extends BaseService {
 	// }
 	public sort: ConsentSearchField = ConsentSearchField.LastUpdated;
 	public order: 'asc' | 'desc' = 'asc';
+	public pageSize = 10;
+	public offset = 0;
 
 	url(): string {
 		return this.backendService.url + ConsentService.CONSENT_PATH;
 	}
 
-	sortParameter() {
-return		`_sort=${this.order == 'asc' ? '' : '-'}${this.sort}`;
+	queryParameters() {
+		return `_sort=${this.order == 'asc' ? '' : '-'}${this.sort}` + `&_count=${this.pageSize}&_getpagesoffset=${this.offset}`;
 	}
+
 	index(): Observable<Bundle<Consent>> {
-		let b = this.http.get<Bundle<Consent>>(this.url() + "?" + this.sortParameter(), { headers: this.backendService.headers() });
+		let b = this.http.get<Bundle<Consent>>(this.url() + "?" + this.queryParameters(), { headers: this.backendService.headers() });
 		return b;
 	}
 

@@ -1,0 +1,224 @@
+<div class="provision" *ngIf="provision && container && container.provision">
+    <div class="mt-4 d-grid gap-2 d-md-flex justify-content-md-end">
+
+        <div class="btn-group btn-group-sm">
+            <a class="btn btn-small btn-primary" (click)="moveUp(provision, container.provision)"
+                *ngIf="canMoveUp(provision, container.provision)"><span class="bi bi-chevron-up"></span></a>
+            <a class="btn btn-small btn-primary disabled" *ngIf="!canMoveUp(provision, container.provision)"><span
+                    class="bi bi-chevron-up"></span></a>
+            <a class="btn btn-small btn-primary disabled" *ngIf="!canMoveDown(provision, container.provision)"><span
+                    class="bi bi-chevron-down"></span></a>
+            <a class="btn btn-small btn-primary" (click)="moveDown(provision, container.provision)"
+                *ngIf="canMoveDown(provision, container.provision)"><span class="bi bi-chevron-down"></span></a>
+            <!-- <a class="btn btn-small btn-outline-danger" (click)="removeProvision(provision)"><span
+                    class="bi bi-trash"></span> Delete Provision</a> -->
+        </div>
+
+        <!-- <button class="btn btn-outline-danger mt-2" (click)="deleteCategory(cat)"><span
+    class="bi bi-trash"></span> Delete Category</button> -->
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="mt-4" *ngIf="provision.id && medicalInformation[provision.id]">
+                <h3>Medical Information</h3>
+
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_behavioral_health-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].behavioralHealth.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_behavioral_health-' + provision.id">Behavioral
+                        Health</label>
+                    <br />
+                    <small class="form-text">All manner of behavioral disabilities and
+                        disorders.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_demographics-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].demographics.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_demographics-' + provision.id">Demographics</label>
+                    <br />
+                    <small class="form-text">General ethnic, social, and environmental
+                        background.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_diagnoses-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].diagnoses.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_diagnoses-' + provision.id">Diagnoses</label>
+                    <br />
+                    <small class="form-text">Medically recognized conditions you have
+                        experienced.</small>
+                </div>
+
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_disabilities-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].disabilities.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_disabilities-' + provision.id">Disabilities</label>
+                    <br />
+                    <small class="form-text">Physical or mental conditions limiting movement, sense, or
+                        activity.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_genetics-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].genetics.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_genetics-' + provision.id">Genetics</label>
+                    <br />
+                    <small class="form-text">Genomic and molecular data that may indicate, for example,
+                        susceptability to heritable disease.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_infectious_diseases-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].infectiousDiseases.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_infectious_diseases-' + provision.id">Infectious
+                        Diseases
+                    </label>
+                    <br />
+                    <small class="form-text">Past or present transmissible ailments.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_medications-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].medications.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_medications-' + provision.id">Medications</label>
+                    <br />
+                    <small class="form-text">Drugs prescribed to you.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox"
+                        [id]="'medical_sexual_and_reproductive-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].sexualAndReproductive.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_sexual_and_reproductive-' + provision.id">Sexual
+                        &amp;
+                        Reproductive
+                        Health</label>
+                    <br />
+                    <small class="form-text">Information related to sexuality and reproductive
+                        health.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_social_determinants-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].socialDeterminants.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_social_determinants-' + provision.id">
+                        Social Determinents of Health</label>
+                    <br />
+                    <small class="form-text">Environmental and contextual factors that may impact your
+                        health.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_violence-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].violence.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_violence-' + provision.id">
+                        Violence</label>
+                    <br />
+                    <small class="form-text">Indicators of possible physical or mental harm by
+                        violence.</small>
+                </div>
+                <!-- <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                    [id]="'medical_substance_use-' + provision.id"
+                    [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
+                    (change)="updateMedicalInformation(provision)" required />
+                <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance
+                    Use</label>
+                <br />
+                <small class="form-text">Records pertaining to drugs and alcohol.</small>
+            </div> -->
+            </div>
+        </div>
+
+        <div class="col-sm-6">
+            <div class="mt-4" *ngIf="provision.id && purpose[provision.id]">
+                <h3>Purpose of Use</h3>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'purpose_treatment-' + provision.id"
+                        [(ngModel)]="purpose[provision.id].treatment.enabled" (change)="updatePurpose(provision)"
+                        required />
+                    <label class="form-check-label" [for]="'purpose_treatment-'+ provision.id">Treatment</label>
+                    <br />
+                    <small class="form-text">For the purposes of providing or supporing care.</small>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'purpose_research-'+ provision.id"
+                        [(ngModel)]="purpose[provision.id].research.enabled" (change)="updatePurpose(provision)"
+                        required />
+                    <label class="form-check-label" [for]="'purpose_research-'+ provision.id">Research</label>
+                    <br />
+                    <small class="form-text">Scientific and academic research intended to benefit
+                        others.</small>
+                </div>
+            </div>
+
+            <h4 class="mt-4">Actors</h4>
+            <div *ngFor="let actor of provision.actor">
+                <h6>Roles</h6>
+                <div *ngIf="actor.role">
+                    <div *ngIf="actor.reference" class="form-floating">
+                        <input class="form-control form-control-sm" type="text" name="consent_provision_actor_reference"
+                            [(ngModel)]="actor.reference.reference" disabled />
+                        <label for="consent_provision_actor_reference">Reference</label>
+                    </div>
+
+                    <div *ngFor="let coding of actor.role.coding">
+                        <div class="form-floating">
+                            <input class="form-control form-control-sm" type="text"
+                                name="consent_provision_actor_role_coding_system" [(ngModel)]="coding.system" />
+                            <label for="consent_provision_actor_role_coding_system">System</label>
+                        </div>
+                        <div class="form-floating">
+                            <input class="form-control form-control-sm" type="text"
+                                name="consent_provision_actor_role_coding_code" [(ngModel)]="coding.code" />
+                            <label for="consent_provision_actor_role_coding_code">Code</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h4 class="mt-4">Actions</h4>
+            <div *ngFor="let cc of provision.action">
+                <div *ngFor="let coding of cc.coding">
+                    <div class="form-floating">
+                        <input class="form-control form-control-sm" type="text"
+                            name="consent_provision_action_coding_system" [(ngModel)]="coding.system" />
+                        <label for="consent_provision_action_coding_system">System</label>
+                    </div>
+                    <div class="form-floating">
+                        <input class="form-control form-control-sm" type="text"
+                            name="consent_provision_action_coding_code" [(ngModel)]="coding.code" />
+                        <label for="consent_provision_action_coding_code">Code</label>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <br>
+    <button class="btn btn-sm btn-primary" (click)="addSubProvision()"><span class="bi-plus-circle"></span>
+        Add a Sub-Provision Exceptions</button>
+
+    <div class="mt-2" *ngFor="let p of provision.provision">
+        <button class="btn btn-sm btn-danger float-end" (click)="removeSubProvision(p)"><span class="bi-trash"></span>
+            Remove This Sub-Provision Exception</button>
+        <provision class="p-2" [container]="provision" [provision]="p" />
+    </div>
+
+
+</div>

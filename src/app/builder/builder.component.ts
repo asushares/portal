@@ -11,6 +11,7 @@ import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute } from '@angular/router';
 import { PatientService } from '../patient.service';
 import { Datepicker } from 'vanillajs-datepicker';
+import { ProvisionComponent } from '../provision/provision.component';
 
 @Component({
   selector: 'app-builder',
@@ -33,201 +34,6 @@ export class BuilderComponent extends BaseComponent {
   organizationSelected: Organization[] = [];
   organizationSearching: boolean = false;
 
-  medicalInformation = this.loadConsentProvisionsMedicalInformation();
-
-  loadConsentProvisionsMedicalInformation() {
-    let t: {
-      [key: string]: {
-        behavioralHealth: {
-          enabled: boolean,
-          act_code: 'BH'
-        },
-        demographics: {
-          enabled: boolean,
-          act_code: 'DEMO'
-        },
-        diagnoses: {
-          enabled: boolean,
-          act_code: 'DIA'
-        },
-        disabilities: {
-          enabled: boolean,
-          act_code: 'DIS'
-        },
-        genetics: {
-          enabled: boolean,
-          act_code: 'GDIS'
-        },
-        infectiousDiseases: {
-          enabled: boolean,
-          act_code: 'DISEASE'
-        },
-        medications: {
-          enabled: boolean,
-          act_code: 'DRGIS'
-        },
-        sexualAndReproductive: {
-          enabled: boolean,
-          act_code: 'SEX'
-        },
-        socialDeterminants: {
-          enabled: boolean,
-          act_code: 'SOCIAL'
-        },
-        violence: {
-          enabled: boolean,
-          act_code: 'VIO'
-        }
-        // substanceUse: {
-        //   enabled: boolean,
-        //   act_code: 'ETH'
-        // }
-      }
-    } = {};
-    this.consent.provision?.forEach(p => {
-      if (!p.id) {
-        console.log("PROVISION ID IS NOT SET!");
-
-      }
-      t[p.id!] = {
-        behavioralHealth: {
-          enabled: false,
-          act_code: 'BH'
-        },
-        demographics: {
-          enabled: false,
-          act_code: 'DEMO'
-        },
-        diagnoses: {
-          enabled: false,
-          act_code: 'DIA'
-        },
-        disabilities: {
-          enabled: false,
-          act_code: 'DIS'
-        },
-        genetics: {
-          enabled: false,
-          act_code: 'GDIS'
-        },
-        infectiousDiseases: {
-          enabled: false,
-          act_code: 'DISEASE'
-        },
-        medications: {
-          enabled: false,
-          act_code: 'DRGIS'
-        },
-        sexualAndReproductive: {
-          enabled: false,
-          act_code: 'SEX'
-        },
-        socialDeterminants: {
-          enabled: false,
-          act_code: 'SOCIAL'
-        },
-        violence: {
-          enabled: false,
-          act_code: 'VIO'
-        }
-        // substanceUse: {
-        //   enabled: false,
-        //   act_code: 'ETH'
-        // }
-      }
-      p.securityLabel?.forEach(sl => {
-        switch (sl.code) {
-          case t[p.id!].behavioralHealth.act_code:
-            t[p.id!].behavioralHealth.enabled = true;
-            break;
-
-          case t[p.id!].demographics.act_code:
-            t[p.id!].demographics.enabled = true;
-            break;
-
-          case t[p.id!].diagnoses.act_code:
-            t[p.id!].diagnoses.enabled = true;
-            break;
-
-          case t[p.id!].disabilities.act_code:
-            t[p.id!].disabilities.enabled = true;
-            break;
-
-          case t[p.id!].genetics.act_code:
-            t[p.id!].genetics.enabled = true;
-            break;
-
-          case t[p.id!].infectiousDiseases.act_code:
-            t[p.id!].infectiousDiseases.enabled = true;
-            break;
-
-          case t[p.id!].medications.act_code:
-            t[p.id!].medications.enabled = true;
-            break;
-
-          case t[p.id!].sexualAndReproductive.act_code:
-            t[p.id!].sexualAndReproductive.enabled = true;
-            break;
-
-          case t[p.id!].socialDeterminants.act_code:
-            t[p.id!].socialDeterminants.enabled = true;
-            break;
-
-          case t[p.id!].violence.act_code:
-            t[p.id!].violence.enabled = true;
-            break;
-
-          // case t[p.id!].substanceUse.act_code:
-          //   t[p.id!].substanceUse.enabled = true;
-          //   break;
-
-          default:
-            break;
-        }
-        // t[p.id!].for
-      })
-    });
-    this.medicalInformation = t;
-    return t;
-  }
-
-  purpose = this.loadConsentProvisionsPurposes();
-
-  loadConsentProvisionsPurposes() {
-    let t: {
-      [key: string]: {
-        treatment: { enabled: boolean, act_code: 'HIPAAConsentCD' },
-        research: { enabled: boolean, act_code: 'RESEARCH' }
-      }
-    } = {};
-    this.consent.provision?.forEach(p => {
-      if (!p.id) {
-        console.log("PROVISION ID IS NOT SET!");
-
-      }
-      t[p.id!] = {
-        treatment: { enabled: false, act_code: 'HIPAAConsentCD' },
-        research: { enabled: false, act_code: 'RESEARCH' }
-      }
-      p.purpose?.forEach(pur => {
-        console.log("PUR " + pur.code);
-        switch (pur.code) {
-          case t[p.id!].research.act_code:
-            t[p.id!].research.enabled = true;
-            break;
-          case t[p.id!].treatment.act_code:
-            t[p.id!].treatment.enabled = true;
-            break;
-          default:
-            break;
-        }
-      })
-
-    });
-    this.purpose = t;
-    return t;
-  }
-
 
   constructor(public route: ActivatedRoute, protected organizationService: OrganizationService, protected patientService: PatientService, protected consentService: ConsentService, protected toastService: ToastService) {
     super();
@@ -238,12 +44,8 @@ export class BuilderComponent extends BaseComponent {
         this.consentService.get(c_id).subscribe({
           next: c => {
             this.consent = this.repairConsent(c);
-            this.loadConsentProvisionsMedicalInformation();
-            this.loadConsentProvisionsPurposes();
-            // this.consent = Object.assign({}, this.consent, c);
-            // console.log("MERGED");
-            // console.log(this.consent);
-
+            // this.loadConsentProvisionsMedicalInformation();
+            // this.loadConsentProvisionsPurposes();
             this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
             console.log("Loading patient...");
             console.log(this.consent);
@@ -333,6 +135,31 @@ export class BuilderComponent extends BaseComponent {
     });
   }
 
+  addProvision() {
+    this.consent.provision?.push(ProvisionComponent.templateProvision());
+    // this.loadConsentProvisionsMedicalInformation();
+    // this.loadConsentProvisionsPurposes();
+  }
+
+  removeProvision(cp: ConsentProvision) {
+    if (this.consent?.provision) {
+      let at = -1;
+      for (let i = 0; i < this.consent?.provision.length; i++) {
+        if (this.consent?.provision[i].id == cp.id) {
+          at = i;
+          break;
+        }
+      }
+      if (at >= 0) {
+        this.consent.provision.splice(at, 1);
+      }
+    }
+    // this.loadMedicalInformation();
+    // this.loadPurposes();
+  }
+
+
+
   template() {
     let c: Consent = {
       resourceType: 'Consent',
@@ -364,7 +191,7 @@ export class BuilderComponent extends BaseComponent {
       ],
       // grantor: [],
       controller: [],
-      provision: [this.templateProvision()]
+      provision: [ProvisionComponent.templateProvision()]
     };
     return c;
   }
@@ -386,8 +213,8 @@ export class BuilderComponent extends BaseComponent {
     this.removeSubject();
     this.organizationList = null;
     this.organizationSelected = [];
-    this.medicalInformation = this.loadConsentProvisionsMedicalInformation();
-    this.purpose = this.loadConsentProvisionsPurposes();
+    // this.medicalInformation = this.loadConsentProvisionsMedicalInformation();
+    // this.purpose = this.loadConsentProvisionsPurposes();
     // this.toastService.showSuccessToast("Form Reset", "Go for it!");
     console.log('Reset complete.');
   }
@@ -416,7 +243,7 @@ export class BuilderComponent extends BaseComponent {
     //     format: 'yyyy-mm-dd',
     //     autohide: true,
     //     todayButton: true,
-      
+
     //   });
     //   datepicker.show();
     //   datepicker.
@@ -540,75 +367,6 @@ export class BuilderComponent extends BaseComponent {
   //   return enabled;
   // }
 
-  updateMedicalInformation(cp: ConsentProvision) {
-
-    if (cp.id && cp.securityLabel) {
-      Object.entries(this.medicalInformation[cp.id]).forEach(([k, n]) => {
-        console.log('CLICK ' + k);
-        // let n = Object.v this.medicalInformation[cp.id!];
-
-        if (n.enabled) {
-          let found = false;
-          cp.securityLabel!.forEach(sl => {
-            if (n.act_code == sl.code) {
-              found = true;
-            }
-          });
-          if (!found) {
-            console.log("ENABLING " + n.act_code);
-            cp.securityLabel!.push({ code: n.act_code, system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', display: n.act_code });
-          }
-        } else { // disabled
-          let foundAt = -1;
-          for (let i = 0; i < cp.securityLabel!.length; i++) {
-            if (n.act_code == cp.securityLabel![i].code) {
-              foundAt = i;
-            }
-            if (foundAt >= 0) {
-              console.log("DISABLED " + n.act_code);
-              cp.securityLabel?.splice(foundAt, 1);
-            }
-          }
-        }
-      });
-    }
-    console.log(this.consent);
-
-  }
-
-  updatePurpose(cp: ConsentProvision) {
-    if (!cp.purpose) {
-      cp.purpose = [];
-    }
-    if (cp.id && cp.purpose) {
-      Object.entries(this.purpose[cp.id]).forEach(([k, n]) => {
-        if (n.enabled) {
-          let found = false;
-          cp.purpose?.forEach(pur => {
-            // console.log("DEBUG" +pur.code);
-            if (n.act_code == pur.code) {
-              found = true;
-            }
-          });
-          if (!found) {
-            console.log("ENABLING " + n.act_code);
-            cp.purpose?.push({ code: n.act_code, system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', display: n.act_code });
-          }
-        } else { // disabled
-          let foundAt = -1;
-          for (let i = 0; i < cp.purpose!.length; i++) {
-            if (n.act_code == cp.purpose![i].code) {
-              foundAt = i;
-            }
-            if (foundAt >= 0) {
-              console.log("DISABLED " + n.act_code);
-              cp.purpose?.splice(foundAt, 1);
-            }
-          }
-        }
-      });
-    }
-  }
 
   createCategory() {
     this.consent.category?.push({ id: uuidv4() });
@@ -624,62 +382,5 @@ export class BuilderComponent extends BaseComponent {
     }
   }
 
-  templateProvision(): ConsentProvision {
-    return {
-      id: uuidv4(),
-      actor: [{
-        reference: {
-          reference: ''
-        },
-        role: {
-          coding: [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
-              "code": "IRCP"
-            }
-          ]
-        }
-      }],
-      action: [{
-        coding: [
-          {
-            "system": "http://terminology.hl7.org/CodeSystem/consentaction",
-            "code": "access"
-          }
-        ]
-      }],
-      securityLabel: [],
-      purpose: [
-        {
-          "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
-          "code": "RESEARCH",
-          "display": "RESEARCH"
-        }
-      ]
-    }
-  }
-
-  addProvision() {
-    this.consent.provision?.push(this.templateProvision());
-    this.loadConsentProvisionsMedicalInformation();
-    this.loadConsentProvisionsPurposes();
-  }
-
-  removeProvision(cp: ConsentProvision) {
-    if (this.consent.provision) {
-      let at = -1;
-      for (let i = 0; i < this.consent.provision.length; i++) {
-        if (this.consent.provision[i].id == cp.id) {
-          at = i;
-          break;
-        }
-      }
-      if (at >= 0) {
-        this.consent.provision.splice(at, 1);
-      }
-    }
-    this.loadConsentProvisionsMedicalInformation();
-    this.loadConsentProvisionsPurposes();
-  }
 
 }

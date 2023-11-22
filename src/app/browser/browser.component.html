@@ -1,12 +1,29 @@
 <!-- {{consentService.url()}} -->
 <br />
 
-<div *ngIf="bundle" id="browser">
-    <!-- <pre>
-    <code class="language-json">
-        {{formatBundle()}}    
-    </code>
-    </pre> -->
+<div *ngIf="bundle" id="browser" class="">
+
+    <div class="m-1">
+
+        <!-- <div class="form-floating mt-2"> -->
+        <select class="form-control form-control-sm" [(ngModel)]="consentService.pageSize" (change)="reload()">
+            <option value="10" [selected]="consentService.pageSize == 10">10 per page</option>
+            <option value="20" [selected]="consentService.pageSize == 20">20 per page</option>
+            <option value="50" [selected]="consentService.pageSize == 50">50 per page</option>
+        </select>
+        <!-- <label for="consent_provision_type">Per Page</label> -->
+        <!-- <small class="form-text"></small> -->
+        <!-- </div> -->
+        &nbsp;
+
+        <div class="pager" *ngIf="hasPreviousPage() || hasNextPage()">
+            <!-- <span *ngIf="!hasPreviousPage()">First Page</span> -->
+            <a class="btn" *ngIf="hasPreviousPage()" (click)="setOffset(currentOffset() - pageSize())">Previous</a>
+            <span>...</span>
+            <a class="btn" *ngIf="hasNextPage()" (click)="setOffset(currentOffset() + pageSize())">Next</a>
+            <!-- <span *ngIf="!hasNextPage()">End of Results</span> -->
+        </div>
+    </div>
 
     <table class="table table-striped table-condensed">
         <thead>
@@ -18,32 +35,37 @@
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.Subject)">
                     Subject
-                    <span *ngIf="currentSort() == sortTypes.Subject" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
-                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                    <span *ngIf="currentSort() == sortTypes.Subject" class="bi"
+                        [class.bi-arrow-up]="currentOrder() == 'asc'" [class.bi-arrow-down]="currentOrder() == 'desc'">
+                    </span>
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.Status)">
                     Status
-                    <span *ngIf="currentSort() == sortTypes.Status" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
-                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                    <span *ngIf="currentSort() == sortTypes.Status" class="bi"
+                        [class.bi-arrow-up]="currentOrder() == 'asc'" [class.bi-arrow-down]="currentOrder() == 'desc'">
+                    </span>
 
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.Period)">
                     Effective Period
-                    <span *ngIf="currentSort() == sortTypes.Period" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
-                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                    <span *ngIf="currentSort() == sortTypes.Period" class="bi"
+                        [class.bi-arrow-up]="currentOrder() == 'asc'" [class.bi-arrow-down]="currentOrder() == 'desc'">
+                    </span>
                 </th>
                 <th>
                     Decision
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.Controller)">
                     Controller(s)
-                    <span *ngIf="currentSort() == sortTypes.Controller" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
-                        [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                    <span *ngIf="currentSort() == sortTypes.Controller" class="bi"
+                        [class.bi-arrow-up]="currentOrder() == 'asc'" [class.bi-arrow-down]="currentOrder() == 'desc'">
+                    </span>
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.LastUpdated)">
                     Updated
-                    <span *ngIf="currentSort() == sortTypes.LastUpdated" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
-                        [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
+                    <span *ngIf="currentSort() == sortTypes.LastUpdated" class="bi"
+                        [class.bi-arrow-up]="currentOrder() == 'asc'" [class.bi-arrow-down]="currentOrder() == 'desc'">
+                    </span>
                 </th>
                 <th>
                     Actions

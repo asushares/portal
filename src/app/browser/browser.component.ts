@@ -14,7 +14,28 @@ import { ConsentSearchField } from '../consent/consent.search.field';
   styleUrls: ['./browser.component.scss']
 })
 export class BrowserComponent implements OnInit {
- 
+
+  hasPreviousPage() {
+    return this.bundle?.link?.some(l => {return l.relation == 'prev'});
+  }
+
+  hasNextPage(): any {
+    return this.bundle?.link?.some(l => { return l.relation == 'next' });
+  }
+
+  currentOffset() {
+    return this.consentService.offset;
+  }
+
+  pageSize() {
+    return this.consentService.pageSize;
+  }
+
+  setOffset(offset: number) {
+    this.consentService.offset = offset;
+    this.reload();
+  }
+
   public sortTypes = ConsentSearchField;
 
   currentSort() {
