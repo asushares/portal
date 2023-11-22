@@ -3,7 +3,7 @@ kind: pipeline
 type: docker
 steps:
   # - name: build_project
-  #   image: node:20-alpine
+  #   image: node:21-alpine
   #   commands:
   #     - npm install
   #     - npm run build

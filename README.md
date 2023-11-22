@@ -11,6 +11,7 @@ This project is written in TypeScript using [Angular](https://angular.io), [Boot
  Assuming you already have node installed via [`nvm`](https://github.com/nvm-sh/nvm) or similar, run `npm run start` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files. The following must be set:
 
 	export CONSENT_BUILDER_DEFAULT_FHIR_URL=https://your.fhir.server.example.com/fhir
+	export CONSENT_CDS_ROOT_URL=https://cds-hooks.sandbox.asushares.com # Any instance of our CDS Hooks service.
 
 
 # Building for Production
