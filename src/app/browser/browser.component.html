@@ -27,14 +27,16 @@
                     [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
 
                 </th>
-                <th>Effective Period
-
+                <th class="sortable" (click)="sortBy(sortTypes.Period)">
+                    Effective Period
+                    <span *ngIf="currentSort() == sortTypes.Period" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
+                    [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
                 </th>
                 <th>
-                    Type
+                    Decision
                 </th>
                 <th class="sortable" (click)="sortBy(sortTypes.Controller)">
-                    Controller Parties
+                    Controller(s)
                     <span *ngIf="currentSort() == sortTypes.Controller" class="bi" [class.bi-arrow-up]="currentOrder() == 'asc'"
                         [class.bi-arrow-down]="currentOrder() == 'desc'"> </span>
                 </th>
