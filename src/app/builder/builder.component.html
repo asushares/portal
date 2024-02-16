@@ -113,12 +113,12 @@
                             <div *ngIf="patientSelected.name" class="input-group">
 
                                 <input class="form-control" type="text" name="consent_subject_patient_selected_name"
-                                    [(ngModel)]="patientSelected.name[0]!.given + ' ' + patientSelected.name[0]!.family"
+                                    [value]="patientSelected.name[0]!.given + ' ' + patientSelected.name[0]!.family"
                                     disabled />
                                 <button class="btn btn-outline btn-primary" (click)="removeSubject()"
                                     *ngIf="consent.subject"><span class="bi bi-trash"></span> Remove</button>
                             </div>
-                            <small class="form-text">Patient whose records this consent document applies :
+                            <small class="form-text">Patient whose records this consent document applies:
                                 {{patientSelected.id}}</small>
                         </div>
 
