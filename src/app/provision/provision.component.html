@@ -25,14 +25,22 @@
 
 
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" [id]="'medical_behavioral_health-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].behavioralHealth.enabled"
+                    <input class="form-check-input" type="checkbox" [id]="'medical_substance_use--' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
                         (change)="updateMedicalInformation(provision)" required />
-                    <label class="form-check-label" [for]="'medical_behavioral_health-' + provision.id">Behavioral
+                    <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance Use</label>
+                    <br />
+                    <small class="form-text">Records possibly pertaining to commonly abused stantances.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_mental_health-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].mentalHealth.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_mental_health-' + provision.id">Mental
                         Health</label>
                     <br />
-                    <small class="form-text">All manner of behavioral disabilities and
-                        disorders.</small>
+                    <small class="form-text">All manner of mental health and wellbeing information.</small>
                 </div>
 
                 <div class="form-check">

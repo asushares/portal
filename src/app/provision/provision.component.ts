@@ -52,9 +52,13 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
   loadMedicalInformation() {
     let t: {
       [key: string]: {
-        behavioralHealth: {
+        substanceUse: {
           enabled: boolean,
-          act_code: 'BH'
+          act_code: 'ACSUBSTAB'
+        },
+        mentalHealth: {
+          enabled: boolean,
+          act_code: 'MENCAT'
         },
         demographics: {
           enabled: boolean,
@@ -100,11 +104,15 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
 
     }
     t[this.provision?.id!] = {
-      behavioralHealth: {
+      substanceUse: {
         enabled: false,
-        act_code: 'BH'
+        act_code: 'ACSUBSTAB'
       },
-      demographics: {
+      mentalHealth: {
+        enabled: false,
+        act_code: 'MENCAT'
+      },
+    demographics: {
         enabled: false,
         act_code: 'DEMO'
       },
@@ -145,8 +153,12 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
 
       this.provision.securityLabel?.forEach(sl => {
         switch (sl.code) {
-          case t[this.provision?.id!].behavioralHealth.act_code:
-            t[this.provision?.id!].behavioralHealth.enabled = true;
+          case t[this.provision?.id!].substanceUse.act_code:
+            t[this.provision?.id!].substanceUse.enabled = true;
+            break;
+
+          case t[this.provision?.id!].mentalHealth.act_code:
+            t[this.provision?.id!].mentalHealth.enabled = true;
             break;
 
           case t[this.provision?.id!].demographics.act_code:
