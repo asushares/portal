@@ -104,15 +104,7 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
 
     }
     t[this.provision?.id!] = {
-      substanceUse: {
-        enabled: false,
-        act_code: 'ACSUBSTAB'
-      },
-      mentalHealth: {
-        enabled: false,
-        act_code: 'MENCAT'
-      },
-    demographics: {
+      demographics: {
         enabled: false,
         act_code: 'DEMO'
       },
@@ -136,6 +128,10 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
         enabled: false,
         act_code: 'DRGIS'
       },
+      mentalHealth: {
+        enabled: false,
+        act_code: 'MENCAT'
+      },
       sexualAndReproductive: {
         enabled: false,
         act_code: 'SEX'
@@ -143,6 +139,10 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
       socialDeterminants: {
         enabled: false,
         act_code: 'SOCIAL'
+      },
+      substanceUse: {
+        enabled: false,
+        act_code: 'ACSUBSTAB'
       },
       violence: {
         enabled: false,
@@ -153,14 +153,6 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
 
       this.provision.securityLabel?.forEach(sl => {
         switch (sl.code) {
-          case t[this.provision?.id!].substanceUse.act_code:
-            t[this.provision?.id!].substanceUse.enabled = true;
-            break;
-
-          case t[this.provision?.id!].mentalHealth.act_code:
-            t[this.provision?.id!].mentalHealth.enabled = true;
-            break;
-
           case t[this.provision?.id!].demographics.act_code:
             t[this.provision?.id!].demographics.enabled = true;
             break;
@@ -185,12 +177,20 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
             t[this.provision?.id!].medications.enabled = true;
             break;
 
+          case t[this.provision?.id!].mentalHealth.act_code:
+            t[this.provision?.id!].mentalHealth.enabled = true;
+            break;
+
           case t[this.provision?.id!].sexualAndReproductive.act_code:
             t[this.provision?.id!].sexualAndReproductive.enabled = true;
             break;
 
           case t[this.provision?.id!].socialDeterminants.act_code:
             t[this.provision?.id!].socialDeterminants.enabled = true;
+            break;
+
+          case t[this.provision?.id!].substanceUse.act_code:
+            t[this.provision?.id!].substanceUse.enabled = true;
             break;
 
           case t[this.provision?.id!].violence.act_code:
@@ -325,7 +325,7 @@ export class ProvisionComponent extends BaseComponent implements OnChanges {
         this.provision!.provision = [];
       }
       console.log("PUSHING");
-      
+
       this.provision.provision.push(ProvisionComponent.templateProvision());
       this.loadMedicalInformation();
       this.loadPurposes();
