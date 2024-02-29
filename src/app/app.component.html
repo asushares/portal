@@ -2,7 +2,10 @@
 
 <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark" aria-label="Marketplace navbar">
     <div class="container-fluid">
-        <a class="navbar-brand" [routerLink]="['/']"><i class="bi-fire"></i> Enterprise Consent Manager</a>
+        <a class="navbar-brand" [routerLink]="['/']">
+            <img src="/assets/images/shares-logo.png" alt="ASU SHARES Logo">
+            <!-- <i class="bi-fire"></i> Enterprise Consent Manager -->
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -24,7 +27,8 @@
                     </a>
                 </li>
 
-                <li *ngIf="settingsService.settings.developer" class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
+                <li *ngIf="settingsService.settings.developer" class="nav-item" [routerLinkActive]="'active'"
+                    [routerLinkActiveOptions]="{exact: true}">
                     <a class="nav-link" [routerLink]="['/sandbox']">
                         <i class="bi-code"></i> Testing Sandbox
                     </a>
@@ -43,13 +47,13 @@
                         </li>
                     </ul>
                 </li> -->
-                
 
-                
+
+
                 <li class="nav-item dropdown" [routerLinkActive]="'active'">
 
-                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownDocumentation" data-bs-toggle="dropdown"
-                        aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownDocumentation"
+                        data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi-book"></i> Documentation
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="dropdownDocumentation">
