@@ -23,26 +23,6 @@
             <div class="mt-4" *ngIf="provision.id && medicalInformation[provision.id]">
                 <h3>Medical Information</h3>
 
-
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" [id]="'medical_substance_use--' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
-                    <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance Use</label>
-                    <br />
-                    <small class="form-text">Records possibly pertaining to commonly abused stantances.</small>
-                </div>
-
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" [id]="'medical_mental_health-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].mentalHealth.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
-                    <label class="form-check-label" [for]="'medical_mental_health-' + provision.id">Mental
-                        Health</label>
-                    <br />
-                    <small class="form-text">All manner of mental health and wellbeing information.</small>
-                </div>
-
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_demographics-' + provision.id"
                         [(ngModel)]="medicalInformation[provision.id].demographics.enabled"
@@ -105,6 +85,16 @@
                 </div>
 
                 <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_mental_health-' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].mentalHealth.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_mental_health-' + provision.id">Mental
+                        Health</label>
+                    <br />
+                    <small class="form-text">All manner of mental health and wellbeing information.</small>
+                </div>
+
+                <div class="form-check">
                     <input class="form-check-input" type="checkbox"
                         [id]="'medical_sexual_and_reproductive-' + provision.id"
                         [(ngModel)]="medicalInformation[provision.id].sexualAndReproductive.enabled"
@@ -130,6 +120,15 @@
                 </div>
 
                 <div class="form-check">
+                    <input class="form-check-input" type="checkbox" [id]="'medical_substance_use--' + provision.id"
+                        [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
+                        (change)="updateMedicalInformation(provision)" required />
+                    <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance Use</label>
+                    <br />
+                    <small class="form-text">Records possibly pertaining to commonly abused stantances.</small>
+                </div>
+
+                <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_violence-' + provision.id"
                         [(ngModel)]="medicalInformation[provision.id].violence.enabled"
                         (change)="updateMedicalInformation(provision)" required />
@@ -139,16 +138,6 @@
                     <small class="form-text">Indicators of possible physical or mental harm by
                         violence.</small>
                 </div>
-                <!-- <div class="form-check">
-                <input class="form-check-input" type="checkbox"
-                    [id]="'medical_substance_use-' + provision.id"
-                    [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
-                    (change)="updateMedicalInformation(provision)" required />
-                <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance
-                    Use</label>
-                <br />
-                <small class="form-text">Records pertaining to drugs and alcohol.</small>
-            </div> -->
             </div>
         </div>
 
