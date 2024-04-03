@@ -19,10 +19,10 @@ This project is written in TypeScript using [Angular](https://angular.io), [Boot
 To build a reusable image with [Docker](https://www.docker.com) and [nginx](http://nginx.org), use the included Dockerfile. For example:
 
 ```sh
-	docker build -t asushares/consent-manager:latest . # though you probably want your own repo and tag strings :)
+	docker build -t asushares/provider:latest . # though you probably want your own repo and tag strings :)
 
 	# or cross-platform
-	docker buildx build --platform linux/arm64/v8,linux/amd64 -t asushares/consent-manager:latest . --push
+	docker buildx build --platform linux/arm64/v8,linux/amd64 -t asushares/provider:latest . --push
 ```
 
 ## Running a Pre-Built Image
@@ -30,7 +30,7 @@ To build a reusable image with [Docker](https://www.docker.com) and [nginx](http
 On your local machine or container hosting environment:
 
 ```sh
-	docker run -d -p 4200:80 --restart unless-stopped -e "PROVIDER_DEFAULT_FHIR_URL=http://localhost:3000" asushares/consent-manager:latest # or any official tag
+	docker run -d -p 4200:80 --restart unless-stopped -e "PROVIDER_DEFAULT_FHIR_URL=http://localhost:3000" asushares/provider:latest # or any official tag
 ```
 
 
