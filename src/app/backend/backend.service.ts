@@ -19,8 +19,8 @@ export class BackendService {
 
 	constructor(protected http: HttpClient) {
 		// this.configuration = readFileSync(BackendService.CONFIGURATION_PATH).toJSON();
-		this.url = (window as any)["CONSENT_BUILDER_DEFAULT_FHIR_URL"];
-		this.cdsUrl = (window as any)["CONSENT_CDS_ROOT_URL"];
+		this.url = (window as any)["PROVIDER_DEFAULT_FHIR_URL"];
+		this.cdsUrl = (window as any)["PROVIDER_CDS_ROOT_URL"];
 	}
 
 	public includeBearerToken: boolean = false;
