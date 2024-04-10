@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CdsService } from '../cds/cds.service';
-import { PatientConsentConsultRequestData } from '../cds/patient_consent_consult_request_data';
+import { PatientConsentHookRequest } from '@asushares/core';
 
 @Component({
   selector: 'app-sandbox',
@@ -9,7 +9,7 @@ import { PatientConsentConsultRequestData } from '../cds/patient_consent_consult
 })
 export class SandboxComponent {
 
-  data: PatientConsentConsultRequestData = new PatientConsentConsultRequestData(null);
+  data: PatientConsentHookRequest = new PatientConsentHookRequest();
   bundleString: string;
 
   response: any = null;

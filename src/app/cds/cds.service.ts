@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { PatientConsentConsultRequestData } from './patient_consent_consult_request_data';
+import { PatientConsentHookRequest } from '@asushares/core';
 
 @Injectable()
 export class CdsService extends BaseService {
@@ -13,7 +13,7 @@ export class CdsService extends BaseService {
     return this.backendService.cdsUrl + '/cds-services/patient-consent-consult';
   }
 
-  patientConsentConsult(data: PatientConsentConsultRequestData) {
+  patientConsentConsult(data: PatientConsentHookRequest) {
     let res = this.http.post(this.patientConsentConsultUrl(), data);
     return res;
   }
