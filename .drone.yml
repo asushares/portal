@@ -1,22 +1,21 @@
 ---
+name: latest-amd64
 kind: pipeline
 type: docker
+platform:
+  arch: amd64
+  os: linux
 steps:
-  # - name: build_project
-  #   image: node:21-alpine
-  #   commands:
-  #     - npm install
-  #     - npm run build
   - name: publish
     image: plugins/docker
     settings:
       repo:
         from_secret:  docker_repository
-      tags: [latest]
+      tags: [latest, latest-amd64]
       username:
         from_secret: docker_username
       password:
         from_secret: docker_password
 trigger:
   branch:
-    - master
+    - main
