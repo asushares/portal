@@ -10,8 +10,8 @@ import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute } from '@angular/router';
 import { PatientService } from '../patient.service';
-import { Datepicker } from 'vanillajs-datepicker';
-import { ProvisionComponent } from '../provision/provision.component';
+import { ConsentTemplate } from '@asushares/core';
+
 
 @Component({
   selector: 'app-builder',
@@ -22,7 +22,7 @@ export class BuilderComponent extends BaseComponent {
 
   mode: 'create' | 'update' = 'create';
 
-  consent: Consent = this.template();
+  consent: Consent = ConsentTemplate.templateConsent();
 
   patientSearchText = '';
   patientList: Bundle<Patient> | null = null;
@@ -136,7 +136,7 @@ export class BuilderComponent extends BaseComponent {
   }
 
   addProvision() {
-    this.consent.provision?.push(ProvisionComponent.templateProvision());
+    this.consent.provision?.push(ConsentTemplate.templateProvision());
     // this.loadConsentProvisionsMedicalInformation();
     // this.loadConsentProvisionsPurposes();
   }
@@ -160,42 +160,6 @@ export class BuilderComponent extends BaseComponent {
 
 
 
-  template() {
-    let c: Consent = {
-      resourceType: 'Consent',
-      status: 'active',
-      decision: 'permit',
-      category: [
-        {
-          id: uuidv4(),
-          text: 'Privacy Consent',
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/consentscope",
-              "code": "patient-privacy",
-              "display": "Privacy Consent"
-            }
-          ]
-        },
-        {
-          id: uuidv4(),
-          text: 'LOINC Consent Document',
-          "coding": [
-            {
-              "system": "http://loinc.org",
-              "code": "59284-6",
-              "display": 'Consent Document'
-            }
-          ]
-        }
-      ],
-      // grantor: [],
-      controller: [],
-      provision: [ProvisionComponent.templateProvision()]
-    };
-    return c;
-  }
-
   // templateMedicalInformation() {
   //   let medicalInformation = {
   //     violence: true,
@@ -208,7 +172,7 @@ export class BuilderComponent extends BaseComponent {
   // }
 
   reset() {
-    this.consent = this.template();
+    this.consent = ConsentTemplate.templateConsent();
     this.mode = 'create';
     this.removeSubject();
     this.organizationList = null;

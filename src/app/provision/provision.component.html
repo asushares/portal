@@ -18,15 +18,15 @@
     class="bi bi-trash"></span> Delete Category</button> -->
     </div>
 
-    <div class="row">
+    <div class="row" *ngIf="sharingSettings">
         <div class="col-sm-6">
-            <div class="mt-4" *ngIf="provision.id && medicalInformation[provision.id]">
+            <div class="mt-4" *ngIf="provision.id && sharingSettings[provision.id]">
                 <h3>Medical Information</h3>
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_demographics-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].demographics.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].demographics.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_demographics-' + provision.id">Demographics</label>
                     <br />
                     <small class="form-text">General ethnic, social, and environmental
@@ -35,8 +35,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_diagnoses-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].diagnoses.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].diagnoses.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_diagnoses-' + provision.id">Diagnoses</label>
                     <br />
                     <small class="form-text">Medically recognized conditions you have
@@ -46,8 +46,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_disabilities-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].disabilities.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].disabilities.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_disabilities-' + provision.id">Disabilities</label>
                     <br />
                     <small class="form-text">Physical or mental conditions limiting movement, sense, or
@@ -56,8 +56,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_genetics-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].genetics.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].genetics.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_genetics-' + provision.id">Genetics</label>
                     <br />
                     <small class="form-text">Genomic and molecular data that may indicate, for example,
@@ -66,8 +66,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_infectious_diseases-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].infectiousDiseases.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].infectiousDiseases.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_infectious_diseases-' + provision.id">Infectious
                         Diseases
                     </label>
@@ -77,8 +77,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_medications-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].medications.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].medications.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_medications-' + provision.id">Medications</label>
                     <br />
                     <small class="form-text">Drugs prescribed to you.</small>
@@ -86,8 +86,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_mental_health-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].mentalHealth.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].mentalHealth.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_mental_health-' + provision.id">Mental
                         Health</label>
                     <br />
@@ -97,8 +97,8 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox"
                         [id]="'medical_sexual_and_reproductive-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].sexualAndReproductive.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].sexualAndReproductive.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_sexual_and_reproductive-' + provision.id">Sexual
                         &amp;
                         Reproductive
@@ -110,8 +110,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_social_determinants-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].socialDeterminants.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].socialDeterminants.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_social_determinants-' + provision.id">
                         Social Determinents of Health</label>
                     <br />
@@ -121,8 +121,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_substance_use--' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].substanceUse.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].substanceUse.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_substance_use-' + provision.id">Substance Use</label>
                     <br />
                     <small class="form-text">Records possibly pertaining to commonly abused stantances.</small>
@@ -130,8 +130,8 @@
 
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'medical_violence-' + provision.id"
-                        [(ngModel)]="medicalInformation[provision.id].violence.enabled"
-                        (change)="updateMedicalInformation(provision)" required />
+                        [(ngModel)]="sharingSettings[provision.id].violence.enabled"
+                        (change)="updateCategorySetting(provision)" required />
                     <label class="form-check-label" [for]="'medical_violence-' + provision.id">
                         Violence</label>
                     <br />
@@ -142,11 +142,11 @@
         </div>
 
         <div class="col-sm-6">
-            <div class="mt-4" *ngIf="provision.id && purpose[provision.id]">
+            <div class="mt-4" *ngIf="provision.id && sharingSettings[provision.id]">
                 <h3>Purpose of Use</h3>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'purpose_treatment-' + provision.id"
-                        [(ngModel)]="purpose[provision.id].treatment.enabled" (change)="updatePurpose(provision)"
+                        [(ngModel)]="sharingSettings[provision.id].treatment.enabled" (change)="updatePurposeSetting(provision)"
                         required />
                     <label class="form-check-label" [for]="'purpose_treatment-'+ provision.id">Treatment</label>
                     <br />
@@ -154,7 +154,7 @@
                 </div>
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" [id]="'purpose_research-'+ provision.id"
-                        [(ngModel)]="purpose[provision.id].research.enabled" (change)="updatePurpose(provision)"
+                        [(ngModel)]="sharingSettings[provision.id].research.enabled" (change)="updatePurposeSetting(provision)"
                         required />
                     <label class="form-check-label" [for]="'purpose_research-'+ provision.id">Research</label>
                     <br />
