@@ -30,6 +30,8 @@ import { CdsService } from './cds/cds.service';
 import { ProvisionComponent } from './provision/provision.component';
 
 
+import './instrument';
+
 @NgModule({
     imports: [
 		AppRoutingModule,
