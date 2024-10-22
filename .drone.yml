@@ -10,7 +10,7 @@ steps:
     image: plugins/docker
     settings:
       repo: asushares/provider
-      tags: [latest-amd64]
+      tags: [latest-linux-amd64]
       username:
         from_secret: docker_username
       password:
