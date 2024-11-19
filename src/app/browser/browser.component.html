@@ -68,14 +68,26 @@
                     </span>
                 </th>
                 <th>
-                    Actions
+                    <!-- Actions -->
                 </th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let c of bundle.entry">
-                <td><a [routerLink]="['/builder', c.resource!.id]">
-                        {{c.resource?.id}}</a></td>
+                <td>
+                    <a [routerLink]="['/builder', c.resource!.id]">
+                        {{c.resource?.id}}</a>
+                    <div class="btn-group mt-2">
+                        <button class="btn btn-sm btn-primary" role="link"
+                            [routerLink]="['/builder', c.resource!.id]">
+                            <span class="bi bi-pencil"> Edit</span>
+                        </button>
+                        <button class="btn btn-sm btn-primary" role="link"
+                            [routerLink]="['/simulator', c.resource!.id]">
+                            <span class="bi bi-tags"> Simulate Sharing</span>
+                        </button>
+                    </div>
+                </td>
                 <td>
                     <div *ngIf="c.resource?.subject?.reference">
                         <b>
