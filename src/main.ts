@@ -1,5 +1,4 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-
+// Author: Preston Lee
 
 import { BackendService } from './app/backend/backend.service';
 import { OrganizationService } from './app/organization.service';

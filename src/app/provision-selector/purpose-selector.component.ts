@@ -1,10 +1,9 @@
+// Author: Preston Lee
+
 import { NgIf, NgFor } from "@angular/common";
 import { Component, OnChanges, Input, SimpleChanges, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
-import { ConsentProvision } from "fhir/r5";
-
-import { BaseComponent } from "../base/base.component";
 import { ConsentCategorySettings } from "@asushares/core";
 import { ProvisionCentricComponent } from "../provision/provision-centric.component";
 import { v4 as uuidv4 } from 'uuid';
