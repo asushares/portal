@@ -3,11 +3,14 @@
 import { Component, OnInit } from '@angular/core';
 import { SettingsService } from './settings.service';
 import { ToastService } from '../toast/toast.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-settings',
-  templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.scss']
+    selector: 'app-settings',
+    templateUrl: './settings.component.html',
+    styleUrls: ['./settings.component.scss'],
+    standalone: true,
+    imports: [FormsModule]
 })
 export class SettingsComponent implements OnInit {
 

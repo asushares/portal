@@ -8,8 +8,8 @@ describe('CodeableConceptComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [CodeableConceptComponent]
-    });
+    imports: [CodeableConceptComponent]
+});
     fixture = TestBed.createComponent(CodeableConceptComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

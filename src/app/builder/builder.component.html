@@ -2,14 +2,14 @@
 
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="basics-tab" data-bs-toggle="tab" data-bs-target="#basics-tab-pane"
-                type="button" role="tab" aria-controls="basics-tab-pane" aria-selected="true"><span
+            <button class="nav-link " id="basics-tab" data-bs-toggle="tab" data-bs-target="#basics-tab-pane"
+                type="button" role="tab" aria-controls="basics-tab-pane" aria-selected="false"><span
                     class="bi bi-person"></span> Home</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="provisions-tab" data-bs-toggle="tab" data-bs-target="#provisions-tab-pane"
-                type="button" role="tab" aria-controls="provisions-tab-pane" aria-selected="false"><span
-                    class="bi bi-file-check"></span> Provisions</button>
+            <button class="nav-link active" id="provisions-tab" data-bs-toggle="tab"
+                data-bs-target="#provisions-tab-pane" type="button" role="tab" aria-controls="provisions-tab-pane"
+                aria-selected="true"><span class="bi bi-file-check"></span> Provisions</button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced-tab-pane"
@@ -32,14 +32,15 @@
         <button *ngIf="mode == 'create'" class="btn btn-md btn-primary" (click)="save()"><span class="bi-save"></span>
             Save as New Consent</button>
         <button *ngIf="mode == 'update'" class="btn btn-md btn-primary" (click)="update()"><span class="bi-save"></span>
-            Update Consent</button>
-        <span *ngIf="consent.id">
-            ID: {{consent.id}}</span>
+            Update Consent <span *ngIf="consent.id">: {{consent.id}}</span></button>
+        <a *ngIf="mode == 'update'" role="button" class="btn btn-md btn-outline-secondary ms-2" [routerLink]="['/simulator', consent.id]"><span
+                class="bi-tags"></span>
+            Simulate</a>
+
     </div>
 
     <div class="tab-content" id="myTabContent">
-        <div class="tab-pane show active" id="basics-tab-pane" role="tabpanel" aria-labelledby="basics-tab"
-            tabindex="0">
+        <div class="tab-pane" id="basics-tab-pane" role="tabpanel" aria-labelledby="basics-tab" tabindex="0">
 
             <div class="row">
 
@@ -252,10 +253,10 @@
                     </section>
                     <section>
                         <div class="mt-4" *ngIf="!consent.period">
-                            <button class="btn btn-sm btn-primary" (click)="addPeriod()"><span
-                                    class="bi-save"></span> Add Period</button>
-                                    <br/>
-                                    <span class="form-text">No date range restriction is currently set.</span>
+                            <button class="btn btn-sm btn-primary" (click)="addPeriod()"><span class="bi-save"></span>
+                                Add Period</button>
+                            <br />
+                            <span class="form-text">No date range restriction is currently set.</span>
                         </div>
                         <div *ngIf="consent.period" class="row mt-4">
                             <h2>Effective Period
@@ -264,9 +265,10 @@
                             </h2>
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="input form-control form-control-sm date datepicker-input" type="text" 
+                                    <input class="input form-control form-control-sm date datepicker-input" type="text"
                                         name="consent_provision_period_start"
-                                        *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period.start" (click)="pickPeriodStart()">
+                                        *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period.start"
+                                        (click)="pickPeriodStart()">
                                     <label for="consent_provision_period_start">Start</label>
                                     <small class="form-text">Begins at this date in yyyy-mm-dd format.</small>
                                 </div>
@@ -274,9 +276,10 @@
 
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="form-control form-control-sm date datepicker-input" type="text" placeholder="yyyy-mm-dd"
-                                        name="consent_provision_period_end" *ngIf="consent.provision && consent.period"
-                                        [(ngModel)]="consent.period!.end" (click)="pickPeriodEnd()" />
+                                    <input class="form-control form-control-sm date datepicker-input" type="text"
+                                        placeholder="yyyy-mm-dd" name="consent_provision_period_end"
+                                        *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period!.end"
+                                        (click)="pickPeriodEnd()" />
                                     <label for="consent_provision_period_end">End</label>
                                     <small class="form-text">Ends at this date in yyyy-mm-dd format.</small>
                                 </div>
@@ -288,18 +291,20 @@
             </div>
         </div>
 
-        <div class="tab-pane " id="provisions-tab-pane" role="tabpanel" aria-labelledby="provisions-tab" tabindex="0">
+        <div class="tab-pane show active " id="provisions-tab-pane" role="tabpanel" aria-labelledby="provisions-tab"
+            tabindex="0">
             <section class="mt-4">
                 <h2>Consent Provisions
                     <button class="btn btn-sm btn-primary" (click)="addProvision()"><span class="bi-plus-circle"></span>
                         Add Provision</button>
                 </h2>
                 <div *ngFor="let p of consent.provision">
-                    <button class="btn btn-sm btn-danger float-end" (click)="removeProvision(p)"><span class="bi-trash"></span>
+                    <button class="btn btn-sm btn-danger float-end" (click)="removeProvision(p)"><span
+                            class="bi-trash"></span>
                         Remove This Provision Exception</button>
-                        <provision class="mt-4 p-2" [container]="consent" [provision]="p"  />
-                    </div>
-        
+                    <provision class="mt-4 p-2" [container]="consent" [provision]="p" />
+                </div>
+
                 <!-- <div class="provision mt-4 p-2" *ngFor="let p of consent.provision"> -->
                 <!-- </div> -->
             </section>
@@ -352,7 +357,12 @@
                 <!-- <pre><code class="language-json" >{{prettyConsentJson()}}
                     </code>
                 </pre> -->
-                <textarea *ngIf="consent" class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea>
+                <div *ngIf="consent">
+                    <pre><code [highlight]="prettyConsentJson()" language="json" lineNumbers></code>
+                    </pre>
+                </div>
+
+                <!-- <textarea *ngIf="consent" class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea> -->
             </section>
 
         </div>

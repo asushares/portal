@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
 import { CdsService } from '../cds/cds.service';
 import { DataSharingCDSHookRequest } from '@asushares/core';
+import { FormsModule } from '@angular/forms';
+import { NgIf } from '@angular/common';
 
 @Component({
-  selector: 'app-sandbox',
-  templateUrl: './sandbox.component.html',
-  styleUrl: './sandbox.component.scss'
+    selector: 'app-sandbox',
+    templateUrl: './sandbox.component.html',
+    styleUrl: './sandbox.component.scss',
+    standalone: true,
+    imports: [FormsModule, NgIf]
 })
 export class SandboxComponent {
 

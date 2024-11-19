@@ -8,11 +8,16 @@ import { PatientService } from '../patient.service';
 import { OrganizationService } from '../organization.service';
 import { ConsentSearchField } from '../consent/consent.search.field';
 import { BaseComponent } from '../base/base.component';
+import { NgIf, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-browser',
-  templateUrl: './browser.component.html',
-  styleUrls: ['./browser.component.scss']
+    selector: 'app-browser',
+    templateUrl: './browser.component.html',
+    styleUrls: ['./browser.component.scss'],
+    standalone: true,
+    imports: [NgIf, FormsModule, NgFor, RouterLink]
 })
 export class BrowserComponent extends BaseComponent implements OnInit {
 

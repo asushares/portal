@@ -1,5 +1,6 @@
 // Author: Preston Lee
 
+import { ConsentCategorySettings } from "@asushares/core";
 import { Patient } from "fhir/r5";
 
 export class BaseComponent {
@@ -49,5 +50,6 @@ export class BaseComponent {
         }
         return name;
     }
+
 
 }

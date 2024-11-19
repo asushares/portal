@@ -34,7 +34,8 @@
                             "src/app/stylesheets/sandstone.min.css",
                             "src/app/stylesheets/styles.scss",
                             "node_modules/prismjs/themes/prism.css",
-                            "node_modules/vanillajs-datepicker/dist/css/datepicker-bs5.css"
+                            "node_modules/vanillajs-datepicker/dist/css/datepicker-bs5.css",
+                            "node_modules/highlight.js/styles/github.css"
                         ],
                         "scripts": [
                             "node_modules/jquery/dist/jquery.min.js",
@@ -45,12 +46,12 @@
                             "node_modules/prismjs/components/prism-javascript.min.js",
                             "node_modules/prismjs/components/prism-json.min.js",
                             "node_modules/vanillajs-datepicker/dist/js/datepicker-full.js"
-
                         ]
                     },
                     "configurations": {
                         "production": {
-                            "budgets": [{
+                            "budgets": [
+                                {
                                     "type": "initial",
                                     "maximumWarning": "1mb",
                                     "maximumError": "5mb"

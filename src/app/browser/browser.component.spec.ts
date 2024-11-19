@@ -8,8 +8,8 @@ describe('BrowserComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [BrowserComponent]
-    });
+    imports: [BrowserComponent]
+});
     fixture = TestBed.createComponent(BrowserComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

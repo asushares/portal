@@ -1,0 +1,105 @@
+<div *ngIf="categorySettings">
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_demographics-' + randomId"
+            [(ngModel)]="categorySettings.demographics.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_demographics-' + randomId">Demographics</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">General ethnic, social, and environmental
+            background.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_diagnoses-' + randomId"
+            [(ngModel)]="categorySettings.diagnoses.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_diagnoses-' + randomId">Diagnoses</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Medically recognized conditions you have
+            experienced.</small>
+    </div>
+
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_disabilities-' + randomId"
+            [(ngModel)]="categorySettings.disabilities.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_disabilities-' + randomId">Disabilities</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Physical or mental conditions limiting movement, sense, or
+            activity.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_genetics-' + randomId"
+            [(ngModel)]="categorySettings.genetics.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_genetics-' + randomId">Genetics</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Genomic and molecular data that may indicate, for example,
+            susceptability to heritable disease.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_infectious_diseases-' + randomId"
+            [(ngModel)]="categorySettings.infectiousDiseases.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_infectious_diseases-' + randomId">Infectious
+            Diseases
+        </label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Past or present transmissible ailments.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_medications-' + randomId"
+            [(ngModel)]="categorySettings.medications.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_medications-' + randomId">Medications</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Drugs prescribed to you.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_mental_health-' + randomId"
+            [(ngModel)]="categorySettings.mentalHealth.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_mental_health-' + randomId">Mental
+            Health</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">All manner of mental health and wellbeing information.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_sexual_and_reproductive-' + randomId"
+            [(ngModel)]="categorySettings.sexualAndReproductive.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_sexual_and_reproductive-' + randomId">Sexual
+            &amp;
+            Reproductive
+            Health</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Information related to sexuality and reproductive
+            health.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_social_determinants-' + randomId"
+            [(ngModel)]="categorySettings.socialDeterminants.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_social_determinants-' + randomId">
+            Social Determinents of Health</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Environmental and contextual factors that may impact your
+            health.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_substance_use-' + randomId"
+            [(ngModel)]="categorySettings.substanceUse.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_substance_use-' + randomId">Substance Use</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Records possibly pertaining to commonly abused stantances.</small>
+    </div>
+
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" [id]="'medical_violence-' + randomId"
+            [(ngModel)]="categorySettings.violence.enabled" (change)="updateCategorySetting()" required />
+        <label class="form-check-label" [for]="'medical_violence-' + randomId">
+            Violence</label>
+        <br />
+        <small *ngIf="settings().settings.show_descriptions"  class="form-text">Indicators of possible physical or mental harm by
+            violence.</small>
+    </div>
+</div>

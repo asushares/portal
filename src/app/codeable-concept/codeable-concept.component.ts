@@ -5,11 +5,15 @@ import {v4 as uuidv4} from 'uuid';
 
 import { CodeableConcept, Coding } from 'fhir/r5';
 import { BaseComponent } from '../base/base.component';
+import { NgIf, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'codeable-concept',
-  templateUrl: './codeable-concept.component.html',
-  styleUrls: ['./codeable-concept.component.scss']
+    selector: 'codeable-concept',
+    templateUrl: './codeable-concept.component.html',
+    styleUrls: ['./codeable-concept.component.scss'],
+    standalone: true,
+    imports: [NgIf, FormsModule, NgFor]
 })
 export class CodeableConceptComponent extends BaseComponent {
 

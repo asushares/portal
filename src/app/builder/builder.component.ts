@@ -8,16 +8,24 @@ import { OrganizationService } from '../organization.service';
 import { BaseComponent } from '../base/base.component';
 import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PatientService } from '../patient.service';
 import { ConsentTemplate } from '@asushares/core';
 import { ConsentBasedComponent } from '../consent/consent-based.component';
+import { Highlight } from 'ngx-highlightjs';
+import { HighlightLineNumbers } from 'ngx-highlightjs/line-numbers';
+import { NgIf, NgFor } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ProvisionComponent } from '../provision/provision.component';
+import { CodeableConceptComponent } from '../codeable-concept/codeable-concept.component';
 
 
 @Component({
-  selector: 'app-builder',
-  templateUrl: './builder.component.html',
-  styleUrls: ['./builder.component.scss']
+    selector: 'app-builder',
+    templateUrl: './builder.component.html',
+    styleUrls: ['./builder.component.scss'],
+    standalone: true,
+    imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, Highlight, HighlightLineNumbers, RouterModule]
 })
 export class BuilderComponent extends ConsentBasedComponent implements OnInit {
 

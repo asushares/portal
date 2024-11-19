@@ -5,18 +5,16 @@ import { Settings } from './settings';
 
 @Injectable({
   providedIn: 'root'
-}) export class SettingsService implements OnInit {
+}) export class SettingsService {
 
   public static SETTINGS_KEY: string = "settings";
   public static FORCE_RESET_KEY: string = "settings_force_reset";
 
-  public settings: Settings = new Settings;
+  public settings: Settings = new Settings();
   public force_reset: boolean = false;
 
-  constructor() {
-  }
 
-  ngOnInit() {
+  constructor() {
     this.reload();
   }
 

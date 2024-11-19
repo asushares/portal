@@ -5,7 +5,7 @@
         <a class="navbar-brand" [routerLink]="['/']">
             <img src="/assets/images/shares-logo.png" alt="ASU SHARES Logo">&nbsp;
             <!-- <i class="bi-fire"></i> -->
-             Provider Portal
+            Provider Portal
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
             aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,17 @@
                 </li> -->
 
 
-
+                <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
+                    <div class="card bg-primary px-2 py-1">
+                        <div class="form-check form-switch ">
+                            <input class="form-check-input" type="checkbox" role="switch" name="nav_show_descriptions"
+                                id="nav_show_descriptions" [(ngModel)]="settings().settings.show_descriptions">
+                            <label class="form-check-label" for="nav_show_descriptions">
+                                Show Descriptions
+                            </label>
+                        </div>
+                    </div>
+                </li>
                 <li class="nav-item dropdown" [routerLinkActive]="'active'">
 
                     <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownDocumentation"
@@ -64,6 +74,7 @@
                                     class="bi-github"></i> GitHub</a></li>
                     </ul>
                 </li>
+            
                 <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
                     <a class="nav-link" [routerLink]="['/settings']">
                         <i class="bi-gear"></i> Settings
