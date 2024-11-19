@@ -7,13 +7,14 @@ import { ToastService } from '../toast/toast.service';
 import { PatientService } from '../patient.service';
 import { OrganizationService } from '../organization.service';
 import { ConsentSearchField } from '../consent/consent.search.field';
+import { BaseComponent } from '../base/base.component';
 
 @Component({
   selector: 'app-browser',
   templateUrl: './browser.component.html',
   styleUrls: ['./browser.component.scss']
 })
-export class BrowserComponent implements OnInit {
+export class BrowserComponent extends BaseComponent implements OnInit {
 
   hasPreviousPage() {
     return this.bundle?.link?.some(l => {return l.relation == 'prev'});
@@ -51,20 +52,7 @@ export class BrowserComponent implements OnInit {
     this.reload();
   }
 
-  nameFor(p: Patient): any {
-    let name = '(None)';
-    if (p.name && p.name.length > 0) {
-      let tmp = [];
-      if (p.name[0].given) {
-        tmp.push(...p.name[0].given);
-      }
-      if (p.name[0].family) {
-        tmp.push(p.name[0].family);
-      }
-      name = tmp.join(' ');
-    }
-    return name;
-  }
+  
 
   displayCategories(be: BundleEntry<Consent>) {
     return be.resource?.category?.map(cc => { cc.text }).join(', ');
@@ -76,6 +64,7 @@ export class BrowserComponent implements OnInit {
   public organizationSummaries: { [key: string]: Organization } = {};
 
   constructor(protected consentService: ConsentService, protected patientService: PatientService, protected organizationService: OrganizationService, protected toastService: ToastService) {
+    super();
   }
 
   ngOnInit() {

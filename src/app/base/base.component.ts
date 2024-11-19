@@ -1,5 +1,7 @@
 // Author: Preston Lee
 
+import { Patient } from "fhir/r5";
+
 export class BaseComponent {
 
     canMoveUp<T>(item: T, within: Array<T>): boolean {
@@ -31,6 +33,21 @@ export class BaseComponent {
                 within[i] = tmp;
             }
         }
+    }
+
+    nameFor(p: Patient): any {
+        let name = '(None)';
+        if (p.name && p.name.length > 0) {
+            let tmp = [];
+            if (p.name[0].given) {
+                tmp.push(...p.name[0].given);
+            }
+            if (p.name[0].family) {
+                tmp.push(p.name[0].family);
+            }
+            name = tmp.join(' ');
+        }
+        return name;
     }
 
 }

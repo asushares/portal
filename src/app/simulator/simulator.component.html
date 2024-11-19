@@ -1,1 +1,53 @@
-todo
+<div *ngIf="patientSelected" class="container-fluid">
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <small class="fw-lighter text-secondary">Data sharing consent directive simulator.
+            </small>
+
+            <h4 class="m-0">
+                {{nameFor(patientSelected!)}}
+                <button class="btn btn-sm btn-primary" role="button" [routerLink]="['/builder', consent.id]">
+                    <span class="bi bi-pencil"></span>
+                    Edit consent: {{consent.id}}
+                </button>
+
+            </h4>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <section>
+                <h6>Simulation Engine</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="engineType" id="engineTypeCql"
+                        [(ngModel)]="engineType" [value]="engineTypes().CQL" />
+                    <label class="form-check-label" for="engineTypeCql">
+                        <span class="bi bi-code-slash"></span>
+                        SHARES CQL
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="engineType" id="engineTypeAi"
+                        [(ngModel)]="engineType" [value]="engineTypes().AI" />
+                    <label class="form-check-label" for="engineTypeAi">
+                        <span class="bi bi-magic"></span>
+                        SHARES AI
+                    </label>
+                </div>
+            </section>
+            <section class="mt-4">
+                <h6>Sensitivity Categories</h6>
+            </section>
+            <section class="mt-4">
+                <h6>Results</h6>
+
+                <button class="btn btn-lg btn-primary" role="button">
+                    <span class="bi bi-play"></span>
+                    Apply</button>
+            </section>
+        </div>
+        <div class="col-md-3">
+            Results
+        </div>
+    </div>
+</div>

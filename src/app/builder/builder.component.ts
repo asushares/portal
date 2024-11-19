@@ -1,6 +1,6 @@
 // Author: Preston Lee
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patient } from 'fhir/r5';
 
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute } from '@angular/router';
 import { PatientService } from '../patient.service';
 import { ConsentTemplate } from '@asushares/core';
+import { ConsentBasedComponent } from '../consent/consent-based.component';
 
 
 @Component({
@@ -18,88 +19,47 @@ import { ConsentTemplate } from '@asushares/core';
   templateUrl: './builder.component.html',
   styleUrls: ['./builder.component.scss']
 })
-export class BuilderComponent extends BaseComponent {
+export class BuilderComponent extends ConsentBasedComponent implements OnInit {
 
   mode: 'create' | 'update' = 'create';
 
-  consent: Consent = ConsentTemplate.templateConsent();
-
   patientSearchText = '';
   patientList: Bundle<Patient> | null = null;
-  patientSelected: Patient | null = null;
   patientSearching: boolean = false;
 
   organizationSearchText = '';
   organizationList: Bundle<Organization> | null = null;
-  organizationSelected: Organization[] = [];
   organizationSearching: boolean = false;
 
+  loadConsentFailed(c_id: string) {
+    this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
+    this.reset();
+  }
 
-  constructor(public route: ActivatedRoute, protected organizationService: OrganizationService, protected patientService: PatientService, protected consentService: ConsentService, protected toastService: ToastService) {
-    super();
+  loadConsentSucceeded(consent: Consent) {
+    this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
+  }
+
+  constructor(public override route: ActivatedRoute,
+    protected override organizationService: OrganizationService,
+    protected override patientService: PatientService,
+    protected override consentService: ConsentService,
+    protected toastService: ToastService) {
+    super(route, organizationService, patientService, consentService);
+
+  }
+  ngOnInit() {
     this.route.paramMap.subscribe(pm => {
       let c_id = pm.get('consent_id')!;
       if (c_id) {
         this.mode = 'update';
-        this.consentService.get(c_id).subscribe({
-          next: c => {
-            this.consent = this.repairConsent(c);
-            // this.loadConsentProvisionsMedicalInformation();
-            // this.loadConsentProvisionsPurposes();
-            this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
-            console.log("Loading patient...");
-            console.log(this.consent);
-            const subject_ref = this.consent?.subject?.reference;
-            if (subject_ref) {
-              if (subject_ref.startsWith('Patient')) {
-                let p_id = subject_ref.replace('Patient/', '');
-                this.patientService.get(p_id).subscribe({
-                  next: p => {
-                    this.patientSelected = p;
-                    console.log('Loaded patient: ' + p.id);
-
-                  }
-                });
-              }
-            }
-            const ref = this.consent?.controller?.forEach(n => {
-              console.log("Loading organization...");
-
-              let o_id = n.reference?.replace('Organization/', '');
-              this.organizationService.get(o_id!).subscribe({
-                next: o => {
-                  console.log('Loaded organization: ' + o.id);
-
-                  this.organizationSelected.push(o);
-                }
-              })
-            });
-
-          },
-          error: error => {
-            this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
-            this.reset();
-          }
-        })
+        this.loadConsent(c_id);
       } else {
         this.reset();
       }
     });
   }
 
-  repairConsent(c: Consent) {
-    c.controller = c.controller || [];
-    c.provision?.forEach(cp => {
-      cp.securityLabel = cp.securityLabel || [];
-      cp.purpose = cp.purpose || [];
-      // cp.actor?.forEach(a => {
-
-      // })
-    });
-    // this.consent.provision = this.consent.provision || [];
-    // this.consent.grantor = this.consent.grantor || [];
-    return c;
-  }
 
   save() {
     this.consentService.post(this.consent).subscribe({

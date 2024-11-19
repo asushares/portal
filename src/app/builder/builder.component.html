@@ -352,7 +352,7 @@
                 <!-- <pre><code class="language-json" >{{prettyConsentJson()}}
                     </code>
                 </pre> -->
-                <textarea class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea>
+                <textarea *ngIf="consent" class="language-json" [ngModel]="prettyConsentJson()" disabled></textarea>
             </section>
 
         </div>
