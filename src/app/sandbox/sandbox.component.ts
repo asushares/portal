@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CdsService } from '../cds/cds.service';
-import { DataSharingCDSHookRequest } from '@asushares/core';
+// import { DataSharingCDSHookRequest } from '@asushares/core';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 
@@ -13,7 +13,7 @@ import { NgIf } from '@angular/common';
 })
 export class SandboxComponent {
 
-  data: DataSharingCDSHookRequest = new DataSharingCDSHookRequest();
+  // data: DataSharingCDSHookRequest = new DataSharingCDSHookRequest();
   bundleString: string;
 
   response: any = null;

@@ -1,7 +1,7 @@
 // Author: Preston Lee
 
-import { NgIf, NgFor } from "@angular/common";
-import { Component, OnChanges, Input, SimpleChanges, OnInit } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { Component, SimpleChanges, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 
 import { ConsentCategorySettings } from "@asushares/core";
@@ -14,7 +14,7 @@ import { SettingsService } from "../settings/settings.service";
     templateUrl: './purpose-selector.component.html',
     styleUrl: './purpose-selector.component.scss',
     standalone: true,
-    imports: [NgIf, FormsModule, NgFor]
+    imports: [CommonModule, FormsModule]
 })
 export class PurposeSelectorComponent extends ProvisionCentricComponent implements OnInit {
 
