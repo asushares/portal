@@ -13,7 +13,7 @@ import { ConsentCategorySettings } from "@asushares/core";
 export abstract class ProvisionCentricComponent extends BaseComponent implements OnChanges {
 
   @Input() provision: ConsentProvision | null = null;
-  public categorySettings: ConsentCategorySettings | null = null;
+  @Input() categorySettings: ConsentCategorySettings | null = null;
 
   abstract ngOnChanges(changes: SimpleChanges): void;
 

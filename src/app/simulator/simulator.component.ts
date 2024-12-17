@@ -33,17 +33,20 @@ import { CdsService } from '../cds/cds.service';
 })
 export class SimulatorComponent extends ConsentBasedComponent {
 
-    engineType: EngineType = EngineType.CQL;
-    categoryMode: FilterMode = FilterMode.INCLUDE;
-    purposeMode: FilterMode = FilterMode.INCLUDE;
+    engineType: EngineType = EngineType.CDS_HOOKS;
+    categoryMode: FilterMode = FilterMode.ALL;
+    purposeMode: FilterMode = FilterMode.ALL;
 
     dummyProvision: ConsentProvision = ConsentTemplate.templateProvision();
 
-    status: 'ready' | 'exporting' | 'collecting' | 'complete' = 'ready';
-    statusMessage: string = '';
-    statusLastPolled: Date | null = null;
-    exportMetadata: ExportMetadata | null = null;
-    allPatientResources: FhirResource[] | null = null;
+    prefetchStatus: 'ready' | 'exporting' | 'collecting' | 'complete' = 'ready';
+    prefetchStatusMessage: string = '';
+    prefetchRequestLastPolled: Date | null = null;
+    prefetchExportMetadata: ExportMetadata | null = null;
+    prefetchResourcesRaw: FhirResource[] | null = null;
+    prefetchResourcesLabeled: FhirResource[] | null = null;
+
+    categorySettings: ConsentCategorySettings = new ConsentCategorySettings();
 
     loadConsentFailed(c_id: string) {
         this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
@@ -77,6 +80,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     reset() {
         this.setStatusReady();
+        this.resetSimulationResults();
     }
 
     engineTypes() {
@@ -87,57 +91,119 @@ export class SimulatorComponent extends ConsentBasedComponent {
     }
 
     fakeExport() {
-        this.exportMetadata = {
-            "transactionTime": "2024-12-17T01:52:56.056+00:00",
-            "request": "http://localhost:8080/fhir/Patient/cfsb1699034947598/$export",
+        this.prefetchExportMetadata = {
+            "transactionTime": "2024-12-17T19:38:56.054+00:00",
+            "request": "http://localhost:8080/fhir/Patient/cfsb1702938770058/$export",
             "requiresAccessToken": true,
             "output": [{
                 "type": "Condition",
-                "url": "http://localhost:8080/fhir/Binary/YPPS1SEWkAjGRk7yLqpyfLlEoGbGDreN"
+                "url": "http://localhost:8080/fhir/Binary/5J1UeK9rkucu7ua5Pe1te3BukqU8fLJu"
             }, {
                 "type": "AllergyIntolerance",
-                "url": "http://localhost:8080/fhir/Binary/HSD00QfATy3bEegW1gfDWybRswKrt2sp"
-            }, {
-                "type": "MedicationRequest",
-                "url": "http://localhost:8080/fhir/Binary/FaVFsXWuYGbyyep7rGNPFyf5xWVXBgXa"
+                "url": "http://localhost:8080/fhir/Binary/WpUeoQVpxUCGUZVsLOey7JVR9PMPFMBh"
             }, {
                 "type": "Consent",
-                "url": "http://localhost:8080/fhir/Binary/AJ7EnGbPX9bCol90O69Pg7xydJnmKTbc"
+                "url": "http://localhost:8080/fhir/Binary/9wDJ65swJaInPzGa1jPaf8HpLvrFwFs7"
             }, {
                 "type": "Observation",
-                "url": "http://localhost:8080/fhir/Binary/vsU6YOjnVlHpPKLDkJgwjxxE1R0BsW29"
+                "url": "http://localhost:8080/fhir/Binary/RDAU76vxMBFs4BClnPUKOAqmK4pYNj2V"
             }, {
                 "type": "Procedure",
-                "url": "http://localhost:8080/fhir/Binary/P1WG5pr0LwexjkPgaavFsDzPFfAOqdBt"
+                "url": "http://localhost:8080/fhir/Binary/aXdW3f24uT9yxIsy1Fwm1t1SbH0ZXTrQ"
             }, {
                 "type": "Patient",
-                "url": "http://localhost:8080/fhir/Binary/VxlOU6aYcm8Kgt2rbNih3TkLfps0Tn3B"
+                "url": "http://localhost:8080/fhir/Binary/vlEiHzFIIZRjUAIgys5EbEqQhakZjovM"
+            }, {
+                "type": "MedicationStatement",
+                "url": "http://localhost:8080/fhir/Binary/OZ5TvAlxfTQyYptsMEcr4Y1lkt5T10Pi"
             }],
             "error": []
         }
         this.recollectPatientData();
     }
 
-    randomize() {
-        console.log('Randomizing...');
-        let categorySettings = new ConsentCategorySettings();
-        categorySettings.allCategories().forEach(c => {
-            c.enabled = (Math.random() > 0.5);
+    selectAllCategories(enabled: boolean) {
+        this.categorySettings.allCategories().forEach(c => {
+            c.enabled = enabled;
         });
-        this.categoryMode = Math.random() > 0.5 ? FilterMode.INCLUDE : FilterMode.EXCLUDE;
-        categorySettings.allPurposes().forEach(p => {
-            p.enabled = (Math.random() > 0.5);
-        });
-        this.purposeMode = Math.random() > 0.5 ? FilterMode.INCLUDE : FilterMode.EXCLUDE;
-        let tmp = ConsentTemplate.templateProvision();
-        categorySettings.updateConsentProvision(tmp);
-        this.dummyProvision = tmp;
-        // this.cdr.detectChanges();
     }
 
+    randomize() {
+        console.log('Randomizing...');
+        // let categorySettings = new ConsentCategorySettings();
+        this.categorySettings.allCategories().forEach(c => {
+            c.enabled = (Math.random() > 0.5);
+        });
+        this.categoryMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
+        this.categorySettings.allPurposes().forEach(p => {
+            p.enabled = (Math.random() > 0.5);
+        });
+        this.purposeMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
+        // let tmp = ConsentTemplate.templateProvision();
+        // categorySettings.updateConsentProvision(tmp);
+        // this.dummyProvision = tmp;
+        this.categorySettings.updateConsentProvision(this.dummyProvision);
+        // // this.cdr.detectChanges();
+    }
+
+    categoryNameFor(code: string) {
+        return this.categorySettings.categoryForCode(code)?.name || (code + ' (Unknown)');
+    }
+
+    resourceShownForLabelFilter(resource: FhirResource) {
+        let labelShown = false;
+        if (this.categoryMode === FilterMode.ALL) {
+            labelShown = true;
+        } else if (this.categoryMode === FilterMode.ONLY) {
+            // this.dummyProvision.
+            this.categorySettings.allCategories().forEach((c) => {
+                if (c.enabled) {
+                    resource.meta?.security?.forEach((s) => {
+                        if (s.code === c.act_code) {
+                            // console.log('SHOWN:', resource.resourceType, resource.id, c.act_code, s.code, c.enabled);                            
+                            labelShown = true;
+                        }
+                    });
+                }
+            });
+        } else if (this.categoryMode === FilterMode.EXCEPT) {
+            labelShown = true;
+            this.categorySettings.allCategories().forEach((c) => {
+                resource.meta?.security?.forEach((s) => {
+                    if (s.code === c.act_code && c.enabled) {
+                        labelShown = false;
+                    }
+                });
+            });
+        }
+        return labelShown;
+    }
+    resourceShownForConsentFilter(resource: FhirResource) {
+        // TODO Implement Consent decision filtering.
+        return true;
+    }
+
+    resourceShown(resource: FhirResource) {
+        let labelShown = this.resourceShownForLabelFilter(resource);
+        let consentShown = this.resourceShownForConsentFilter(resource);
+        return labelShown && consentShown;
+    }
+
+    canSimulate() {
+        switch (this.engineType) {
+            case EngineType.CDS_HOOKS:
+                return this.prefetchStatus == 'complete'
+            case EngineType.CQL:
+                return this.prefetchStatus == 'ready' || this.prefetchStatus == 'complete';
+            case EngineType.AI:
+                return false;
+            default:
+                return false;
+        }
+    }
 
     pollUntillCompleted(location: string) {
-        this.status = 'exporting';
+        this.prefetchStatus = 'exporting';
         return interval(5000)
             .pipe(
                 switchMap(() =>
@@ -165,31 +231,31 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
 
     setStatusReady() {
-        this.status = 'ready';
-        this.statusMessage = '';
-        this.statusLastPolled = null;
-        this.exportMetadata = null;
-        this.allPatientResources = [];
+        this.prefetchStatus = 'ready';
+        this.prefetchStatusMessage = '';
+        this.prefetchRequestLastPolled = null;
+        this.prefetchExportMetadata = null;
+        this.prefetchResourcesRaw = [];
     }
 
     setStatusExporting() {
-        this.status = 'exporting';
-        this.statusMessage = '';
+        this.prefetchStatus = 'exporting';
+        this.prefetchStatusMessage = '';
     }
 
     setStatusCollecting() {
-        this.status = 'collecting';
-        this.statusMessage = '';
+        this.prefetchStatus = 'collecting';
+        this.prefetchStatusMessage = '';
     }
 
     setStatusComplete() {
-        this.status = 'complete';
-        this.statusMessage = '';
+        this.prefetchStatus = 'complete';
+        this.prefetchStatusMessage = '';
     }
 
     recollectPatientData() {
-        if (this.exportMetadata) {
-            this.collectAll(this.exportMetadata).subscribe({
+        if (this.prefetchExportMetadata) {
+            this.collectAll(this.prefetchExportMetadata).subscribe({
                 next: (data) => {
                     console.log('Collected:', data.length, 'types.');
                     let all: FhirResource[] = [];
@@ -208,7 +274,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                             }
                         });
                     });
-                    this.allPatientResources = all;
+                    this.prefetchResourcesRaw = all;
                     this.setStatusComplete();
                 },
                 error: (err) => {
@@ -228,16 +294,16 @@ export class SimulatorComponent extends ConsentBasedComponent {
                     console.log('Requested export of patient data for:', this.patientSelected!.id);
                     const poll_location = outcome.headers.get('Content-Location');
                     console.log('Content-Location:', poll_location);
-                    this.status = 'exporting';
+                    this.prefetchStatus = 'exporting';
                     if (poll_location) {
                         this.pollUntillCompleted(poll_location).subscribe({
                             next: (outcome) => {
                                 console.log('Polling for export to be complete...');
                                 let progress = outcome.headers.get('X-Progress');
                                 if (progress) {
-                                    this.statusMessage = progress;
+                                    this.prefetchStatusMessage = progress;
                                 } else {
-                                    this.statusMessage = 'Exporting...';
+                                    this.prefetchStatusMessage = 'Exporting...';
                                 }
                             },
                             error: (err) => {
@@ -249,7 +315,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                                     next: (poll_response) => {
                                         console.log('Export metadata.');
                                         if (poll_response.body) {
-                                            this.exportMetadata = poll_response.body as ExportMetadata;
+                                            this.prefetchExportMetadata = poll_response.body as ExportMetadata;
                                             this.recollectPatientData();
                                         } else {
                                             console.error('Polling export of patient data for:', this.patientSelected!.id, 'failed with status:', poll_response.status);
@@ -270,7 +336,12 @@ export class SimulatorComponent extends ConsentBasedComponent {
         }
     }
 
+    resetSimulationResults() {
+        this.prefetchResourcesLabeled = null;
+    }
+
     simulate() {
+        this.resetSimulationResults();
         switch (this.engineType) {
             case EngineType.CDS_HOOKS:
                 this.simulateCdsHooks();
@@ -287,19 +358,34 @@ export class SimulatorComponent extends ConsentBasedComponent {
     }
 
     simulateCdsHooks() {
-        const data = new DataSharingCDSHookRequest();
-        const bundle: Bundle = { resourceType: 'Bundle', type: 'collection', entry: [] };
-        this.allPatientResources?.forEach((r) => {
-            bundle.entry!.push({ resource: r });
-        });
-        data.context.content = bundle;
-        this.cdsService.patientConsentConsult(data).subscribe({
-            next: (result) => {
-                console.log('Result: ', result);
-            }, error: (err) => {
-                console.error('Error: ', err);
-            }
-        });
+        if (this.patientSelected) {
+            const data = new DataSharingCDSHookRequest();
+            const bundle: Bundle = { resourceType: 'Bundle', type: 'collection', entry: [] };
+            data.context.patientId = [{ value: 'Patient/' + this.patientSelected.id }];
+            this.prefetchResourcesRaw?.forEach((r) => {
+                bundle.entry!.push({ resource: r });
+            });
+            data.context.content = bundle;
+            this.cdsService.patientConsentConsult(data).subscribe({
+                next: (result) => {
+                    console.log('Result: ', result);
+                    if (result.extension.content?.entry) {
+                        console.log('Entries:', result.extension.content.entry.length);
+                        // this.allPatientResources = [];
+                        this.prefetchResourcesLabeled = result.extension.content.entry.map(e => e.resource).filter(r => r !== undefined);
+                        // this.allResultResources.forEach((r) => {
+                        //     r.meta?.security?.forEach((s) => {
+                        //         console.log('Security:', s.code);
+                        //     });
+                        // });
+                    }
+                }, error: (err) => {
+                    console.error('Error: ', err);
+                }
+            });
+        } else {
+            this.toastService.showErrorToast('No Patient Selected', 'Please select a patient before simulating.');
+        }
     }
 
     simulateCql() {
@@ -408,6 +494,7 @@ export enum EngineType {
 }
 
 export enum FilterMode {
-    INCLUDE = 'include',
-    EXCLUDE = 'exclude'
+    ALL = 'all',
+    ONLY = 'only',
+    EXCEPT = 'except'
 }

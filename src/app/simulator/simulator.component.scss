@@ -4,7 +4,8 @@ h6 {
     font-size: .8em;
 }
 
-#categories,
-#purposes {
+// #categories,
+// #purposes
+#controls section:not(:first-child) {
     border-top: 1px solid #ccc;
 }

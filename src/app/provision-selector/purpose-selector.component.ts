@@ -49,14 +49,15 @@ export class PurposeSelectorComponent extends ProvisionCentricComponent implemen
         }
     }
     loadSharingSettingsFromProvision() {
-        if (this.provision) {
-          console.log("Loading purpose settings from provision id: ", this.provision.id);
-          const tmp = new ConsentCategorySettings();
-          tmp.loadPurposesFromConsentProvision(this.provision);
-          this.categorySettings = tmp;
+        if (this.provision && this.categorySettings) {
+            console.log("Loading purpose settings from provision id: ", this.provision.id);
+            //   const tmp = new ConsentCategorySettings();
+            //   tmp.loadPurposesFromConsentProvision(this.provision);
+            //   this.categorySettings = tmp;
+            this.categorySettings.loadPurposesFromConsentProvision(this.provision);
         } else {
-          console.warn("PROVISION WAS NULL WHEN LOADING SHARING SETTINGS!");
+            console.warn("PROVISION WAS NULL WHEN LOADING SHARING SETTINGS!");
         }
-      }
+    }
 
 }

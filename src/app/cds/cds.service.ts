@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { DataSharingCDSHookRequest, DataSharingEngineContext } from '@asushares/core';
+import { Card, DataSharingCDSHookRequest, DataSharingEngineContext } from '@asushares/core';
 import { Parameters, Patient } from 'fhir/r5';
 import { HttpHeaders } from '@angular/common/http';
 
@@ -18,7 +18,7 @@ export class CdsService extends BaseService {
 
   patientConsentConsult(data: DataSharingCDSHookRequest) {
     let headers = new HttpHeaders().append(DataSharingEngineContext.HEADER_CDS_REDACTION_ENABLED, 'false');
-    let res = this.http.post(this.patientConsentConsultUrl(), data, { headers: headers });
+    let res = this.http.post<Card>(this.patientConsentConsultUrl(), data, { headers: headers });
     return res;
   }
 

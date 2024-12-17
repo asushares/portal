@@ -15,38 +15,23 @@
         </div>
     </div>
     <div class="row mt-4">
-        <div class="col-sm-2">
-            <section class="data">
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="fakeExport()"
-                    [disabled]="status != 'ready' && status != 'complete'">
-                    <span class="bi bi-person"></span>
-                    Fake Patient Export</button>
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
-                    [disabled]="status != 'ready' && status != 'complete'">
-                    <span class="bi bi-person"></span>
-                    Request Patient Export</button>
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="recollectPatientData()"
-                    [disabled]="status != 'collecting' && status != 'complete'">
-                    <span class="bi bi-file-earmark-arrow-down"></span>
-                    Recollect Patient Data</button>
-            </section>
-
+        <div id="controls" class="col-sm-2">
             <section id="engine" class="mt-4">
-                <h6>Simulation Engine</h6>
+                <h6>SHARES Simulation Engine</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="engineType" id="engineTypeCdsHooks"
+                        [(ngModel)]="engineType" [value]="engineTypes().CDS_HOOKS" />
+                    <label class="form-check-label" for="engineTypeCdsHooks">
+                        <span class="bi bi-terminal-split"></span>
+                        CDS Hooks
+                    </label>
+                </div>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="engineType" id="engineTypeCql"
                         [(ngModel)]="engineType" [value]="engineTypes().CQL" />
                     <label class="form-check-label" for="engineTypeCql">
                         <span class="bi bi-code-slash"></span>
-                        SHARES CQL
-                    </label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="engineType" id="engineTypeCdsHooks"
-                        [(ngModel)]="engineType" [value]="engineTypes().CDS_HOOKS" [disabled]="status != 'complete'" />
-                    <label class="form-check-label" for="engineTypeCdsHooks">
-                        <span class="bi bi-terminal-split"></span>
-                        SHARES CDS Hooks
+                        CQL
                     </label>
                 </div>
                 <div class="form-check">
@@ -54,79 +39,111 @@
                         [(ngModel)]="engineType" [value]="engineTypes().AI" disabled />
                     <label class="form-check-label" for="engineTypeAi">
                         <span class="bi bi-magic"></span>
-                        SHARES AI
+                        AI (Coming 2025)
                     </label>
                 </div>
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="simulate()"
-                    [disabled]="status != 'ready' && status != 'complete'">
+                <div *ngIf="engineType == engineTypes().CDS_HOOKS || engineType == engineTypes().AI" class="data">
+                    <small>Data prefetch is required.</small>
+                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="fakeExport()"
+                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
+                        <span class="bi bi-person"></span>
+                        Fake Patient Export</button>
+                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
+                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
+                        <span class="bi bi-person"></span>
+                        Request Patient Export</button>
+                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="recollectPatientData()"
+                        [disabled]="prefetchStatus != 'collecting' && prefetchStatus != 'complete'">
+                        <span class="bi bi-file-earmark-arrow-down"></span>
+                        Recollect Patient Data</button>
+                </div>
+
+                <button class="btn btn-lg btn-primary mt-2 me-1" role="button" (click)="simulate()"
+                    [disabled]="!canSimulate()">
                     <span class="bi bi-play"></span>
                     Simulate</button>
-
-                <button class="btn btn-sm btn-outline-primary mt-2" role="button" (click)="randomize()">
-                    <span class="bi bi-shuffle"></span>
-                    Randomize</button>
             </section>
 
-            <section id="categories" class="mt-4 p-2">
-                <h6>Information Categories</h6>
-                <select class="form-control form-control-sm" [(ngModel)]="categoryMode">
-                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data labeled as
+            <section id="categories" class="mt-4 py-2">
+
+                <button class="btn btn-sm btn-outline-primary my-2" role="button" (click)="randomize()">
+                    <span class="bi bi-shuffle"></span>
+                    Randomize Filters</button>
+                <h6>Data Category Labels</h6>
+                <select class="form-control form-control-sm " [(ngModel)]="categoryMode">
+                    <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Show everything
                     </option>
-                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data labeled as
+                    <option [value]="filterModes().ONLY" [selected]="filterModes().ONLY">Only data labeled as
+                    </option>
+                    <option [value]="filterModes().EXCEPT" [selected]="filterModes().EXCEPT">Except data labeled as
                     </option>
                 </select>
-                <category-selector [provision]="dummyProvision"></category-selector>
+                <a class="btn btn-sm btn-outline-secondary my-2 py-0 px-1" role="button"
+                    (click)="selectAllCategories(true)"><small>All</small></a>&nbsp;
+                <a class="btn btn-sm btn-outline-secondary my-2 py-0 px-1" role="button"
+                    (click)="selectAllCategories(false)"><small>None</small></a>
+                <category-selector *ngIf="categoryMode != filterModes().ALL" [provision]="dummyProvision"
+                    [categorySettings]="categorySettings"></category-selector>
             </section>
 
             <section id="purposes" class="mt-4 p-2">
-                <h6>Sharing Purpose</h6>
+                <h6>Consent Sharing Purpose</h6>
                 <select class="form-control form-control-sm" [(ngModel)]="purposeMode">
-                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data sharable for
+                    <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Any purpose
                     </option>
-                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data sharable for
+                    <option [value]="filterModes().ONLY" [selected]="filterModes().ONLY">Only data sharable for
+                    </option>
+                    <option [value]="filterModes().EXCEPT" [selected]="filterModes().EXCEPT">Except data sharable for
                     </option>
                 </select>
-                <purpose-selector [provision]="dummyProvision"></purpose-selector>
+                <purpose-selector *ngIf="purposeMode != filterModes().ALL" [provision]="dummyProvision"
+                    [categorySettings]="categorySettings"></purpose-selector>
             </section>
+
 
 
         </div>
         <div class="col-md-10">
-            @if(status == 'ready') {
+            @if(prefetchStatus == 'ready') {
             <!-- Ready -->
-            } @else if (status == 'exporting') {
+            } @else if (prefetchStatus == 'exporting') {
             <div class="lead">
                 <div class="spinner-border" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div> Waiting for the server to produce a patient export...
             </div>
-            <p *ngIf="statusMessage">{{statusMessage}}</p>
-            } @else if (status == 'collecting') {
+            <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p>
+            } @else if (prefetchStatus == 'collecting') {
             <div class="lead">
                 <div class="spinner-border" role="status">
                     <span class="visually-hidden">Collecting...</span>
                 </div> Fetching compiled resources produced by the server...
             </div>
-            <p *ngIf="statusMessage">{{statusMessage}}</p>
-            } @else if (status == 'complete') {
-            <table>
+            <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p>
+            } @else if (prefetchStatus == 'complete') {
+            <table class="table table-condensed">
                 <thead>
                     <tr>
-                        <th>Resource</th>
-                        <th>Labels</th>
-                        <th></th>
-                        <th></th>
+                        <th>Patient Data Resource</th>
+                        <th>Engine-Provided Labels</th>
+                        <th>Consent Decision</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let r of allPatientResources">
+                    <tr *ngFor="let r of prefetchResourcesLabeled" [hidden]="!resourceShown(r)">
                         <td><a [href]="this.backendService.url + '/' + r.resourceType + '/' + r.id"
                                 target="_blank">{{r.resourceType}}/{{r.id}}</a></td>
                         <td>
                             <span *ngFor="let c of r.meta?.security">
-                                {{c.display}}
+                                <span *ngIf="c.code" class="badge rounded-pill text-bg-primary">
+                                    {{categoryNameFor(c.code)}}
+                                </span>
+                                <span *ngIf="!c.code" class="badge rounded-pill text-bg-warning">
+                                    {{c.code}}
+                                </span>
                             </span>
                         </td>
+                        <td></td>
                     </tr>
                 </tbody>
             </table>

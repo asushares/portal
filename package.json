@@ -1,6 +1,6 @@
 {
     "name": "@asushares/provider",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "scripts": {
         "ng": "ng",
         "start": "envsubst < src/assets/configuration.template.js > src/assets/configuration.js && ng serve",
@@ -20,7 +20,7 @@
         "@angular/platform-browser-dynamic": "~19.0.4",
         "@angular/router": "~19.0.4",
         "@popperjs/core": "^2.11.8",
-        "@asushares/core": "^2.6.1",
+        "@asushares/core": "2.7.0",
         "bootstrap": "^5.3.3",
         "bootstrap-icons": "^1.11.3",
         "jquery": "^3.7.1",

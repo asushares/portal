@@ -28,6 +28,7 @@ export class CategorySelectorComponent extends ProvisionCentricComponent impleme
         super();
         console.log('CategorySelectorComponent constructor', this.provision);
     }
+
     ngOnInit(): void {
         console.log('CategorySelectorComponent ngOnInit', this.provision);
         // this.sharingSettings = this.loadSharingSettingsFromProvision();
@@ -47,13 +48,14 @@ export class CategorySelectorComponent extends ProvisionCentricComponent impleme
     }
 
     loadSharingSettingsFromProvision() {
-        if (this.provision) {
-          console.log("Loading category settings from provision id: ", this.provision.id);
-          const tmp = new ConsentCategorySettings();
-          tmp.loadCategoriesFromConsentProvision(this.provision);
-          this.categorySettings = tmp;
+        if (this.provision && this.categorySettings) {
+            console.log("Loading category settings from provision id: ", this.provision.id);
+            //   const tmp = new ConsentCategorySettings();
+            //   tmp.loadCategoriesFromConsentProvision(this.provision);
+            //   this.categorySettings = tmp;
+            this.categorySettings.loadCategoriesFromConsentProvision(this.provision);
         } else {
-          console.warn("PROVISION WAS NULL WHEN LOADING SHARING SETTINGS!");
+            console.warn("PROVISION WAS NULL WHEN LOADING SHARING SETTINGS!");
         }
-      }
+    }
 }
