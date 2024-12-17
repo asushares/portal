@@ -108,8 +108,6 @@
                     <option [value]="consentDecisionTypes().CONSENT_DENY" [selected]="consentDecisionTypes().CONSENT_DENY">Only redacted data
                     </option>
                 </select>
-                <purpose-selector *ngIf="purposeMode != filterModes().ALL" [provision]="dummyProvision"
-                    [categorySettings]="categorySettings"></purpose-selector>
             </section>
 
 
