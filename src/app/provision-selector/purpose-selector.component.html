@@ -2,7 +2,7 @@
     <div class="form-check">
         <input class="form-check-input" type="checkbox" [id]="'purpose_treatment-' + randomId"
             [(ngModel)]="categorySettings.treatment.enabled" (change)="updatePurposeSetting()" required />
-        <label class="form-check-label" [for]="'purpose_treatment-'+ randomId">Treatment</label>
+        <label class="form-check-label" role="button" [for]="'purpose_treatment-'+ randomId">Treatment</label>
         <br />
         <small *ngIf="settings().settings.show_descriptions" class="form-text">For the purposes of providing or
             supporing care.</small>
@@ -10,7 +10,7 @@
     <div class="form-check">
         <input class="form-check-input" type="checkbox" [id]="'purpose_research-'+ randomId"
             [(ngModel)]="categorySettings.research.enabled" (change)="updatePurposeSetting()" required />
-        <label class="form-check-label" [for]="'purpose_research-'+ randomId">Research</label>
+        <label class="form-check-label" role="button" [for]="'purpose_research-'+ randomId">Research</label>
         <br />
         <small *ngIf="settings().settings.show_descriptions" class="form-text">Scientific and academic research intended
             to benefit

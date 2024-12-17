@@ -14,14 +14,14 @@
             </h4>
         </div>
     </div>
-    <div class="row mt-4">
+    <div class="row mt-1">
         <div id="controls" class="col-sm-2">
             <section id="engine" class="mt-4">
                 <h6>SHARES Simulation Engine</h6>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="engineType" id="engineTypeCdsHooks"
                         [(ngModel)]="engineType" [value]="engineTypes().CDS_HOOKS" />
-                    <label class="form-check-label" for="engineTypeCdsHooks">
+                    <label class="form-check-label" role="button" for="engineTypeCdsHooks">
                         <span class="bi bi-terminal-split"></span>
                         CDS Hooks
                     </label>
@@ -29,7 +29,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="engineType" id="engineTypeCql"
                         [(ngModel)]="engineType" [value]="engineTypes().CQL" />
-                    <label class="form-check-label" for="engineTypeCql">
+                    <label class="form-check-label" role="button" for="engineTypeCql">
                         <span class="bi bi-code-slash"></span>
                         CQL
                     </label>
@@ -37,39 +37,40 @@
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="engineType" id="engineTypeAi"
                         [(ngModel)]="engineType" [value]="engineTypes().AI" disabled />
-                    <label class="form-check-label" for="engineTypeAi">
+                    <label class="form-check-label" role="button" for="engineTypeAi">
                         <span class="bi bi-magic"></span>
                         AI (Coming 2025)
                     </label>
                 </div>
-                <div *ngIf="engineType == engineTypes().CDS_HOOKS || engineType == engineTypes().AI" class="data">
-                    <small>Data prefetch is required.</small>
-                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="fakeExport()"
-                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
-                        <span class="bi bi-person"></span>
-                        Fake Patient Export</button>
+                <div *ngIf="engineType == engineTypes().CDS_HOOKS || engineType == engineTypes().AI" class="mt-3">
+                    <!-- <small class="text-secondary">Data prefetch is required.</small> -->
                     <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
                         [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
                         <span class="bi bi-person"></span>
                         Request Patient Export</button>
-                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="recollectPatientData()"
+                    <button class="btn btn-sm btn-outline-secondary mt-2 ms-4" role="button" (click)="fakeExport()"
+                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
+                        <span class="bi bi-arrow-90deg-up"></span>
+                        Fake Export Request</button>
+                    <!-- <button class="btn btn-sm btn-secondary mt-2 me-1" role="button" (click)="recollectPatientData()"
                         [disabled]="prefetchStatus != 'collecting' && prefetchStatus != 'complete'">
                         <span class="bi bi-file-earmark-arrow-down"></span>
-                        Recollect Patient Data</button>
+                        Recollect Patient Data</button> -->
                 </div>
 
-                <button class="btn btn-lg btn-primary mt-2 me-1" role="button" (click)="simulate()"
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="simulate()"
                     [disabled]="!canSimulate()">
                     <span class="bi bi-play"></span>
-                    Simulate</button>
+                    Simulate Data Exchange</button>
             </section>
 
-            <section id="categories" class="mt-4 py-2">
-
+            <section *ngIf="canSimulate()" id="categories" class="mt-4 py-2">
+                <h6>Post-Simulation Filtering</h6>
                 <button class="btn btn-sm btn-outline-primary my-2" role="button" (click)="randomize()">
                     <span class="bi bi-shuffle"></span>
-                    Randomize Filters</button>
-                <h6>Data Category Labels</h6>
+                    Randomize</button>
+
+                <h6 class="mt-4">Data Category Security Labels</h6>
                 <select class="form-control form-control-sm " [(ngModel)]="categoryMode">
                     <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Show everything
                     </option>
@@ -84,16 +85,27 @@
                     (click)="selectAllCategories(false)"><small>None</small></a>
                 <category-selector *ngIf="categoryMode != filterModes().ALL" [provision]="dummyProvision"
                     [categorySettings]="categorySettings"></category-selector>
-            </section>
 
-            <section id="purposes" class="mt-4 p-2">
-                <h6>Consent Sharing Purpose</h6>
+
+                <h6 class="mt-4">Consent Sharing Purpose</h6>
                 <select class="form-control form-control-sm" [(ngModel)]="purposeMode">
                     <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Any purpose
                     </option>
                     <option [value]="filterModes().ONLY" [selected]="filterModes().ONLY">Only data sharable for
                     </option>
                     <option [value]="filterModes().EXCEPT" [selected]="filterModes().EXCEPT">Except data sharable for
+                    </option>
+                </select>
+                <purpose-selector *ngIf="purposeMode != filterModes().ALL" [provision]="dummyProvision"
+                    [categorySettings]="categorySettings"></purpose-selector>
+
+                <h6 class="mt-4">Sharing Decision</h6>
+                <select class="form-control form-control-sm" [(ngModel)]="sharingDecisionMode">
+                    <option [value]="consentDecisionTypes().NO_CONSENT" [selected]="filterModes().ALL">Everything
+                    </option>
+                    <option [value]="consentDecisionTypes().CONSENT_PERMIT" [selected]="consentDecisionTypes().CONSENT_PERMIT">Only shared data
+                    </option>
+                    <option [value]="consentDecisionTypes().CONSENT_DENY" [selected]="consentDecisionTypes().CONSENT_DENY">Only redacted data
                     </option>
                 </select>
                 <purpose-selector *ngIf="purposeMode != filterModes().ALL" [provision]="dummyProvision"
@@ -107,24 +119,36 @@
             @if(prefetchStatus == 'ready') {
             <!-- Ready -->
             } @else if (prefetchStatus == 'exporting') {
-            <div class="lead">
-                <div class="spinner-border" role="status">
+            <div class="text-center">
+                <div class="spinner-border my-4" role="status">
                     <span class="visually-hidden">Loading...</span>
-                </div> Waiting for the server to produce a patient export...
+                </div>
+                <p>
+                    Waiting for the server to produce a patient export, which could take some time. Don't close this
+                    page!</p>
+                <small *ngIf="prefetchRequestLastPolled">Last polled {{prefetchRequestLastPolled.toLocaleTimeString()}}.
+                </small>
+
             </div>
-            <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p>
+            <!-- <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p> -->
             } @else if (prefetchStatus == 'collecting') {
-            <div class="lead">
-                <div class="spinner-border" role="status">
+            <div class="text-center">
+                <div class="spinner-border my-4" role="status">
                     <span class="visually-hidden">Collecting...</span>
-                </div> Fetching compiled resources produced by the server...
+                </div>
+                <p>
+                    Fetching compiled resources produced by the server...</p>
             </div>
-            <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p>
+            <!-- <p *ngIf="prefetchStatusMessage">{{prefetchStatusMessage}}</p> -->
             } @else if (prefetchStatus == 'complete') {
-            <table class="table table-condensed">
+            <div *ngIf="!prefetchResourcesLabeled" class="my-4">
+                <p class="text-center text-secondary"> Simulate an exchange to view results.</p>
+            </div>
+            <table *ngIf="prefetchResourcesLabeled" class="table table-condensed">
                 <thead>
                     <tr>
-                        <th>Patient Data Resource</th>
+                        <th>Data Type & Link</th>
+                        <th>Codings</th>
                         <th>Engine-Provided Labels</th>
                         <th>Consent Decision</th>
                     </tr>
@@ -132,7 +156,13 @@
                 <tbody>
                     <tr *ngFor="let r of prefetchResourcesLabeled" [hidden]="!resourceShown(r)">
                         <td><a [href]="this.backendService.url + '/' + r.resourceType + '/' + r.id"
-                                target="_blank">{{r.resourceType}}/{{r.id}}</a></td>
+                                target="_blank">{{r.resourceType}}</a>
+                        </td>
+                        <td>
+
+                            <span *ngFor="let c of codingsFor(r)"
+                                class="badge rounded-pill text-bg-light">{{c.display}}</span>
+                        </td>
                         <td>
                             <span *ngFor="let c of r.meta?.security">
                                 <span *ngIf="c.code" class="badge rounded-pill text-bg-primary">
@@ -143,7 +173,19 @@
                                 </span>
                             </span>
                         </td>
-                        <td></td>
+                        <td>
+                            <span *ngIf="r.id && consentDecisions[r.id]">
+                                <span *ngIf="consentDecisions[r.id].summary == consentDecisionTypes().CONSENT_PERMIT"
+                                    class="badge rounded-pill bg-success">
+                                    Permit
+                                </span>
+                                <span *ngIf="consentDecisions[r.id].summary == consentDecisionTypes().CONSENT_DENY"
+                                    class="badge rounded-pill bg-danger">
+                                    Deny
+                                </span>
+                            </span>
+
+                        </td>
                     </tr>
                 </tbody>
             </table>
