@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { DataSharingCDSHookRequest } from '@asushares/core';
+import { DataSharingCDSHookRequest, DataSharingEngineContext } from '@asushares/core';
+import { Parameters, Patient } from 'fhir/r5';
+import { HttpHeaders } from '@angular/common/http';
 
 @Injectable()
 export class CdsService extends BaseService {
@@ -13,13 +15,11 @@ export class CdsService extends BaseService {
     return this.backendService.cdsUrl + '/cds-services/patient-consent-consult';
   }
 
+
   patientConsentConsult(data: DataSharingCDSHookRequest) {
-    let res = this.http.post(this.patientConsentConsultUrl(), data);
+    let headers = new HttpHeaders().append(DataSharingEngineContext.HEADER_CDS_REDACTION_ENABLED, 'false');
+    let res = this.http.post(this.patientConsentConsultUrl(), data, { headers: headers });
     return res;
   }
-
-  // evaluateLibrary(id: libraryId) {
-
-  // }
 
 }

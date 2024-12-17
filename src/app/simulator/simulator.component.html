@@ -16,8 +16,19 @@
     </div>
     <div class="row mt-4">
         <div class="col-sm-2">
-            <section class="">
-              
+            <section class="data">
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="fakeExport()"
+                    [disabled]="status != 'ready' && status != 'complete'">
+                    <span class="bi bi-person"></span>
+                    Fake Patient Export</button>
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
+                    [disabled]="status != 'ready' && status != 'complete'">
+                    <span class="bi bi-person"></span>
+                    Request Patient Export</button>
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="recollectPatientData()"
+                    [disabled]="status != 'collecting' && status != 'complete'">
+                    <span class="bi bi-file-earmark-arrow-down"></span>
+                    Recollect Patient Data</button>
             </section>
 
             <section id="engine" class="mt-4">
@@ -31,6 +42,14 @@
                     </label>
                 </div>
                 <div class="form-check">
+                    <input class="form-check-input" type="radio" name="engineType" id="engineTypeCdsHooks"
+                        [(ngModel)]="engineType" [value]="engineTypes().CDS_HOOKS" [disabled]="status != 'complete'" />
+                    <label class="form-check-label" for="engineTypeCdsHooks">
+                        <span class="bi bi-terminal-split"></span>
+                        SHARES CDS Hooks
+                    </label>
+                </div>
+                <div class="form-check">
                     <input class="form-check-input" type="radio" name="engineType" id="engineTypeAi"
                         [(ngModel)]="engineType" [value]="engineTypes().AI" disabled />
                     <label class="form-check-label" for="engineTypeAi">
@@ -38,7 +57,8 @@
                         SHARES AI
                     </label>
                 </div>
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button">
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="simulate()"
+                    [disabled]="status != 'ready' && status != 'complete'">
                     <span class="bi bi-play"></span>
                     Simulate</button>
 
@@ -50,8 +70,10 @@
             <section id="categories" class="mt-4 p-2">
                 <h6>Information Categories</h6>
                 <select class="form-control form-control-sm" [(ngModel)]="categoryMode">
-                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data labeled as</option>
-                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data labeled as</option>
+                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data labeled as
+                    </option>
+                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data labeled as
+                    </option>
                 </select>
                 <category-selector [provision]="dummyProvision"></category-selector>
             </section>
@@ -59,16 +81,56 @@
             <section id="purposes" class="mt-4 p-2">
                 <h6>Sharing Purpose</h6>
                 <select class="form-control form-control-sm" [(ngModel)]="purposeMode">
-                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data sharable for</option>
-                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data sharable for</option>
+                    <option [value]="filterModes().INCLUDE" [selected]="filterModes().INCLUDE">Only data sharable for
+                    </option>
+                    <option [value]="filterModes().EXCLUDE" [selected]="filterModes().EXCLUDE">Except data sharable for
+                    </option>
                 </select>
-                    <purpose-selector [provision]="dummyProvision"></purpose-selector>
+                <purpose-selector [provision]="dummyProvision"></purpose-selector>
             </section>
 
-    
+
         </div>
         <div class="col-md-10">
-            
+            @if(status == 'ready') {
+            <!-- Ready -->
+            } @else if (status == 'exporting') {
+            <div class="lead">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div> Waiting for the server to produce a patient export...
+            </div>
+            <p *ngIf="statusMessage">{{statusMessage}}</p>
+            } @else if (status == 'collecting') {
+            <div class="lead">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Collecting...</span>
+                </div> Fetching compiled resources produced by the server...
+            </div>
+            <p *ngIf="statusMessage">{{statusMessage}}</p>
+            } @else if (status == 'complete') {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resource</th>
+                        <th>Labels</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of allPatientResources">
+                        <td><a [href]="this.backendService.url + '/' + r.resourceType + '/' + r.id"
+                                target="_blank">{{r.resourceType}}/{{r.id}}</a></td>
+                        <td>
+                            <span *ngFor="let c of r.meta?.security">
+                                {{c.display}}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            }
         </div>
     </div>
 </div>
