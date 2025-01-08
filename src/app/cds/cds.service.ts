@@ -16,8 +16,10 @@ export class CdsService extends BaseService {
   }
 
 
-  patientConsentConsult(data: DataSharingCDSHookRequest) {
-    let headers = new HttpHeaders().append(DataSharingEngineContext.HEADER_CDS_REDACTION_ENABLED, 'false');
+  patientConsentConsult(data: DataSharingCDSHookRequest, threshold: string) {
+    let headers = new HttpHeaders()
+      .append(DataSharingEngineContext.HEADER_CDS_REDACTION_ENABLED, 'false')
+      .append(DataSharingEngineContext.HEADER_CDS_CONFIDENCE_THRESHOLD, threshold);
     let res = this.http.post<Card>(this.patientConsentConsultUrl(), data, { headers: headers });
     return res;
   }

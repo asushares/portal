@@ -8,7 +8,7 @@ import { OrganizationService } from '../organization.service';
 import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PatientService } from '../patient.service';
-import { AbstractSensitivityRuleProvider, Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, DataSharingCDSHookRequest, DenyCard, PermitCard } from '@asushares/core';
+import { AbstractSensitivityRuleProvider, Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, DataSharingCDSHookRequest, DenyCard, InformationCategorySetting, PermitCard } from '@asushares/core';
 import { ConsentBasedComponent } from '../consent/consent-based.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,7 +38,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     engineType: EngineType = EngineType.CDS_HOOKS;
 
-    dummyProvision: ConsentProvision = ConsentTemplate.templateProvision();
+    simulatorProvision: ConsentProvision = ConsentTemplate.templateProvision();
 
     prefetchStatus: 'ready' | 'exporting' | 'collecting' | 'complete' = 'ready';
     prefetchStatusMessage: string = '';
@@ -47,10 +47,10 @@ export class SimulatorComponent extends ConsentBasedComponent {
     prefetchResourcesRaw: FhirResource[] | null = null;
     prefetchResourcesLabeled: FhirResource[] | null = null;
 
+    labelConfidenceThreshold: number = 0.0;
+
     filterCategoryMode: FilterMode = FilterMode.ALL;
-    filterPurposeMode: FilterMode = FilterMode.ALL;
-    filterCategorySettings: ConsentCategorySettings = new ConsentCategorySettings();
-    // filterPurposeSettings: ConsentPurposeSettings = new ConsentPurposeSettings();
+    filterCategorySettings: ConsentCategorySettings = this.createConsentCategorySettings();
 
     sharingDecisionMode: ConsentDecision = ConsentDecision.NO_CONSENT;
 
@@ -60,6 +60,17 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     public static CACHE_KEY: string = 'cache';
 
+    createConsentCategorySettings(): ConsentCategorySettings {
+        let settings = new ConsentCategorySettings();
+
+        // Set these to true by default.
+        settings.allPurposes().forEach(p => {
+            let tmp = { system: p.system, code: p.act_code, display: p.description };
+            console.log('Adding purpose:', tmp);            
+            this.simulatorProvision.purpose?.push(tmp);
+        });
+        return settings;
+    }
 
     constructor(public override route: ActivatedRoute,
         protected override organizationService: OrganizationService,
@@ -73,10 +84,13 @@ export class SimulatorComponent extends ConsentBasedComponent {
         protected toastrService: ToastrService,
         protected cdr: ChangeDetectorRef) {
         super(route, organizationService, patientService, consentService);
+
+
         this.route.paramMap.subscribe(pm => {
             let c_id = pm.get('consent_id')!;
             if (c_id) {
                 this.loadConsent(c_id);
+                this.filterCategorySettings = this.createConsentCategorySettings();
             } else {
                 this.resetSimulator();
             }
@@ -191,11 +205,11 @@ export class SimulatorComponent extends ConsentBasedComponent {
         this.filterCategorySettings.allPurposes().forEach(p => {
             p.enabled = (Math.random() > 0.5);
         });
-        this.filterPurposeMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
+        // this.filterPurposeMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
         // let tmp = ConsentTemplate.templateProvision();
         // categorySettings.updateConsentProvision(tmp);
         // this.dummyProvision = tmp;
-        this.filterCategorySettings.updateConsentProvision(this.dummyProvision);
+        this.filterCategorySettings.updateConsentProvision(this.simulatorProvision);
         // // this.cdr.detectChanges();
     }
 
@@ -464,9 +478,9 @@ export class SimulatorComponent extends ConsentBasedComponent {
             this.consent.provision.forEach((p) => {
                 tmpCategorySettings.loadAllFromConsentProvision(p);
                 this.prefetchResourcesLabeled?.forEach((r) => {
-                    let decision = new ConsentExtension(null);
+                    let extension = new ConsentExtension(null);
                     let includeEnabled = this.consent.decision == 'permit';
-                    decision.obligations.push({
+                    extension.obligations.push({
                         id: { system: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.system, code: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.code },
                         parameters: {
                             codes: tmpCategorySettings.allCategories()
@@ -474,7 +488,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                                 .map(c => { return { system: c.system, code: c.act_code } }) // Make it a valid Coding
                         }
                     })
-                    shouldShare = !engine.shouldRedactFromLabels(decision, r);
+                    shouldShare = !engine.shouldRedactFromLabels(extension, r) && engine.shouldShareFromPurposes(r, p, this.filterCategorySettings);
                     console.log('Decision:', r.resourceType, r.id, shouldShare);
                     if (shouldShare) {
                         this.consentDecisions[r.id!] = new PermitCard();
@@ -495,6 +509,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
         }
 
     }
+    
     consentDecisionTypes() {
         return ConsentDecision;
     }
@@ -507,7 +522,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                 bundle.entry!.push({ resource: r });
             });
             data.context.content = bundle;
-            this.cdsService.patientConsentConsult(data).subscribe({
+            this.cdsService.patientConsentConsult(data, this.labelConfidenceThreshold.toString()).subscribe({
                 next: (result) => {
                     console.log('Result: ', result);
                     if (result.extension.content?.entry) {
@@ -515,8 +530,11 @@ export class SimulatorComponent extends ConsentBasedComponent {
                         this.prefetchResourcesLabeled = result.extension.content.entry.map(e => e.resource).filter(r => r !== undefined);
                         this.calculateConsentDecisions(data);
                     }
+                    console.log('CDS Hooks simulation complete.');
+                    this.toastrService.success('CDS Hooks simulation complete.', 'Simulation Successful');
                 }, error: (err) => {
                     console.error('Error: ', err);
+                    this.toastrService.error('Failed to simulate due to a failure in running the CDS Hooks labeling service.', 'Data Labeling Failed');
                 }
             });
         } else {

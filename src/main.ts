@@ -28,7 +28,7 @@ bootstrapApplication(AppComponent, {
         ,
         provideHttpClient(withInterceptorsFromDi()),
         provideAnimations(),
-        provideToastr(),
+        provideToastr({positionClass: 'toast-bottom-right'}),
         BackendService,
         OrganizationService,
         ConsentService,
