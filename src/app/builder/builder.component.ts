@@ -5,8 +5,6 @@ import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patie
 
 import { v4 as uuidv4 } from 'uuid';
 import { OrganizationService } from '../organization.service';
-import { BaseComponent } from '../base/base.component';
-import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PatientService } from '../patient.service';
@@ -18,14 +16,15 @@ import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProvisionComponent } from '../provision/provision.component';
 import { CodeableConceptComponent } from '../codeable-concept/codeable-concept.component';
+import { ToastrService } from 'ngx-toastr';
 
 
 @Component({
-    selector: 'app-builder',
-    templateUrl: './builder.component.html',
-    styleUrls: ['./builder.component.scss'],
-    standalone: true,
-    imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, Highlight, HighlightLineNumbers, RouterModule]
+  selector: 'app-builder',
+  templateUrl: './builder.component.html',
+  styleUrls: ['./builder.component.scss'],
+  standalone: true,
+  imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, Highlight, HighlightLineNumbers, RouterModule]
 })
 export class BuilderComponent extends ConsentBasedComponent implements OnInit {
 
@@ -40,19 +39,19 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   organizationSearching: boolean = false;
 
   loadConsentFailed(c_id: string) {
-    this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
+    this.toastrService.error('Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.', 'Could Not Load');
     this.reset();
   }
 
   loadConsentSucceeded(consent: Consent) {
-    this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
+    this.toastrService.success('Any saved updates will overwrite the existing consent document.', 'Consent Loaded');
   }
 
   constructor(public override route: ActivatedRoute,
     protected override organizationService: OrganizationService,
     protected override patientService: PatientService,
     protected override consentService: ConsentService,
-    protected toastService: ToastService) {
+    protected toastrService: ToastrService) {
     super(route, organizationService, patientService, consentService);
 
   }
@@ -73,7 +72,7 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     this.consentService.post(this.consent).subscribe({
       next: oo => {
         console.log(oo);
-        this.toastService.showSuccessToast('Consent Created', 'Saved as consent id: ' + oo.id);
+        this.toastrService.success('Saved as consent id: ' + oo.id, 'Consent Created');
 
         this.consent = this.repairConsent(oo);
         // this.consent = Object.assign({}, oo, this.consent);
@@ -83,7 +82,7 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
       }, error: error => {
         console.log(error);
         console.log(error.error);
-        this.toastService.showErrorToast('Consent Creation Failed', 'The server refused to create the consent document.');
+        this.toastrService.error('The server refused to create the consent document.', 'Consent Creation Failed');
       }
     });
   }
@@ -92,13 +91,13 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     this.consentService.put(this.consent).subscribe({
       next: oo => {
         console.log(oo);
-        this.toastService.showSuccessToast('Consent Updated', 'Updated consent id: ' + oo.id);
+        this.toastrService.success('Updated consent id: ' + oo.id, 'Consent Updated');
         this.mode = 'update';
       },
       error: error => {
         console.log(error);
         console.log(error.error);
-        this.toastService.showErrorToast('Consent Update Failed', 'The server refused to update the consent document.');
+        this.toastrService.error('The server refused to update the consent document.', 'Consent Update Failed');
       }
     });
   }
@@ -147,7 +146,7 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     this.organizationSelected = [];
     // this.medicalInformation = this.loadConsentProvisionsMedicalInformation();
     // this.purpose = this.loadConsentProvisionsPurposes();
-    // this.toastService.showSuccessToast("Form Reset", "Go for it!");
+    // this.toastrService.success("Go for it!", "Form Reset");
     console.log('Reset complete.');
   }
 

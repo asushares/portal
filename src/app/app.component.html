@@ -1,5 +1,3 @@
-<toaster></toaster>
-
 <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark" aria-label="Marketplace navbar">
     <div class="container-fluid">
         <a class="navbar-brand" [routerLink]="['/']">
@@ -52,11 +50,11 @@
 
                 <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
                     <div class="card bg-primary px-2 py-1">
-                        <div class="form-check form-switch ">
-                            <input class="form-check-input" type="checkbox" role="switch" name="nav_show_descriptions"
+                        <div class="form-check form-switch" >
+                            <input class="form-check-input" type="checkbox" role="button" name="nav_show_descriptions"
                                 id="nav_show_descriptions" [(ngModel)]="settings().settings.show_descriptions">
-                            <label class="form-check-label" for="nav_show_descriptions">
-                                Show Descriptions
+                            <label class="form-check-label" role="button" for="nav_show_descriptions">
+                                Show Help Text
                             </label>
                         </div>
                     </div>

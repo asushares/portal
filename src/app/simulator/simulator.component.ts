@@ -1,18 +1,14 @@
 // Author: Preston Lee
 
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { Bundle, CodeableConcept, Coding, Consent, ConsentProvision, FhirResource, Organization, Parameters, Patient, Resource } from 'fhir/r5';
+import { Bundle, Coding, Consent, ConsentProvision, FhirResource, Parameters } from 'fhir/r5';
 
-import { v4 as uuidv4 } from 'uuid';
-import moment from 'moment';
 
 import { OrganizationService } from '../organization.service';
-import { BaseComponent } from '../base/base.component';
-import { ToastService } from '../toast/toast.service';
 import { ConsentService } from '../consent/consent.service';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PatientService } from '../patient.service';
-import { Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, DataSharingCDSHookRequest, DataSharingEngineContext, DenyCard, PermitCard } from '@asushares/core';
+import { AbstractSensitivityRuleProvider, Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, DataSharingCDSHookRequest, DenyCard, PermitCard } from '@asushares/core';
 import { ConsentBasedComponent } from '../consent/consent-based.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,12 +16,15 @@ import { CategorySelectorComponent } from "../provision-selector/category-select
 import { PurposeSelectorComponent } from '../provision-selector/purpose-selector.component';
 import { LibraryService } from '../library/library.service';
 import { BackendService } from '../backend/backend.service';
-import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { forkJoin, interval, Observable, switchMap, takeWhile } from 'rxjs';
 import { ExportMetadata } from '../backend/export_metadata';
 import { CdsService } from '../cds/cds.service';
 import { WebDataSharingEngine } from './web_data_sharing_engine';
 import { WebRuleProvider } from './web_rule_provider';
+import { ToastrService } from 'ngx-toastr';
+import { PatientDataCache } from './patient_data_cache';
+import { SettingsService } from '../settings/settings.service';
 
 
 @Component({
@@ -38,8 +37,6 @@ import { WebRuleProvider } from './web_rule_provider';
 export class SimulatorComponent extends ConsentBasedComponent {
 
     engineType: EngineType = EngineType.CDS_HOOKS;
-    categoryMode: FilterMode = FilterMode.ALL;
-    purposeMode: FilterMode = FilterMode.ALL;
 
     dummyProvision: ConsentProvision = ConsentTemplate.templateProvision();
 
@@ -50,18 +47,19 @@ export class SimulatorComponent extends ConsentBasedComponent {
     prefetchResourcesRaw: FhirResource[] | null = null;
     prefetchResourcesLabeled: FhirResource[] | null = null;
 
-    categorySettings: ConsentCategorySettings = new ConsentCategorySettings();
+    filterCategoryMode: FilterMode = FilterMode.ALL;
+    filterPurposeMode: FilterMode = FilterMode.ALL;
+    filterCategorySettings: ConsentCategorySettings = new ConsentCategorySettings();
+    // filterPurposeSettings: ConsentPurposeSettings = new ConsentPurposeSettings();
 
     sharingDecisionMode: ConsentDecision = ConsentDecision.NO_CONSENT;
 
-    loadConsentFailed(c_id: string) {
-        this.toastService.showErrorToast('Could Not Load', 'Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.');
-        this.reset();
-    }
 
-    loadConsentSucceeded(consent: Consent) {
-        this.toastService.showSuccessToast('Consent Loaded', 'Any saved updates will overwrite the existing consent document.');
-    }
+    cacheDataSave: boolean = true;
+    cacheDataLookup: boolean = true;
+
+    public static CACHE_KEY: string = 'cache';
+
 
     constructor(public override route: ActivatedRoute,
         protected override organizationService: OrganizationService,
@@ -70,8 +68,9 @@ export class SimulatorComponent extends ConsentBasedComponent {
         protected cdsService: CdsService,
         protected libraryService: LibraryService,
         protected backendService: BackendService,
+        protected settingsService: SettingsService,
         protected http: HttpClient,
-        protected toastService: ToastService,
+        protected toastrService: ToastrService,
         protected cdr: ChangeDetectorRef) {
         super(route, organizationService, patientService, consentService);
         this.route.paramMap.subscribe(pm => {
@@ -79,12 +78,79 @@ export class SimulatorComponent extends ConsentBasedComponent {
             if (c_id) {
                 this.loadConsent(c_id);
             } else {
-                this.reset();
+                this.resetSimulator();
             }
         });
     }
 
-    reset() {
+
+    forceResetCache() {
+        this.resetCache();
+        this.toastrService.info('The patient data cache has been reset.', 'Cache Reset');
+    }
+
+    resetCache() {
+        const cache = new PatientDataCache();
+        localStorage.setItem(SimulatorComponent.CACHE_KEY, JSON.stringify(cache));
+        return cache;
+    }
+
+    // removeFromCache(key: string) {
+    //     let data = this.createEmptyCache();
+    //     delete data[key];
+    //     localStorage.setItem(SimulatorComponent.CACHE_KEY, JSON.stringify(data));
+    // }
+
+    lookupFromCache(patientId: string): FhirResource[] | null {
+        const cache = this.loadCache();
+        return cache.data[patientId] || null;
+    }
+
+    loadCache(): PatientDataCache {
+        let raw = localStorage.getItem(SimulatorComponent.CACHE_KEY);
+        if (raw) {
+            try {
+                let cache = JSON.parse(raw);
+                return cache;
+            } catch (error) {
+                console.error('Failed to parse cache data:', error);
+                this.toastrService.info('Cache data found, but the data could not be read. It has been reset.', 'Cache Reset');
+                return this.resetCache();
+            }
+        } else {
+            this.toastrService.info('A new patient data cache has been created.', 'Cache Reset');
+            return this.resetCache();
+        }
+    }
+
+    saveToCache(key: string, data: FhirResource[]) {
+        let cache = this.loadCache();
+        cache.data[key] = data;
+        try {
+            localStorage.setItem(SimulatorComponent.CACHE_KEY, JSON.stringify(cache));
+            this.toastrService.success('Cache data saved.', 'Cache Saved');
+        } catch (e) {
+            console.warn('Failed to save cache data:', e);
+            this.toastrService.warning('Cache data could not be saved. This is likely due to the payload exceeding the browsers allowed storage limit. Try clearing the cache or increasing the amount of usable browser local storage available to applications.', 'Not Saved to Cache');
+
+        }
+    }
+
+    requiresPatientDataExport() {
+        return this.engineType == this.engineTypes().CDS_HOOKS || this.engineType == this.engineTypes().AI;
+    }
+
+
+    loadConsentFailed(c_id: string) {
+        this.toastrService.error('Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.', 'Could Not Load');
+        this.resetSimulator();
+    }
+
+    loadConsentSucceeded(consent: Consent) {
+        this.toastrService.success('Any saved updates will overwrite the existing consent document.', 'Consent Loaded');
+    }
+
+    resetSimulator() {
         this.setStatusReady();
         this.resetSimulationResults();
     }
@@ -110,7 +176,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
 
     selectAllCategories(enabled: boolean) {
-        this.categorySettings.allCategories().forEach(c => {
+        this.filterCategorySettings.allCategories().forEach(c => {
             c.enabled = enabled;
         });
     }
@@ -118,32 +184,32 @@ export class SimulatorComponent extends ConsentBasedComponent {
     randomize() {
         console.log('Randomizing...');
         // let categorySettings = new ConsentCategorySettings();
-        this.categorySettings.allCategories().forEach(c => {
+        this.filterCategorySettings.allCategories().forEach(c => {
             c.enabled = (Math.random() > 0.5);
         });
-        this.categoryMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
-        this.categorySettings.allPurposes().forEach(p => {
+        this.filterCategoryMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
+        this.filterCategorySettings.allPurposes().forEach(p => {
             p.enabled = (Math.random() > 0.5);
         });
-        this.purposeMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
+        this.filterPurposeMode = Math.random() > 0.5 ? FilterMode.ONLY : FilterMode.EXCEPT;
         // let tmp = ConsentTemplate.templateProvision();
         // categorySettings.updateConsentProvision(tmp);
         // this.dummyProvision = tmp;
-        this.categorySettings.updateConsentProvision(this.dummyProvision);
+        this.filterCategorySettings.updateConsentProvision(this.dummyProvision);
         // // this.cdr.detectChanges();
     }
 
     categoryNameFor(code: string) {
-        return this.categorySettings.categoryForCode(code)?.name || (code + ' (Unknown)');
+        return this.filterCategorySettings.categoryForCode(code)?.name || (code + ' (Unknown)');
     }
 
     resourceShownForLabelFilter(resource: FhirResource) {
         let labelShown = false;
-        if (this.categoryMode === FilterMode.ALL) {
+        if (this.filterCategoryMode === FilterMode.ALL) {
             labelShown = true;
-        } else if (this.categoryMode === FilterMode.ONLY) {
+        } else if (this.filterCategoryMode === FilterMode.ONLY) {
             // this.dummyProvision.
-            this.categorySettings.allCategories().forEach((c) => {
+            this.filterCategorySettings.allCategories().forEach((c) => {
                 if (c.enabled) {
                     resource.meta?.security?.forEach((s) => {
                         if (s.code === c.act_code) {
@@ -153,9 +219,9 @@ export class SimulatorComponent extends ConsentBasedComponent {
                     });
                 }
             });
-        } else if (this.categoryMode === FilterMode.EXCEPT) {
+        } else if (this.filterCategoryMode === FilterMode.EXCEPT) {
             labelShown = true;
-            this.categorySettings.allCategories().forEach((c) => {
+            this.filterCategorySettings.allCategories().forEach((c) => {
                 resource.meta?.security?.forEach((s) => {
                     if (s.code === c.act_code && c.enabled) {
                         labelShown = false;
@@ -282,6 +348,10 @@ export class SimulatorComponent extends ConsentBasedComponent {
                     });
                     this.prefetchResourcesRaw = all;
                     console.log(this.prefetchResourcesRaw);
+                    if (this.cacheDataSave && this.patientSelected) {
+                        this.saveToCache(this.patientSelected.id!, all);
+                        console.log('Exported patient data saved to cache:', this.patientSelected.id);
+                    }
                     this.setStatusComplete();
                 },
                 error: (err) => {
@@ -296,6 +366,17 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     getPatientData() {
         if (this.patientSelected) {
+            if (this.cacheDataLookup) {
+                let cached = this.lookupFromCache(this.patientSelected.id!);
+                if (cached) {
+                    this.prefetchResourcesRaw = cached;
+                    this.setStatusComplete();
+                    this.toastrService.info('Using cached data for patient ' + this.patientSelected.id, 'Cached Data Found!');
+                    console.log('Using cached data for patient:', this.patientSelected.id);
+                    return;
+                }
+            }
+            this.toastrService.info('Requesting export of patient data for ' + this.patientSelected.id, 'Exporting Patient Data');
             this.backendService.exportRequest(this.patientSelected).subscribe({
                 next: outcome => {
                     console.log('Requested export of patient data for:', this.patientSelected!.id);
@@ -337,6 +418,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                     }
                     // console.log('Body:', outcome.body);
                 }, error: e => {
+                    this.toastrService.error('Failed to request export of patient data', 'Export Failed');
                     console.error('Failed to request export of patient data for:', this.patientSelected!.id);
                     console.error('Error:', e);
                 }
@@ -358,7 +440,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                 this.simulateCql();
                 break;
             case EngineType.AI:
-                this.toastService.showInfoToast('AI Engine Not Implemented', 'The AI engine is not yet implemented.');
+                this.toastrService.info('The AI engine is not yet implemented.', 'AI Engine Not Implemented');
                 break;
             default:
                 break;
@@ -369,18 +451,49 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     calculateConsentDecisions(request: DataSharingCDSHookRequest) {
         this.consentDecisions = {};
-        const ruleProvider = new WebRuleProvider();
-        const engine = new WebDataSharingEngine(ruleProvider, 0.0, false);
-        this.prefetchResourcesLabeled?.forEach((r) => {
-            let decision = new ConsentExtension(null);
-            let shouldShare = !engine.shouldRedactFromLabels(decision, r);
-            console.log('Decision:', r.resourceType, r.id, shouldShare);
-            if (shouldShare) {
-                this.consentDecisions[r.id!] = new PermitCard();
-            } else {
-                this.consentDecisions[r.id!] = new DenyCard();
+        let shouldShare = false;
+        if (this.consent.provision) {
+            if (this.consent.decision === undefined) {
+                // Making a root denial by default, for purposes of simulation.
+                this.consent.decision = 'deny';
             }
-        });
+            const ruleProvider = new WebRuleProvider();
+            const engine = new WebDataSharingEngine(ruleProvider, 0.0, false);
+            const tmpCategorySettings = new ConsentCategorySettings();
+
+            this.consent.provision.forEach((p) => {
+                tmpCategorySettings.loadAllFromConsentProvision(p);
+                this.prefetchResourcesLabeled?.forEach((r) => {
+                    let decision = new ConsentExtension(null);
+                    let includeEnabled = this.consent.decision == 'permit';
+                    decision.obligations.push({
+                        id: { system: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.system, code: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.code },
+                        parameters: {
+                            codes: tmpCategorySettings.allCategories()
+                                .filter(c => includeEnabled ? !c.enabled : c.enabled) // Only categories relevant to the consent
+                                .map(c => { return { system: c.system, code: c.act_code } }) // Make it a valid Coding
+                        }
+                    })
+                    shouldShare = !engine.shouldRedactFromLabels(decision, r);
+                    console.log('Decision:', r.resourceType, r.id, shouldShare);
+                    if (shouldShare) {
+                        this.consentDecisions[r.id!] = new PermitCard();
+                    } else {
+                        this.consentDecisions[r.id!] = new DenyCard();
+                    }
+                });
+            });
+
+        } else {
+            this.prefetchResourcesLabeled?.forEach((r) => {
+                if (this.consent.decision == 'deny') {
+                    this.consentDecisions[r.id!] = new DenyCard();
+                } else {
+                    this.consentDecisions[r.id!] = new PermitCard();
+                }
+            });
+        }
+
     }
     consentDecisionTypes() {
         return ConsentDecision;
@@ -407,7 +520,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                 }
             });
         } else {
-            this.toastService.showErrorToast('No Patient Selected', 'Please select a patient before simulating.');
+            this.toastrService.error('Please select a patient before simulating.', 'No Patient Selected');
         }
     }
 
@@ -509,7 +622,10 @@ export class SimulatorComponent extends ConsentBasedComponent {
         });
     }
 
+    settings() { return this.settingsService; }
+
     fakeExport() {
+        this.toastrService.info('Using fake patient export data.', 'Export Faked');
         this.prefetchExportMetadata = {
             "transactionTime": "2024-12-17T19:38:56.054+00:00",
             "request": "http://localhost:8080/fhir/Patient/fake/$export",

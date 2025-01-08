@@ -33,8 +33,8 @@
             Save as New Consent</button>
         <button *ngIf="mode == 'update'" class="btn btn-md btn-primary" (click)="update()"><span class="bi-save"></span>
             Update Consent <span *ngIf="consent.id">: {{consent.id}}</span></button>
-        <a *ngIf="mode == 'update'" role="button" class="btn btn-md btn-outline-secondary ms-2" [routerLink]="['/simulator', consent.id]"><span
-                class="bi-tags"></span>
+        <a *ngIf="mode == 'update'" role="button" class="btn btn-md btn-outline-secondary ms-2"
+            [routerLink]="['/simulator', consent.id]"><span class="bi-tags"></span>
             Simulate</a>
 
     </div>
@@ -50,7 +50,7 @@
 
                         <h1>
                             <span *ngIf="mode == 'create'">New</span><span *ngIf="mode == 'update'">Update</span>
-                            Consent Form
+                            Consent Directive
                             <button *ngIf="mode == 'create'" class="btn btn-sm btn-primary" (click)="reset()"><span
                                     class="bi-save"></span> Reset
                                 Form</button>

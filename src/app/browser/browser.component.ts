@@ -3,7 +3,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ConsentService } from '../consent/consent.service';
 import { Bundle, BundleEntry, Consent, Organization, Patient } from 'fhir/r5';
-import { ToastService } from '../toast/toast.service';
+
 import { PatientService } from '../patient.service';
 import { OrganizationService } from '../organization.service';
 import { ConsentSearchField } from '../consent/consent.search.field';
@@ -11,6 +11,7 @@ import { BaseComponent } from '../base/base.component';
 import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
     selector: 'app-browser',
@@ -68,7 +69,7 @@ export class BrowserComponent extends BaseComponent implements OnInit {
   public patientSummaries: { [key: string]: Patient } = {};
   public organizationSummaries: { [key: string]: Organization } = {};
 
-  constructor(protected consentService: ConsentService, protected patientService: PatientService, protected organizationService: OrganizationService, protected toastService: ToastService) {
+  constructor(protected consentService: ConsentService, protected patientService: PatientService, protected organizationService: OrganizationService, protected toastrService: ToastrService) {
     super();
   }
 
@@ -145,11 +146,11 @@ export class BrowserComponent extends BaseComponent implements OnInit {
       next: oo => {
         console.log(oo);
         this.removeConsent(consent);
-        this.toastService.showSuccessToast('Consent Deleted', 'The consent has been deleted.');
+        this.toastrService.success('The consent has been deleted.', 'Consent Deleted');
       }, error: error => {
         console.log(error);
         console.log(error.error);
-        this.toastService.showErrorToast('Consent Deletion Failed', 'The server refused to delete the consent document.');
+        this.toastrService.error('The server refused to delete the consent document.', 'Consent Deletion Failed');
       }
     });
   }

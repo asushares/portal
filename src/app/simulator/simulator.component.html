@@ -42,36 +42,72 @@
                         AI (Coming 2025)
                     </label>
                 </div>
-                <div *ngIf="engineType == engineTypes().CDS_HOOKS || engineType == engineTypes().AI" class="mt-3">
-                    <!-- <small class="text-secondary">Data prefetch is required.</small> -->
-                    <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
-                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
-                        <span class="bi bi-person"></span>
-                        Request Patient Export</button>
-                    <button class="btn btn-sm btn-outline-secondary mt-2 ms-4" role="button" (click)="fakeExport()"
-                        [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
-                        <span class="bi bi-arrow-90deg-up"></span>
-                        Fake Export Request</button>
-                    <!-- <button class="btn btn-sm btn-secondary mt-2 me-1" role="button" (click)="recollectPatientData()"
+
+            </section>
+
+            <section *ngIf="requiresPatientDataExport()" class="mt-4 py-2">
+                <h6 class="">Data Caching</h6>
+
+                <!-- <small class="text-secondary">Data prefetch is required.</small> -->
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cacheDataSave" [(ngModel)]="cacheDataSave" />
+                    <label class="form-check-label" role="button" for="cacheDataSave">Save exports to browser
+                        cache.</label>
+                    <br />
+                    <small *ngIf="settings().settings.show_descriptions" class="form-text">Exported data will always be
+                        saved to browser storage for future reuse, overwriting any other local copy of the patient's
+                        records.</small>
+                </div>
+
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="cacheDataLookup"
+                        [(ngModel)]="cacheDataLookup" />
+                    <label class="form-check-label" role="button" for="cacheDataLookup">Use cached data.</label>
+                    <br />
+                    <small *ngIf="settings().settings.show_descriptions && cacheDataLookup" class="form-text">Exported
+                        data will be saved to browser storage for future reuse.</small>
+                    <small *ngIf="settings().settings.show_descriptions && !cacheDataLookup" class="form-text">Data will
+                        always be reexported.</small>
+                </div>
+                <button class="btn btn-sm btn-outline-primary mt-2 me-1" role="button" (click)="forceResetCache()">
+                    <span class="bi bi-trash"></span>
+                    Empty Cache</button>
+            </section>
+            <section *ngIf="requiresPatientDataExport()" class="mt-4 py-2">
+                <h6 class="">Patient Data Retrieval</h6>
+
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="getPatientData()"
+                    [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
+                    <span class="bi bi-person"></span>
+                    Request Patient Export</button>
+                <button class="btn btn-sm btn-outline-secondary mt-2 ms-4" role="button" (click)="fakeExport()"
+                    [disabled]="prefetchStatus != 'ready' && prefetchStatus != 'complete'">
+                    <span class="bi bi-arrow-90deg-up"></span>
+                    Use Fake Export Instead</button>
+                <!-- <button class="btn btn-sm btn-secondary mt-2 me-1" role="button" (click)="recollectPatientData()"
                         [disabled]="prefetchStatus != 'collecting' && prefetchStatus != 'complete'">
                         <span class="bi bi-file-earmark-arrow-down"></span>
                         Recollect Patient Data</button> -->
-                </div>
 
-                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="simulate()"
-                    [disabled]="!canSimulate()">
+
+            </section>
+
+            <section *ngIf="canSimulate()" class="mt-4 py-2">
+                <h6 class="">Exchange Simulation</h6>
+                <button class="btn btn-sm btn-primary mt-2 me-1" role="button" (click)="simulate()">
                     <span class="bi bi-play"></span>
-                    Simulate Data Exchange</button>
+                    Run Simulation</button>
             </section>
 
             <section *ngIf="canSimulate()" id="categories" class="mt-4 py-2">
+
                 <h6>Post-Simulation Filtering</h6>
                 <button class="btn btn-sm btn-outline-primary my-2" role="button" (click)="randomize()">
                     <span class="bi bi-shuffle"></span>
                     Randomize</button>
 
                 <h6 class="mt-4">Data Category Security Labels</h6>
-                <select class="form-control form-control-sm " [(ngModel)]="categoryMode">
+                <select class="form-control form-control-sm " [(ngModel)]="filterCategoryMode">
                     <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Show everything
                     </option>
                     <option [value]="filterModes().ONLY" [selected]="filterModes().ONLY">Only data labeled as
@@ -83,12 +119,12 @@
                     (click)="selectAllCategories(true)"><small>All</small></a>&nbsp;
                 <a class="btn btn-sm btn-outline-secondary my-2 py-0 px-1" role="button"
                     (click)="selectAllCategories(false)"><small>None</small></a>
-                <category-selector *ngIf="categoryMode != filterModes().ALL" [provision]="dummyProvision"
-                    [categorySettings]="categorySettings"></category-selector>
+                <category-selector *ngIf="filterCategoryMode != filterModes().ALL" [provision]="dummyProvision"
+                    [categorySettings]="filterCategorySettings"></category-selector>
 
 
                 <h6 class="mt-4">Consent Sharing Purpose</h6>
-                <select class="form-control form-control-sm" [(ngModel)]="purposeMode">
+                <select class="form-control form-control-sm" [(ngModel)]="filterPurposeMode">
                     <option [value]="filterModes().ALL" [selected]="filterModes().ALL">Any purpose
                     </option>
                     <option [value]="filterModes().ONLY" [selected]="filterModes().ONLY">Only data sharable for
@@ -96,16 +132,18 @@
                     <option [value]="filterModes().EXCEPT" [selected]="filterModes().EXCEPT">Except data sharable for
                     </option>
                 </select>
-                <purpose-selector *ngIf="purposeMode != filterModes().ALL" [provision]="dummyProvision"
-                    [categorySettings]="categorySettings"></purpose-selector>
+                <purpose-selector *ngIf="filterPurposeMode != filterModes().ALL" [provision]="dummyProvision"
+                    [categorySettings]="filterCategorySettings"></purpose-selector>
 
                 <h6 class="mt-4">Sharing Decision</h6>
                 <select class="form-control form-control-sm" [(ngModel)]="sharingDecisionMode">
                     <option [value]="consentDecisionTypes().NO_CONSENT" [selected]="filterModes().ALL">Everything
                     </option>
-                    <option [value]="consentDecisionTypes().CONSENT_PERMIT" [selected]="consentDecisionTypes().CONSENT_PERMIT">Only shared data
+                    <option [value]="consentDecisionTypes().CONSENT_PERMIT"
+                        [selected]="consentDecisionTypes().CONSENT_PERMIT">Only shared data
                     </option>
-                    <option [value]="consentDecisionTypes().CONSENT_DENY" [selected]="consentDecisionTypes().CONSENT_DENY">Only redacted data
+                    <option [value]="consentDecisionTypes().CONSENT_DENY"
+                        [selected]="consentDecisionTypes().CONSENT_DENY">Only redacted data
                     </option>
                 </select>
             </section>
@@ -145,7 +183,7 @@
             <table *ngIf="prefetchResourcesLabeled" class="table table-condensed">
                 <thead>
                     <tr>
-                        <th>Data Type & Link</th>
+                        <th>Source Data Link</th>
                         <th>Codings</th>
                         <th>Engine-Provided Labels</th>
                         <th>Consent Decision</th>

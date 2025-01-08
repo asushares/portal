@@ -5,7 +5,6 @@ import { Consent, Organization, Patient } from "fhir/r5";
 import { BaseComponent } from "../base/base.component";
 import { OrganizationService } from "../organization.service";
 import { PatientService } from "../patient.service";
-import { ToastService } from "../toast/toast.service";
 import { ConsentService } from "./consent.service";
 import { ConsentTemplate } from "@asushares/core";
 

@@ -35,11 +35,12 @@
                             "src/app/stylesheets/styles.scss",
                             "node_modules/prismjs/themes/prism.css",
                             "node_modules/vanillajs-datepicker/dist/css/datepicker-bs5.css",
-                            "node_modules/highlight.js/styles/github.css"
+                            "node_modules/highlight.js/styles/github.css",
+                            "node_modules/ngx-toastr/toastr.css"
                         ],
                         "scripts": [
                             "node_modules/jquery/dist/jquery.min.js",
-                            "node_modules/@popperjs/core/dist/esm/popper.js",
+                            "node_modules/@popperjs/core/dist/umd/popper.js",
                             "node_modules/bootstrap/dist/js/bootstrap.min.js",
                             "node_modules/prismjs/prism.js",
                             "node_modules/prismjs/components/prism-typescript.min.js",

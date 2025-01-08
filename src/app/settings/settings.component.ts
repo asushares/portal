@@ -1,20 +1,22 @@
 // Author: Preston Lee
 
 import { Component, OnInit } from '@angular/core';
-import { SettingsService } from './settings.service';
-import { ToastService } from '../toast/toast.service';
 import { FormsModule } from '@angular/forms';
 
+import { ToastrService } from 'ngx-toastr';
+
+import { SettingsService } from './settings.service';
+
 @Component({
-    selector: 'app-settings',
-    templateUrl: './settings.component.html',
-    styleUrls: ['./settings.component.scss'],
-    standalone: true,
-    imports: [FormsModule]
+  selector: 'app-settings',
+  templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss'],
+  standalone: true,
+  imports: [FormsModule]
 })
 export class SettingsComponent implements OnInit {
 
-  constructor(protected toastService: ToastService, protected settingsService: SettingsService) {
+  constructor(protected toastrService: ToastrService, protected settingsService: SettingsService) {
   }
 
   ngOnInit() {
@@ -27,12 +29,12 @@ export class SettingsComponent implements OnInit {
 
   save() {
     this.settingsService.saveSettings();
-    this.toastService.showSuccessToast("Settings Saved", "Settings are local to your browser only.")
+    this.toastrService.success("Settings are local to your browser only.", "Settings Saved")
   }
 
   restore() {
     this.settingsService.forceResetToDefaults();
-    this.toastService.showSuccessToast("Settings Restored", "All settings have been restored to their defaults.")
+    this.toastrService.success("All settings have been restored to their defaults.", "Settings Restored")
 
   }
 

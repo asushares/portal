@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { BackendService } from './backend/backend.service';
 import { SettingsService } from './settings/settings.service';
-import { ToasterComponent } from './toaster/toaster.component';
+
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 	templateUrl: 'app.component.html',
 	styleUrl: 'app.component.scss',
 	standalone: true,
-	imports: [ToasterComponent, RouterLink, RouterLinkActive, NgIf, RouterOutlet, FormsModule]
+	imports: [ RouterLink, RouterLinkActive, NgIf, RouterOutlet, FormsModule]
 })
 export class AppComponent implements OnInit {
 
