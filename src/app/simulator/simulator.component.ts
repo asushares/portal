@@ -8,7 +8,7 @@ import { OrganizationService } from '../organization.service';
 import { ConsentService } from '../consent/consent.service';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PatientService } from '../patient.service';
-import { AbstractSensitivityRuleProvider, Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, DataSharingCDSHookRequest, DenyCard, InformationCategorySetting, PermitCard } from '@asushares/core';
+import { AbstractSensitivityRuleProvider, Card, ConsentCategorySettings, ConsentDecision, ConsentExtension, ConsentTemplate, ConsoleDataSharingEngine, DataSharingCDSHookRequest, DenyCard, DummyRuleProvider, InformationCategorySetting, PermitCard } from '@asushares/core';
 import { ConsentBasedComponent } from '../consent/consent-based.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,8 +20,6 @@ import { HttpClient } from '@angular/common/http';
 import { forkJoin, interval, Observable, switchMap, takeWhile } from 'rxjs';
 import { ExportMetadata } from '../backend/export_metadata';
 import { CdsService } from '../cds/cds.service';
-import { WebDataSharingEngine } from './web_data_sharing_engine';
-import { WebRuleProvider } from './web_rule_provider';
 import { ToastrService } from 'ngx-toastr';
 import { PatientDataCache } from './patient_data_cache';
 import { SettingsService } from '../settings/settings.service';
@@ -66,7 +64,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
         // Set these to true by default.
         settings.allPurposes().forEach(p => {
             let tmp = { system: p.system, code: p.act_code, display: p.description };
-            console.log('Adding purpose:', tmp);            
+            console.log('Adding purpose:', tmp);
             this.simulatorProvision.purpose?.push(tmp);
         });
         return settings;
@@ -464,55 +462,18 @@ export class SimulatorComponent extends ConsentBasedComponent {
     consentDecisions: { [key: string]: Card } = {};
 
     calculateConsentDecisions(request: DataSharingCDSHookRequest) {
-        this.consentDecisions = {};
-        let shouldShare = false;
-        if (this.consent.provision) {
-            if (this.consent.decision === undefined) {
-                // Making a root denial by default, for purposes of simulation.
-                this.consent.decision = 'deny';
-            }
-            const ruleProvider = new WebRuleProvider();
-            const engine = new WebDataSharingEngine(ruleProvider, 0.0, false);
-            const tmpCategorySettings = new ConsentCategorySettings();
-
-            this.consent.provision.forEach((p) => {
-                tmpCategorySettings.loadAllFromConsentProvision(p);
-                this.prefetchResourcesLabeled?.forEach((r) => {
-                    let extension = new ConsentExtension(null);
-                    let includeEnabled = this.consent.decision == 'permit';
-                    extension.obligations.push({
-                        id: { system: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.system, code: AbstractSensitivityRuleProvider.REDACTION_OBLIGATION.code },
-                        parameters: {
-                            codes: tmpCategorySettings.allCategories()
-                                .filter(c => includeEnabled ? !c.enabled : c.enabled) // Only categories relevant to the consent
-                                .map(c => { return { system: c.system, code: c.act_code } }) // Make it a valid Coding
-                        }
-                    })
-                    shouldShare = !engine.shouldRedactFromLabels(extension, r) && engine.shouldShareFromPurposes(r, p, this.filterCategorySettings);
-                    console.log('Decision:', r.resourceType, r.id, shouldShare);
-                    if (shouldShare) {
-                        this.consentDecisions[r.id!] = new PermitCard();
-                    } else {
-                        this.consentDecisions[r.id!] = new DenyCard();
-                    }
-                });
-            });
-
-        } else {
-            this.prefetchResourcesLabeled?.forEach((r) => {
-                if (this.consent.decision == 'deny') {
-                    this.consentDecisions[r.id!] = new DenyCard();
-                } else {
-                    this.consentDecisions[r.id!] = new PermitCard();
-                }
-            });
+        const ruleProvider = new DummyRuleProvider();
+        const engine = new ConsoleDataSharingEngine(ruleProvider, 0.0, false);
+        const tmpCategorySettings = new ConsentCategorySettings();
+        if (this.prefetchResourcesLabeled) {
+            this.consentDecisions = engine.computeConsentDecisionsForResources(this.prefetchResourcesLabeled, this.consent, this.filterCategorySettings);
         }
-
     }
-    
+
     consentDecisionTypes() {
         return ConsentDecision;
     }
+    
     simulateCdsHooks() {
         if (this.patientSelected) {
             const data = new DataSharingCDSHookRequest();
@@ -642,1639 +603,1611 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     settings() { return this.settingsService; }
 
-    fakeExport() {
-        this.toastrService.info('Using fake patient export data.', 'Export Faked');
-        this.prefetchExportMetadata = {
-            "transactionTime": "2024-12-17T19:38:56.054+00:00",
-            "request": "http://localhost:8080/fhir/Patient/fake/$export",
-            "requiresAccessToken": false,
-            "output": [],
-            "error": []
-        }
-        // this.prefetchExportMetadata = {
-        //     "transactionTime": "2024-12-17T21:57:56.046+00:00",
-        //     "request": "http://localhost:8080/fhir/Patient/cfsb1702939072210/$export",
-        //     "requiresAccessToken": true,
-        //     "output": [{
-        //         "type": "Condition",
-        //         "url": "http://localhost:8080/fhir/Binary/mUW0lNhhvqJ8PcCOxV2tbETGtr655Qn5"
-        //     }, {
-        //         "type": "AllergyIntolerance",
-        //         "url": "http://localhost:8080/fhir/Binary/pQ4id2304wG8st3Kg7fkSl0nmZL8FR9f"
-        //     }, {
-        //         "type": "Consent",
-        //         "url": "http://localhost:8080/fhir/Binary/cMt7UdaQnl5Z1tZzx4dLq6eIaHl95LHH"
-        //     }, {
-        //         "type": "Observation",
-        //         "url": "http://localhost:8080/fhir/Binary/kS1ZWwl8bSy06LGlx5fY0nV388IF2aTU"
-        //     }, {
-        //         "type": "Procedure",
-        //         "url": "http://localhost:8080/fhir/Binary/0my1VqkInaQaAo2X5wqKPsGAVCdnIlsq"
-        //     }, {
-        //         "type": "Patient",
-        //         "url": "http://localhost:8080/fhir/Binary/3u3GtqcBWFHWBIGfCD59IAkSJdGV8z4F"
-        //     }, {
-        //         "type": "MedicationStatement",
-        //         "url": "http://localhost:8080/fhir/Binary/7s3eueqIuNYfX678IH5NI8AQ2laZGiUN"
-        //     }],
-        //     "error": []
-        // };
-        this.prefetchResourcesRaw = [
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567003500",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "191611001",
-                            "display": "Recurrent major depressive episodes, moderate"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567085984",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "386805003",
-                            "display": "Mild cognitive disorder"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567132494",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "44054006",
-                            "display": "Type 2 diabetes mellitus"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567161720",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "38341003",
-                            "display": "Hypertension"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567176824",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "195967001",
-                            "display": "Asthma"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567283117",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "23986001",
-                            "display": "Glaucoma"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567310341",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "4556007",
-                            "display": "Gastritis"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567335345",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "37796009",
-                            "display": "Migraine"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567378787",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "734757002",
-                            "display": "Weakness of right facial muscle"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567652777",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "31681005",
-                            "display": "Trigeminal neuralgia"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567718936",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "371822007",
-                            "display": "Patient post percutaneous transluminal coronary angioplasty"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703567927090",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "21522001",
-                            "display": "Abdominal pain"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Condition",
-                "id": "cfsb1703569931062",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "clinicalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                            "code": "active",
-                            "display": "Active"
-                        }
-                    ]
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "29857009",
-                            "display": "Chest pain"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "AllergyIntolerance",
-                "id": "cfsb1703568095737",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "716186003",
-                            "display": "No known allergy"
-                        }
-                    ]
-                },
-                "patient": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "AllergyIntolerance",
-                "id": "cfsb1703568123369",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "418038007",
-                            "display": "Propensity to adverse reactions to substance"
-                        }
-                    ]
-                },
-                "patient": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Consent",
-                "id": "1040",
-                "meta": {
-                    "versionId": "2",
-                    "lastUpdated": "2024-12-17T21:12:06.842+00:00",
-                    "source": "#nSizDobnNwAeO9EE"
-                },
-                "status": "active",
-                "category": [
-                    {
-                        "id": "e8c9caf5-678f-4cb2-8971-aa58abe5a8f2",
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/consentscope",
-                                "code": "patient-privacy",
-                                "display": "Privacy Consent"
-                            }
-                        ],
-                        "text": "Privacy Consent"
-                    },
-                    {
-                        "id": "a079b3b8-67a5-4604-bb1f-be86e5329a6a",
-                        "coding": [
-                            {
-                                "system": "http://loinc.org",
-                                "code": "59284-6",
-                                "display": "Consent Document"
-                            }
-                        ],
-                        "text": "LOINC Consent Document"
-                    }
-                ],
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210",
-                    "type": "Patient"
-                },
-                "decision": "permit",
-                "provision": [
-                    {
-                        "id": "c2acdcc9-0b54-464c-bb58-76c63d7ff1e0",
-                        "actor": [
-                            {
-                                "role": {
-                                    "coding": [
-                                        {
-                                            "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
-                                            "code": "IRCP"
-                                        }
-                                    ]
-                                }
-                            }
-                        ],
-                        "action": [
-                            {
-                                "coding": [
-                                    {
-                                        "system": "http://terminology.hl7.org/CodeSystem/consentaction",
-                                        "code": "access"
-                                    }
-                                ]
-                            }
-                        ],
-                        "securityLabel": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-                                "code": "DEMO",
-                                "display": "General ethnic, social, and environmental background."
-                            },
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-                                "code": "VIO",
-                                "display": "Indicators of possible physical or mental harm by violence."
-                            }
-                        ],
-                        "purpose": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
-                                "code": "HIPAAConsentCD",
-                                "display": "For the purposes of providing or supporing care."
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703567855529",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LA27838-4",
-                            "display": "Coronary artery disease (CAD) (e.g., angina, myocardial infarction, and atherosclerotic heart disease (ASHD))"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568164562",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "social-history",
-                                "display": "Social History"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP133912-8",
-                            "display": "Unemployed"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568197525",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "social-history",
-                                "display": "Social History"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP173580-4",
-                            "display": "Alcohol use"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "note": [
-                    {
-                        "text": "Occasional drinker"
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568688243",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "social-history",
-                                "display": "Social History"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LA18978-9",
-                            "display": "Never smoker"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568785255",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "social-history",
-                                "display": "Social History"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP231631-5",
-                            "display": "Physical abuse"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "valueBoolean": false
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568905705",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP32134-6",
-                            "display": "Potassium"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "N",
-                                "display": "Normal"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703568960142",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LA24772-8",
-                            "display": "Lactic acidosis in blood"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "H",
-                                "display": "High"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569010310",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP100019-1",
-                            "display": "Cholesterol"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "H",
-                                "display": "High"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569115044",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP15275-8",
-                            "display": "Triglyceride"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "H",
-                                "display": "High"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569173459",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP32023-1",
-                            "display": "Cholesterol.in LDL"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "N",
-                                "display": "Normal"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569224661",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "laboratory",
-                                "display": "Laboratory"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "LP32022-3",
-                            "display": "Cholesterol.in HDL"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "interpretation": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
-                                "code": "N",
-                                "display": "Normal"
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569300333",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "imaging",
-                                "display": "Imaging"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "36813-4",
-                            "display": "CT Abdomen and Pelvis W contrast IV"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Observation",
-                "id": "cfsb1703569456631",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "final",
-                "category": [
-                    {
-                        "coding": [
-                            {
-                                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                                "code": "imaging",
-                                "display": "Imaging"
-                            }
-                        ]
-                    }
-                ],
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://loinc.org",
-                            "code": "36643-5",
-                            "display": "XR Chest 2 Views"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Procedure",
-                "id": "cfsb1703567985887",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "completed",
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "236886002",
-                            "display": "Hysterectomy"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Procedure",
-                "id": "cfsb1703568040523",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "completed",
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "171841007",
-                            "display": "Endoscopic carpal tunnel release"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Procedure",
-                "id": "cfsb1703569556746",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "completed",
-                "code": {
-                    "coding": [
-                        {
-                            "system": "http://snomed.info/sct",
-                            "code": "5154007",
-                            "display": "Speech therapy"
-                        }
-                    ]
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "Patient",
-                "id": "cfsb1702939072210",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "name": [
-                    {
-                        "family": "Little12",
-                        "given": [
-                            "Lisa"
-                        ]
-                    }
-                ],
-                "gender": "female",
-                "birthDate": "1959-12-12",
-                "maritalStatus": {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
-                            "code": "M",
-                            "display": "Married"
-                        }
-                    ]
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716367408",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "318956006",
-                                "display": "Losartan potassium 50 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716415379",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "376209006",
-                                "display": "Hydrochlorothiazide 25 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716463607",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "376561007",
-                                "display": "Salbutamol (as salbutamol sulfate) 830 microgram/mL solution for inhalation"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716508113",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "1156249009",
-                                "display": "Budesonide 160 microgram and formoterol fumarate dihydrate 4.5 microgram/actuation powder for inhalation"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716717715",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "320884002",
-                                "display": "Montelukast (as montelukast sodium) 10 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716765391",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "374870002",
-                                "display": "Benzonatate 200 mg oral capsule"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716801594",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "376803002",
-                                "display": "Fluoxetine (as fluoxetine hydrochloride) 40 mg oral capsule"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716838280",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "321880000",
-                                "display": "Trazodone hydrochloride 100 mg oral capsule"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716875955",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "419484002",
-                                "display": "Buspirone hydrochloride"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "dosage": [
-                    {
-                        "text": "Buspar (buspirone) 15 mg"
-                    }
-                ]
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703716991002",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "375196006",
-                                "display": "Mirtazapine 45 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717071728",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "323022001",
-                                "display": "Gabapentin 800 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717102906",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "765872007",
-                                "display": "Topiramate 25 mg oral capsule"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717139909",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "323048009",
-                                "display": "Oxcarbazepine 600 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717214368",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "783147000",
-                                "display": "Alendronic acid (as alendronate sodium) 70 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717257412",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "317306008",
-                                "display": "Omeprazole 20 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717323840",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "317265007",
-                                "display": "Sucralfate 1 g oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717375832",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "1193668004",
-                                "display": "Azithromycin 250 mg oral capsule"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717416417",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "330729005",
-                                "display": "Latanoprost 50 microgram/mL eye drops"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717488632",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "785444002",
-                                "display": "Carmellose-containing product in ocular dose form"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                },
-                "note": [
-                    {
-                        "text": "Optive ophthalmic solution (OTC)"
-                    }
-                ]
-            },
-            {
-                "resourceType": "MedicationStatement",
-                "id": "cfsb1703717727782",
-                "meta": {
-                    "versionId": "1",
-                    "lastUpdated": "2024-12-17T00:44:08.219+00:00",
-                    "source": "#tGGvNqD5DKPPmXLl"
-                },
-                "status": "recorded",
-                "medication": {
-                    "concept": {
-                        "coding": [
-                            {
-                                "system": "http://snomed.info/sct",
-                                "code": "377286005",
-                                "display": "Hydrocodone bitartrate 5 mg and paracetamol 325 mg oral tablet"
-                            }
-                        ]
-                    }
-                },
-                "subject": {
-                    "reference": "Patient/cfsb1702939072210"
-                }
-            }
-        ];
-        this.setStatusComplete();
-        // this.recollectPatientData();
-    }
+    // fakeExport() {
+    //     this.toastrService.info('Using fake patient export data.', 'Export Faked');
+    //     this.prefetchExportMetadata = {
+    //         "transactionTime": "2024-12-17T19:38:56.054+00:00",
+    //         "request": "http://localhost:8080/fhir/Patient/fake/$export",
+    //         "requiresAccessToken": false,
+    //         "output": [],
+    //         "error": []
+    //     };
+    //     this.prefetchResourcesRaw = [
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567003500",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "191611001",
+    //                         "display": "Recurrent major depressive episodes, moderate"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567085984",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "386805003",
+    //                         "display": "Mild cognitive disorder"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567132494",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "44054006",
+    //                         "display": "Type 2 diabetes mellitus"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567161720",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "38341003",
+    //                         "display": "Hypertension"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567176824",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "195967001",
+    //                         "display": "Asthma"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567283117",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "23986001",
+    //                         "display": "Glaucoma"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567310341",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "4556007",
+    //                         "display": "Gastritis"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567335345",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "37796009",
+    //                         "display": "Migraine"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567378787",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "734757002",
+    //                         "display": "Weakness of right facial muscle"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567652777",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "31681005",
+    //                         "display": "Trigeminal neuralgia"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567718936",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "371822007",
+    //                         "display": "Patient post percutaneous transluminal coronary angioplasty"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703567927090",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "21522001",
+    //                         "display": "Abdominal pain"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Condition",
+    //             "id": "cfsb1703569931062",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "clinicalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+    //                         "code": "active",
+    //                         "display": "Active"
+    //                     }
+    //                 ]
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "29857009",
+    //                         "display": "Chest pain"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "AllergyIntolerance",
+    //             "id": "cfsb1703568095737",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "716186003",
+    //                         "display": "No known allergy"
+    //                     }
+    //                 ]
+    //             },
+    //             "patient": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "AllergyIntolerance",
+    //             "id": "cfsb1703568123369",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "418038007",
+    //                         "display": "Propensity to adverse reactions to substance"
+    //                     }
+    //                 ]
+    //             },
+    //             "patient": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Consent",
+    //             "id": "1040",
+    //             "meta": {
+    //                 "versionId": "2",
+    //                 "lastUpdated": "2024-12-17T21:12:06.842+00:00",
+    //                 "source": "#nSizDobnNwAeO9EE"
+    //             },
+    //             "status": "active",
+    //             "category": [
+    //                 {
+    //                     "id": "e8c9caf5-678f-4cb2-8971-aa58abe5a8f2",
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/consentscope",
+    //                             "code": "patient-privacy",
+    //                             "display": "Privacy Consent"
+    //                         }
+    //                     ],
+    //                     "text": "Privacy Consent"
+    //                 },
+    //                 {
+    //                     "id": "a079b3b8-67a5-4604-bb1f-be86e5329a6a",
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://loinc.org",
+    //                             "code": "59284-6",
+    //                             "display": "Consent Document"
+    //                         }
+    //                     ],
+    //                     "text": "LOINC Consent Document"
+    //                 }
+    //             ],
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210",
+    //                 "type": "Patient"
+    //             },
+    //             "decision": "permit",
+    //             "provision": [
+    //                 {
+    //                     "id": "c2acdcc9-0b54-464c-bb58-76c63d7ff1e0",
+    //                     "actor": [
+    //                         {
+    //                             "role": {
+    //                                 "coding": [
+    //                                     {
+    //                                         "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+    //                                         "code": "IRCP"
+    //                                     }
+    //                                 ]
+    //                             }
+    //                         }
+    //                     ],
+    //                     "action": [
+    //                         {
+    //                             "coding": [
+    //                                 {
+    //                                     "system": "http://terminology.hl7.org/CodeSystem/consentaction",
+    //                                     "code": "access"
+    //                                 }
+    //                             ]
+    //                         }
+    //                     ],
+    //                     "securityLabel": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+    //                             "code": "DEMO",
+    //                             "display": "General ethnic, social, and environmental background."
+    //                         },
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+    //                             "code": "VIO",
+    //                             "display": "Indicators of possible physical or mental harm by violence."
+    //                         }
+    //                     ],
+    //                     "purpose": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+    //                             "code": "HIPAAConsentCD",
+    //                             "display": "For the purposes of providing or supporing care."
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703567855529",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LA27838-4",
+    //                         "display": "Coronary artery disease (CAD) (e.g., angina, myocardial infarction, and atherosclerotic heart disease (ASHD))"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568164562",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "social-history",
+    //                             "display": "Social History"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP133912-8",
+    //                         "display": "Unemployed"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568197525",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "social-history",
+    //                             "display": "Social History"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP173580-4",
+    //                         "display": "Alcohol use"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "note": [
+    //                 {
+    //                     "text": "Occasional drinker"
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568688243",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "social-history",
+    //                             "display": "Social History"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LA18978-9",
+    //                         "display": "Never smoker"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568785255",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "social-history",
+    //                             "display": "Social History"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP231631-5",
+    //                         "display": "Physical abuse"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "valueBoolean": false
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568905705",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP32134-6",
+    //                         "display": "Potassium"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "N",
+    //                             "display": "Normal"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703568960142",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LA24772-8",
+    //                         "display": "Lactic acidosis in blood"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "H",
+    //                             "display": "High"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569010310",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP100019-1",
+    //                         "display": "Cholesterol"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "H",
+    //                             "display": "High"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569115044",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP15275-8",
+    //                         "display": "Triglyceride"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "H",
+    //                             "display": "High"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569173459",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP32023-1",
+    //                         "display": "Cholesterol.in LDL"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "N",
+    //                             "display": "Normal"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569224661",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "laboratory",
+    //                             "display": "Laboratory"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "LP32022-3",
+    //                         "display": "Cholesterol.in HDL"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "interpretation": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationInterpretation",
+    //                             "code": "N",
+    //                             "display": "Normal"
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569300333",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "imaging",
+    //                             "display": "Imaging"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "36813-4",
+    //                         "display": "CT Abdomen and Pelvis W contrast IV"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Observation",
+    //             "id": "cfsb1703569456631",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "final",
+    //             "category": [
+    //                 {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+    //                             "code": "imaging",
+    //                             "display": "Imaging"
+    //                         }
+    //                     ]
+    //                 }
+    //             ],
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://loinc.org",
+    //                         "code": "36643-5",
+    //                         "display": "XR Chest 2 Views"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Procedure",
+    //             "id": "cfsb1703567985887",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "completed",
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "236886002",
+    //                         "display": "Hysterectomy"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Procedure",
+    //             "id": "cfsb1703568040523",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "completed",
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "171841007",
+    //                         "display": "Endoscopic carpal tunnel release"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Procedure",
+    //             "id": "cfsb1703569556746",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "completed",
+    //             "code": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://snomed.info/sct",
+    //                         "code": "5154007",
+    //                         "display": "Speech therapy"
+    //                     }
+    //                 ]
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "Patient",
+    //             "id": "cfsb1702939072210",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "name": [
+    //                 {
+    //                     "family": "Little12",
+    //                     "given": [
+    //                         "Lisa"
+    //                     ]
+    //                 }
+    //             ],
+    //             "gender": "female",
+    //             "birthDate": "1959-12-12",
+    //             "maritalStatus": {
+    //                 "coding": [
+    //                     {
+    //                         "system": "http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+    //                         "code": "M",
+    //                         "display": "Married"
+    //                     }
+    //                 ]
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716367408",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "318956006",
+    //                             "display": "Losartan potassium 50 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716415379",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "376209006",
+    //                             "display": "Hydrochlorothiazide 25 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716463607",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "376561007",
+    //                             "display": "Salbutamol (as salbutamol sulfate) 830 microgram/mL solution for inhalation"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716508113",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "1156249009",
+    //                             "display": "Budesonide 160 microgram and formoterol fumarate dihydrate 4.5 microgram/actuation powder for inhalation"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716717715",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "320884002",
+    //                             "display": "Montelukast (as montelukast sodium) 10 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716765391",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "374870002",
+    //                             "display": "Benzonatate 200 mg oral capsule"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716801594",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "376803002",
+    //                             "display": "Fluoxetine (as fluoxetine hydrochloride) 40 mg oral capsule"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716838280",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "321880000",
+    //                             "display": "Trazodone hydrochloride 100 mg oral capsule"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716875955",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "419484002",
+    //                             "display": "Buspirone hydrochloride"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "dosage": [
+    //                 {
+    //                     "text": "Buspar (buspirone) 15 mg"
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703716991002",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "375196006",
+    //                             "display": "Mirtazapine 45 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717071728",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "323022001",
+    //                             "display": "Gabapentin 800 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717102906",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "765872007",
+    //                             "display": "Topiramate 25 mg oral capsule"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717139909",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "323048009",
+    //                             "display": "Oxcarbazepine 600 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717214368",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "783147000",
+    //                             "display": "Alendronic acid (as alendronate sodium) 70 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717257412",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "317306008",
+    //                             "display": "Omeprazole 20 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717323840",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "317265007",
+    //                             "display": "Sucralfate 1 g oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717375832",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "1193668004",
+    //                             "display": "Azithromycin 250 mg oral capsule"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717416417",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "330729005",
+    //                             "display": "Latanoprost 50 microgram/mL eye drops"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717488632",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "785444002",
+    //                             "display": "Carmellose-containing product in ocular dose form"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             },
+    //             "note": [
+    //                 {
+    //                     "text": "Optive ophthalmic solution (OTC)"
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             "resourceType": "MedicationStatement",
+    //             "id": "cfsb1703717727782",
+    //             "meta": {
+    //                 "versionId": "1",
+    //                 "lastUpdated": "2024-12-17T00:44:08.219+00:00",
+    //                 "source": "#tGGvNqD5DKPPmXLl"
+    //             },
+    //             "status": "recorded",
+    //             "medication": {
+    //                 "concept": {
+    //                     "coding": [
+    //                         {
+    //                             "system": "http://snomed.info/sct",
+    //                             "code": "377286005",
+    //                             "display": "Hydrocodone bitartrate 5 mg and paracetamol 325 mg oral tablet"
+    //                         }
+    //                     ]
+    //                 }
+    //             },
+    //             "subject": {
+    //                 "reference": "Patient/cfsb1702939072210"
+    //             }
+    //         }
+    //     ];
+    //     this.setStatusComplete();
+    //     // this.recollectPatientData();
+    // }
 }
 
 export enum EngineType {
