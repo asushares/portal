@@ -463,7 +463,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
 
     calculateConsentDecisions(request: DataSharingCDSHookRequest) {
         const ruleProvider = new DummyRuleProvider();
-        const engine = new ConsoleDataSharingEngine(ruleProvider, 0.0, false);
+        const engine = new ConsoleDataSharingEngine(ruleProvider, 0.0, false, false);
         const tmpCategorySettings = new ConsentCategorySettings();
         if (this.prefetchResourcesLabeled) {
             this.consentDecisions = engine.computeConsentDecisionsForResources(this.prefetchResourcesLabeled, this.consent, this.filterCategorySettings);
