@@ -8,7 +8,7 @@ import { BackendService } from './backend/backend.service';
 import { SettingsService } from './settings/settings.service';
 
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 
@@ -17,7 +17,7 @@ import { FormsModule } from '@angular/forms';
 	templateUrl: 'app.component.html',
 	styleUrl: 'app.component.scss',
 	standalone: true,
-	imports: [ RouterLink, RouterLinkActive, NgIf, RouterOutlet, FormsModule]
+	imports: [ RouterLink, RouterLinkActive, CommonModule, RouterOutlet, FormsModule]
 })
 export class AppComponent implements OnInit {
 

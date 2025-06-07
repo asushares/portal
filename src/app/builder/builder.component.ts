@@ -206,10 +206,6 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     });
   }
 
-  // addPatientSubject() {
-
-  // }
-
   selectPatientSubject(p: Patient) {
     this.patientSelected = p;
     this.consent.subject = { reference: 'Patient/' + p.id, type: 'Patient' };
