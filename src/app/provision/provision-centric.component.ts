@@ -7,7 +7,6 @@ import { ConsentCategorySettings } from "@asushares/core";
 
 @Component({
   selector: 'provision-centric',
-  standalone: true,
   template: 'not-implemented'
 })
 export abstract class ProvisionCentricComponent extends BaseComponent implements OnChanges {

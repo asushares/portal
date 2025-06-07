@@ -17,7 +17,6 @@ import { ToastrService } from 'ngx-toastr';
     selector: 'app-browser',
     templateUrl: './browser.component.html',
     styleUrls: ['./browser.component.scss'],
-    standalone: true,
     imports: [NgIf, FormsModule, NgFor, RouterLink]
 })
 export class BrowserComponent extends BaseComponent implements OnInit {

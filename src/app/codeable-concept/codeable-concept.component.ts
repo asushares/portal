@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
     selector: 'codeable-concept',
     templateUrl: './codeable-concept.component.html',
     styleUrls: ['./codeable-concept.component.scss'],
-    standalone: true,
     imports: [NgIf, FormsModule, NgFor]
 })
 export class CodeableConceptComponent extends BaseComponent {

@@ -27,7 +27,6 @@ import { SettingsService } from '../settings/settings.service';
 
 @Component({
     selector: 'simulator',
-    standalone: true,
     imports: [CommonModule, RouterModule, FormsModule, CategorySelectorComponent, CategorySelectorComponent, PurposeSelectorComponent],
     templateUrl: './simulator.component.html',
     styleUrls: ['./simulator.component.scss']

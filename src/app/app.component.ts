@@ -16,7 +16,6 @@ import { FormsModule } from '@angular/forms';
 	selector: 'app',
 	templateUrl: 'app.component.html',
 	styleUrl: 'app.component.scss',
-	standalone: true,
 	imports: [ RouterLink, RouterLinkActive, CommonModule, RouterOutlet, FormsModule]
 })
 export class AppComponent implements OnInit {

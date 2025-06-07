@@ -13,7 +13,6 @@ import { SettingsService } from "../settings/settings.service";
     selector: 'purpose-selector',
     templateUrl: './purpose-selector.component.html',
     styleUrl: './purpose-selector.component.scss',
-    standalone: true,
     imports: [CommonModule, FormsModule]
 })
 export class PurposeSelectorComponent extends ProvisionCentricComponent implements OnInit {

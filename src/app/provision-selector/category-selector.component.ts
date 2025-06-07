@@ -13,7 +13,6 @@ import { SettingsService } from "../settings/settings.service";
     selector: 'category-selector',
     templateUrl: './category-selector.component.html',
     styleUrl: './category-selector.component.scss',
-    standalone: true,
     imports: [CommonModule, FormsModule]
 })
 export class CategorySelectorComponent extends ProvisionCentricComponent implements OnInit, OnChanges {

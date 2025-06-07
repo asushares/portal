@@ -8,7 +8,6 @@ import { NgIf } from '@angular/common';
     selector: 'app-sandbox',
     templateUrl: './sandbox.component.html',
     styleUrl: './sandbox.component.scss',
-    standalone: true,
     imports: [FormsModule, NgIf]
 })
 export class SandboxComponent {

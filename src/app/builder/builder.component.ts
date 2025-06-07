@@ -23,7 +23,6 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-builder',
   templateUrl: './builder.component.html',
   styleUrls: ['./builder.component.scss'],
-  standalone: true,
   imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, Highlight, HighlightLineNumbers, RouterModule]
 })
 export class BuilderComponent extends ConsentBasedComponent implements OnInit {

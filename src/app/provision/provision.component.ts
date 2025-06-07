@@ -16,7 +16,6 @@ import { PurposeSelectorComponent } from '../provision-selector/purpose-selector
     selector: 'provision',
     templateUrl: './provision.component.html',
     styleUrl: './provision.component.scss',
-    standalone: true,
     imports: [NgIf, FormsModule, NgFor, CategorySelectorComponent, PurposeSelectorComponent]
 })
 export class ProvisionComponent extends ProvisionCentricComponent implements OnChanges {
