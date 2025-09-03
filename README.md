@@ -1,8 +1,8 @@
-# Provider Portal
+# Consent Portal
 
-The SHARES Provider Portal is a FHIR Consent resource administration and management UI for visually browsing, creating, maintaining, and simulating behavior of Consent-related FHIR documents from a FHIR backend URL configured at runtime.
+The SHARES Consent Portal is a FHIR Consent resource administration and management UI for visually browsing, creating, maintaining, and simulating behavior of Consent-related FHIR documents from a FHIR backend URL configured at runtime.
 
-Provider Portal natively supports the FHIR R5 specification. Due to significant differences with the Consent resource in prior FHIR releases, only R5 is supported.
+Consent Portal natively supports the FHIR R5 specification. Due to significant differences with the Consent resource in prior FHIR releases, only R5 is supported.
 
 This project is written in TypeScript using [Angular](https://angular.io), [Bootstrap](https://getbootstrap.com/), and [SCSS](http://sass-lang.com) for custom CSS. `npm` is the package manager.
 

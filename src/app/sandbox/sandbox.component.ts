@@ -3,21 +3,32 @@ import { CdsService } from '../cds/cds.service';
 // import { DataSharingCDSHookRequest } from '@asushares/core';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { DataSharingCDSHookRequest, DataSharingEngineContext } from '@asushares/core';
+import { Bundle, FhirResource } from 'fhir/r5';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
-    selector: 'app-sandbox',
-    templateUrl: './sandbox.component.html',
-    styleUrl: './sandbox.component.scss',
-    imports: [FormsModule, NgIf]
+  selector: 'app-sandbox',
+  templateUrl: './sandbox.component.html',
+  styleUrl: './sandbox.component.scss',
+  imports: [FormsModule, NgIf]
 })
 export class SandboxComponent {
+responseFormatted() {
+return this.response ? JSON.stringify(this.response, null, "\t") : null;
+return this.response;
+}
 
   // data: DataSharingCDSHookRequest = new DataSharingCDSHookRequest();
   bundleString: string;
 
   response: any = null;
-  
-  constructor(protected cdsService: CdsService) {
+
+  labelConfidenceThreshold: number = 0.0;
+
+  constructor(protected cdsService: CdsService,
+    protected toastr: ToastrService
+  ) {
     // this.data.context.content 
     this.bundleString = JSON.stringify({
       "resourceType": "Bundle",
@@ -59,6 +70,26 @@ export class SandboxComponent {
   }
 
   submit() {
+    try {
+
+      let bundle: Bundle<FhirResource> = JSON.parse(this.bundleString); // validate JSON      
+      let data = new DataSharingCDSHookRequest();
+      data.context = new DataSharingEngineContext();
+      data.context.content = bundle;
+      this.cdsService.patientConsentConsult(data, this.labelConfidenceThreshold.toString()).subscribe({
+        next: (res) => {
+          this.response = res;
+        },
+        error: (err) => {
+          this.response = {
+            error: true,
+            message: this.cdsService.formatErrors(err.error)
+          };
+        }
+      });
+    } catch (error) {
+      this.toastr.error('Request payload must parse to a valid JSON document!', 'Invalid JSON');
+    }
   }
 
 }

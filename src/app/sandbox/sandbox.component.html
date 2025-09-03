@@ -9,6 +9,11 @@
 
         </div>
         <div class="col-sm-6">
+            <label for="threshold-range" class="form-label">Confidence Threshold ({{(labelConfidenceThreshold *
+                100).toFixed(0)}}%)</label>
+            <input type="range" class="form-range" id="threshold-range" min="0.0" max="1.0" step="0.01"
+                [(ngModel)]="labelConfidenceThreshold" />
+
             <h2>Request Payload <button class="btn btn-primary" (click)="submit()"><span class="bi bi-upload"></span>
                     Invoke CDS Hook</button>
             </h2>
@@ -20,6 +25,9 @@
         <div class="col-sm-6">
             <h2>Response</h2>
             <i *ngIf="!response">(request not yet submitted)</i>
+            @if(response) {
+                {{responseFormatted()}}
+            }
         </div>
         <div class="col-sm-6">
 
