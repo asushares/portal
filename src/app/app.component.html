@@ -26,6 +26,12 @@
                     </a>
                 </li>
 
+                <li class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
+                    <a class="nav-link" [routerLink]="['/patient']">
+                        <i class="bi-plus-circle"></i> Patient
+                    </a>
+                </li>
+
                 <li *ngIf="settingsService.settings.developer" class="nav-item" [routerLinkActive]="'active'"
                     [routerLinkActiveOptions]="{exact: true}">
                     <a class="nav-link" [routerLink]="['/sandbox']">
