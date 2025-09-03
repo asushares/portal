@@ -10,8 +10,8 @@ This project is written in TypeScript using [Angular](https://angular.io), [Boot
 
  Assuming you already have node installed via [`nvm`](https://github.com/nvm-sh/nvm) or similar, run `npm run start` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files. The following must be set:
 
-	export PROVIDER_DEFAULT_FHIR_URL=https://your.fhir.server.example.com/fhir
-	export PROVIDER_CDS_ROOT_URL=https://cds-hooks.sandbox.asushares.com # Any instance of our CDS Hooks service.
+	export CONSENT_PORTAL_DEFAULT_FHIR_URL=https://your.fhir.server.example.com/fhir
+	export CONSENT_PORTAL_CDS_ROOT_URL=https://cds-hooks.sandbox.asushares.com # Any instance of our CDS Hooks service.
 
 
 # Building for Production
@@ -19,10 +19,10 @@ This project is written in TypeScript using [Angular](https://angular.io), [Boot
 To build a reusable image with [Docker](https://www.docker.com) and [nginx](http://nginx.org), use the included Dockerfile. For example:
 
 ```sh
-	docker build -t asushares/provider:latest . # though you probably want your own repo and tag strings :)
+	docker build -t asushares/portal:latest . # though you probably want your own repo and tag strings :)
 
 	# or cross-platform
-	docker buildx build --platform linux/arm64/v8,linux/amd64 -t asushares/provider:latest . --push
+	docker buildx build --platform linux/arm64/v8,linux/amd64 -t asushares/portal:latest . --push
 ```
 
 ## Running a Pre-Built Image
@@ -30,7 +30,7 @@ To build a reusable image with [Docker](https://www.docker.com) and [nginx](http
 On your local machine or container hosting environment:
 
 ```sh
-	docker run -d -p 4200:80 --restart unless-stopped -e "PROVIDER_DEFAULT_FHIR_URL=http://localhost:3000" asushares/provider:latest # or any official tag
+	docker run -d -p 4200:80 --restart unless-stopped -e "CONSENT_PORTAL_DEFAULT_FHIR_URL=http://localhost:3000" asushares/portal:latest # or any official tag
 ```
 
 
