@@ -13,9 +13,11 @@ const routes: Routes = [
   { path: 'builder', component: BuilderComponent },
   { path: 'builder/:consent_id', component: BuilderComponent },
   { path: 'simulator/:consent_id', component: SimulatorComponent },
-  {path: 'settings', component: SettingsComponent},
-  {path: 'sandbox', component: SandboxComponent},
-  {path: 'patient', component: PatientComponent}
+  { path: 'settings', component: SettingsComponent },
+  { path: 'sandbox', component: SandboxComponent },
+  {
+    path: 'patient', component: PatientComponent
+  }
 ]
 
 @NgModule({

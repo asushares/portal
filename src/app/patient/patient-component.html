@@ -1,1 +1,65 @@
-<p>TODO put former patient portal application here!</p>
+<div class="container">
+  <div class="mt-4">
+    <!-- <h1>SHARES Patient Portal</h1> -->
+    <!-- <hr> -->
+  </div>
+
+  <section class="mt-4">
+    <!-- <h2>:</h2> -->
+    <div class="input-group">
+      <div class="form-floating">
+        <input
+          class="form-control"
+          type="text"
+          name="patient_search_text"
+          [(ngModel)]="patientSearchText"
+          (change)="patientSearch(patientSearchText)" />
+        <label for="patient_search_text">Patient experience to simulate</label>
+      </div>
+      <button
+        class="btn btn-outline btn-primary"
+        type="button"
+        (click)="patientSearch(patientSearchText)"
+        [disabled]="patientSearchText === ''">
+        <span *ngIf="!patientSearching" class="bi bi-search"></span>
+        <span *ngIf="patientSearching" class="bi bi-hourglass-split"></span>
+        Search
+      </button>
+    </div>
+    <small class="form-text"
+      >Search for a patient whose records will be the subject of this
+      consent.</small
+    >
+
+    <table *ngIf="patientList" class="table table-condensed table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>ID</th>
+          <th>Birth Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of patientList.entry">
+          <td>
+            <span *ngFor="let n of p.resource?.name">
+              {{ n.family || '(Unknown)' }},
+              <span *ngFor="let g of n.given">{{ g }} </span>
+            </span>
+          </td>
+          <td>{{ p.resource?.id }}</td>
+          <td>{{ p.resource?.birthDate }}</td>
+          <td>
+            <button
+              *ngIf="p.resource"
+              class="btn btn-sm btn-primary"
+              (click)="launchPatientPortal(p.resource)">
+              <span class="bi-rocket-takeoff"></span> TODO New Patient Portal
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

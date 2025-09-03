@@ -3,6 +3,7 @@
 import { Bundle, Patient } from 'fhir/r5';
 import { BaseService } from './base/base.service';
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 
 @Injectable()
@@ -51,5 +52,56 @@ export class PatientService extends BaseService {
 	summary(id: string) {
 		return this.http.get<Patient>(this.urlFor(id) + '?_summary=true');
 	}
+
+
+  public current: BehaviorSubject<Patient | null> =
+    new BehaviorSubject<Patient | null>(null);
+
+  private currentPatientEverything: BehaviorSubject<Bundle | null> =
+    new BehaviorSubject<Bundle | null>(null);
+
+  currentPatientEverything$ = this.currentPatientEverything.asObservable();
+
+  load(id: string) {
+    this.http
+      .get<Patient>(this.urlFor(id), { headers: this.backendService.headers() })
+      .subscribe({
+        next: d => {
+          this.current.next(d);
+        },
+        error: e => {
+          console.error('Error loading patient.');
+          console.error(e);
+        },
+      });
+  }
+
+  loadEverything(id: string, searchParameters: string = '_count=1000') {
+    this.http
+      .get<Bundle>(this.urlFor(id) + '/$everything?' + searchParameters, {
+        headers: this.backendService.headers(),
+      })
+      .subscribe({
+        next: d => {
+          const nextLink = (d.link as { relation: string; url: string }[]).find(
+            ({ relation }) => relation === 'next',
+          );
+          const currentValue = this.currentPatientEverything.getValue();
+          const { id: _id, link: _link, ...rest } = d;
+          this.currentPatientEverything.next({
+            ...rest,
+            entry: [...(currentValue?.entry || []), ...d.entry!],
+          });
+          if (nextLink) {
+            this.loadEverything(id, nextLink.url.split('?')[1]);
+          }
+        },
+        error: e => {
+          console.error('Error loading patient everything.');
+          console.error(e);
+        },
+      });
+  }
+
 
 }

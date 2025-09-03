@@ -5,6 +5,7 @@ import { BaseService } from '../base/base.service';
 import { Bundle, Consent } from 'fhir/r5';
 import { Observable } from 'rxjs';
 import { ConsentSearchField } from './consent.search.field';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
 	providedIn: 'root'
@@ -25,12 +26,24 @@ export class ConsentService extends BaseService {
 		return this.backendService.url + ConsentService.CONSENT_PATH;
 	}
 
-	queryParameters() {
-		return `_sort=${this.order == 'asc' ? '' : '-'}${this.sort}` + `&_count=${this.pageSize}&_getpagesoffset=${this.offset}`;
+	queryParameters(p_id?: string) {
+		let p = `_sort=${this.order == 'asc' ? '' : '-'}${this.sort}` + `&_count=${this.pageSize}&_getpagesoffset=${this.offset}`;
+		if (p_id) {
+			p += `&subject=Patient/${p_id}`
+		}
+		return p;
 	}
 
 	index(): Observable<Bundle<Consent>> {
 		let b = this.http.get<Bundle<Consent>>(this.url() + "?" + this.queryParameters(), { headers: this.backendService.headers() });
+		return b;
+	}
+
+	indexForPatient(p_id: string): Observable<Bundle<Consent>> {
+		const b = this.http.get<Bundle<Consent>>(
+			this.url() + '?' + this.queryParameters(p_id),
+			{ headers: this.backendService.headers() },
+		);
 		return b;
 	}
 
