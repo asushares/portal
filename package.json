@@ -19,7 +19,7 @@
         "@angular/platform-browser": "~20.2.3",
         "@angular/platform-browser-dynamic": "~20.2.3",
         "@angular/router": "~20.2.3",
-        "@asushares/core": "^2.12.5",
+        "@asushares/core": "^3.0.3",
         "@popperjs/core": "^2.11.8",
         "bootstrap": "^5.3.8",
         "bootstrap-icons": "^1.13.1",
