@@ -1,0 +1,107 @@
+<section class="mt-4">
+    <h2>FHIR Validation</h2>
+    <p class="form-text">Validate this Consent resource against FHIR specifications and profiles.</p>
+    
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="form-floating">
+                <input class="form-control" type="text" [(ngModel)]="validationProfile" 
+                    placeholder="http://example.org/fhir/StructureDefinition/MyConsentProfile" />
+                <label>Profile URL (Optional)</label>
+                <small class="form-text">Optional profile URL to validate against. Leave empty for basic FHIR validation.</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-primary" (click)="validateConsent()" [disabled]="isValidating">
+                <span *ngIf="!isValidating" class="bi bi-check-circle"></span>
+                <span *ngIf="isValidating" class="bi bi-hourglass-split"></span>
+                {{isValidating ? 'Validating...' : 'Validate Consent'}}
+            </button>
+        </div>
+    </div>
+
+    <!-- Validation Results -->
+    <div *ngIf="validationResult" class="mt-4">
+        <div class="alert" 
+             [class.alert-success]="!hasValidationErrors()" 
+             [class.alert-danger]="hasValidationErrors()">
+            <h4 class="alert-heading">
+                <span *ngIf="!hasValidationErrors()" class="bi bi-check-circle-fill"></span>
+                <span *ngIf="hasValidationErrors()" class="bi bi-exclamation-triangle-fill"></span>
+                {{hasValidationErrors() ? 'Validation Failed' : 'Validation Passed'}}
+            </h4>
+            <p *ngIf="!hasValidationErrors()" class="mb-0">
+                The Consent resource is valid according to FHIR specifications.
+            </p>
+            <p *ngIf="hasValidationErrors()" class="mb-0">
+                The Consent resource has {{getValidationErrorCount()}} validation issue(s).
+            </p>
+        </div>
+
+        <!-- Validation Issues -->
+        <div *ngIf="hasValidationErrors()" class="mt-3">
+            <h5>Validation Issues:</h5>
+            <div class="accordion validation-issue" id="validationAccordion">
+                <div *ngFor="let issue of validationResult.issue; let i = index" class="accordion-item">
+                    <h2 class="accordion-header" [id]="'heading' + i">
+                        <button class="accordion-button collapsed" type="button" 
+                                data-bs-toggle="collapse" 
+                                [attr.data-bs-target]="'#collapse' + i" 
+                                aria-expanded="false" 
+                                [attr.aria-controls]="'collapse' + i">
+                            <span class="me-2">
+                                <span *ngIf="issue.severity === 'error'" class="bi bi-x-circle-fill text-danger"></span>
+                                <span *ngIf="issue.severity === 'warning'" class="bi bi-exclamation-triangle-fill text-warning"></span>
+                                <span *ngIf="issue.severity === 'information'" class="bi bi-info-circle-fill text-info"></span>
+                            </span>
+                            <strong>{{issue.severity.toUpperCase() || 'UNKNOWN'}}</strong>
+                            <span *ngIf="issue.location" class="ms-2 text-muted">({{issue.location.join(', ')}})</span>
+                        </button>
+                    </h2>
+                    <div [id]="'collapse' + i" 
+                         class="accordion-collapse collapse" 
+                         [attr.aria-labelledby]="'heading' + i" 
+                         data-bs-parent="#validationAccordion">
+                        <div class="accordion-body">
+                            <p><strong>Issue:</strong> {{issue.diagnostics || 'No description available'}}</p>
+                            <p *ngIf="issue.expression" class="mb-1"><strong>Expression:</strong> {{issue.expression.join(', ')}}</p>
+                            <p *ngIf="issue.code" class="mb-1"><strong>Code:</strong> {{getIssueCode(issue)}}</p>
+                            <p *ngIf="issue.details" class="mb-0"><strong>Details:</strong> {{issue.details.text}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validation Summary -->
+        <div class="mt-3">
+            <h6>Validation Summary:</h6>
+            <ul class="list-group list-group-flush validation-summary">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Total Issues
+                    <span class="badge bg-primary rounded-pill">{{getValidationErrorCount()}}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Errors
+                    <span class="badge bg-danger rounded-pill">{{getValidationErrorCount('error')}}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Warnings
+                    <span class="badge bg-warning rounded-pill">{{getValidationErrorCount('warning')}}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Information
+                    <span class="badge bg-info rounded-pill">{{getValidationErrorCount('information')}}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- No validation results yet -->
+    <div *ngIf="!validationResult && !isValidating" class="mt-4">
+        <div class="alert alert-info">
+            <h5 class="alert-heading">Ready to Validate</h5>
+            <p class="mb-0">Click the "Validate Consent" button above to check this Consent resource against FHIR specifications.</p>
+        </div>
+    </div>
+</section>

@@ -1,7 +1,7 @@
 // Author: Preston Lee
 
 import { Component, OnInit } from '@angular/core';
-import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patient, Identifier, Reference, Attachment, ConsentVerification, ConsentPolicyBasis, Narrative } from 'fhir/r5';
+import { Bundle, CodeableConcept, Consent, ConsentProvision, Organization, Patient, Identifier, Reference, Attachment, ConsentVerification, ConsentPolicyBasis, Narrative, OperationOutcome } from 'fhir/r5';
 
 import { v4 as uuidv4 } from 'uuid';
 import { OrganizationService } from '../organization.service';
@@ -16,6 +16,7 @@ import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProvisionComponent } from '../provision/provision.component';
 import { CodeableConceptComponent } from '../codeable-concept/codeable-concept.component';
+import { ValidationComponent } from '../validation/validation.component';
 import { ToastrService } from 'ngx-toastr';
 
 
@@ -23,7 +24,7 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-builder',
   templateUrl: './builder.component.html',
   styleUrls: ['./builder.component.scss'],
-  imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, Highlight, HighlightLineNumbers, RouterModule]
+  imports: [NgIf, FormsModule, NgFor, ProvisionComponent, CodeableConceptComponent, ValidationComponent, Highlight, HighlightLineNumbers, RouterModule]
 })
 export class BuilderComponent extends ConsentBasedComponent implements OnInit {
 
@@ -36,6 +37,9 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   organizationSearchText = '';
   organizationList: Bundle<Organization> | null = null;
   organizationSearching: boolean = false;
+
+  // Validation state for tab badge
+  validationResult: OperationOutcome | null = null;
 
   loadConsentFailed(c_id: string) {
     this.toastrService.error('Consent ID ' + c_id + ' could not be loaded. Form put into creation mode instead.', 'Could Not Load');
@@ -916,6 +920,21 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     });
     
     return cleanConsent;
+  }
+
+  // Validation methods for tab badge
+  hasValidationErrors(): boolean {
+    if (!this.validationResult?.issue) {
+      return false;
+    }
+    
+    return this.validationResult.issue.some(issue => 
+      issue.severity === 'error' || issue.severity === 'fatal'
+    );
+  }
+
+  onValidationComplete(result: OperationOutcome | null) {
+    this.validationResult = result;
   }
 
 }

@@ -1,0 +1,36 @@
+// Validation component styles
+.validation-issue {
+    .accordion-button {
+        font-size: 0.9rem;
+        
+        &:not(.collapsed) {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+    }
+    
+    .accordion-body {
+        font-size: 0.85rem;
+        line-height: 1.4;
+        
+        p {
+            margin-bottom: 0.5rem;
+            
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.validation-summary {
+    .list-group-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+.validation-status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}

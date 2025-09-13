@@ -49,6 +49,18 @@
                     class="bi bi-code-slash"></span> Advanced</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="validation-tab" data-bs-toggle="tab" data-bs-target="#validation-tab-pane" type="button"
+                role="tab" aria-controls="validation-tab-pane" aria-selected="false">
+                <span class="bi bi-check-circle"></span> Validation
+                <span *ngIf="validationResult" 
+                    class="badge ms-1 validation-status-badge" 
+                    [class.bg-success]="!hasValidationErrors()" 
+                    [class.bg-danger]="hasValidationErrors()">
+                    {{hasValidationErrors() ? 'Errors' : 'Valid'}}
+                </span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="fhir-tab" data-bs-toggle="tab" data-bs-target="#fhir-tab-pane" type="button"
                 role="tab" aria-controls="fhir-tab-pane" aria-selected="false"><span class="bi bi-fire"></span>
                 FHIR</button>
@@ -994,6 +1006,13 @@
                 </div> -->
                 </div>
             </section>
+        </div>
+
+        <div class="tab-pane" id="validation-tab-pane" role="tabpanel" aria-labelledby="validation-tab" tabindex="0">
+            <consent-validation 
+                [consent]="consent" 
+                (validationComplete)="onValidationComplete($event)">
+            </consent-validation>
         </div>
 
         <div class="tab-pane " id="fhir-tab-pane" role="tabpanel" aria-labelledby="fhir-tab" tabindex="0">

@@ -2,7 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { BaseService } from '../base/base.service';
-import { Bundle, Consent } from 'fhir/r5';
+import { Bundle, Consent, OperationOutcome } from 'fhir/r5';
 import { Observable } from 'rxjs';
 import { ConsentSearchField } from './consent.search.field';
 import { HttpParams } from '@angular/common/http';
@@ -65,5 +65,50 @@ export class ConsentService extends BaseService {
 
 	delete(consent: Consent) {
 		return this.http.delete<Consent>(this.urlFor(consent.id!), { headers: this.backendService.headers() });
+	}
+
+	/**
+	 * Validates a Consent resource using FHIR's $validate operation
+	 * @param consent The Consent resource to validate
+	 * @param profile Optional profile URL to validate against
+	 * @returns Observable<OperationOutcome> containing validation results
+	 */
+	validate(consent: Consent, profile?: string): Observable<OperationOutcome> {
+		const validateUrl = this.url() + '/$validate';
+		const headers = this.backendService.headers();
+		
+		// Add profile parameter if provided
+		let queryParams = '';
+		if (profile) {
+			queryParams = '?profile=' + encodeURIComponent(profile);
+		}
+		
+		return this.http.post<OperationOutcome>(
+			validateUrl + queryParams,
+			JSON.stringify(consent),
+			{ headers: headers }
+		);
+	}
+
+	/**
+	 * Validates a Consent resource by ID using FHIR's $validate operation
+	 * @param id The ID of the Consent resource to validate
+	 * @param profile Optional profile URL to validate against
+	 * @returns Observable<OperationOutcome> containing validation results
+	 */
+	validateById(id: string, profile?: string): Observable<OperationOutcome> {
+		const validateUrl = this.urlFor(id) + '/$validate';
+		const headers = this.backendService.headers();
+		
+		// Add profile parameter if provided
+		let queryParams = '';
+		if (profile) {
+			queryParams = '?profile=' + encodeURIComponent(profile);
+		}
+		
+		return this.http.get<OperationOutcome>(
+			validateUrl + queryParams,
+			{ headers: headers }
+		);
 	}
 }
