@@ -1,0 +1,108 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <div class="jumbotron bg-primary text-white rounded p-5 my-4">
+        <h1 class="display-4">
+          <i class="bi-shield-check"></i> ASU SHARES Consent Portal
+        </h1>
+        <p class="lead">
+          A comprehensive platform for managing healthcare consent documents and patient data sharing agreements 
+          for Substance Use Disorder (SUD) care.
+        </p>
+        <hr class="my-4">
+        <p>
+          SHARES (Substance use HeAlth REcord Sharing) is dedicated to improving care for individuals with 
+          Substance Use Disorders by enhancing the sharing of medical records between patients and providers. 
+          Our mission is to balance patient privacy and data access needs through automated data segmentation methods.
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+          <a class="btn btn-light btn-lg" [routerLink]="['/manager/browser']" role="button">
+            <i class="bi-eye"></i> Browse Consents
+          </a>
+          <a class="btn btn-outline-light btn-lg" [routerLink]="['/manager/builder']" role="button">
+            <i class="bi-plus-circle"></i> Create New Consent
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi-eye display-1 text-primary mb-3"></i>
+          <h5 class="card-title">Browse Consents</h5>
+          <p class="card-text">
+            View and manage FHIR-based consent documents for Substance Use Disorder care. Search, filter, and organize 
+            consent records with powerful browsing capabilities designed for healthcare providers.
+          </p>
+          <a [routerLink]="['/manager/browser']" class="btn btn-primary">
+            <i class="bi-eye"></i> Go to Browser
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi-plus-circle display-1 text-success mb-3"></i>
+          <h5 class="card-title">Create Consents</h5>
+          <p class="card-text">
+            Build new FHIR executable consent documents using our intuitive builder. Define data sharing purposes, 
+            sensitive data categories, and patient preferences for SUD care coordination.
+          </p>
+          <a [routerLink]="['/manager/builder']" class="btn btn-success">
+            <i class="bi-plus-circle"></i> Start Building
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body text-center">
+          <i class="bi-person display-1 text-info mb-3"></i>
+          <h5 class="card-title">Manage Patients</h5>
+          <p class="card-text">
+            View and manage patient information and their consent preferences for SUD care. 
+            Track consent status and data sharing agreements to support coordinated care.
+          </p>
+          <a [routerLink]="['/patient']" class="btn btn-info">
+            <i class="bi-person"></i> View Patients
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="bi-info-circle"></i> About ASU SHARES
+          </h5>
+        </div>
+        <div class="card-body">
+          <p>
+            <strong>SHARES (Substance use HeAlth REcord Sharing)</strong> is an interdisciplinary research initiative 
+            at Arizona State University dedicated to improving care for individuals with Substance Use Disorders (SUD) 
+            by enhancing the sharing of medical records between patients and providers.
+          </p>
+          
+          <div class="d-flex gap-3 mt-4">
+            <a href="https://www.asushares.com" target="_blank" class="btn btn-outline-primary">
+              <i class="bi-globe"></i> Visit ASU SHARES
+            </a>
+            <a href="https://www.github.com/asushares" target="_blank" class="btn btn-outline-secondary">
+              <i class="bi-github"></i> View on GitHub
+            </a>
+            <a href="https://www.asushares.com/contact/" target="_blank" class="btn btn-outline-info">
+              <i class="bi-envelope"></i> Contact Us
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,39 @@
 .navbar-brand img {
     height: 28px;
 }
+
+/* Footer Styles */
+footer {
+    margin-top: auto;
+    background: linear-gradient(135deg, #343a40 0%, #212529 100%);
+    border-top: 3px solid #007bff;
+}
+
+footer a:hover {
+    color: #007bff !important;
+    transition: color 0.3s ease;
+}
+
+footer h5, footer h6 {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+footer .text-muted {
+    color: #adb5bd !important;
+}
+
+footer hr {
+    border-color: #495057;
+}
+
+/* Ensure main content pushes footer to bottom */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}

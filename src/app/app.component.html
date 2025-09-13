@@ -16,13 +16,7 @@
 
                 <li class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
                     <a class="nav-link" [routerLink]="['/']">
-                        <i class="bi-eye"></i> Browser
-                    </a>
-                </li>
-
-                <li class="nav-item" [routerLinkActive]="'active'" [routerLinkActiveOptions]="{exact: true}">
-                    <a class="nav-link" [routerLink]="['/builder']">
-                        <i class="bi-plus-circle"></i> Builder
+                        <i class="bi-house"></i> Home
                     </a>
                 </li>
 
@@ -30,6 +24,27 @@
                     <a class="nav-link" [routerLink]="['/patient']">
                         <i class="bi-person"></i> Patient
                     </a>
+                </li>
+
+                <li class="nav-item dropdown" [routerLinkActive]="'active'">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" id="dropdownConsentManager"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi-shield-check"></i> Consent Manager
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownConsentManager">
+                        <li>
+                            <a class="dropdown-item" [routerLink]="['/manager/browser']" [routerLinkActive]="'active'"
+                                [routerLinkActiveOptions]="{exact: true}">
+                                <i class="bi-eye"></i> Browser
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" [routerLink]="['/manager/builder']" [routerLinkActive]="'active'"
+                                [routerLinkActiveOptions]="{exact: true}">
+                                <i class="bi-plus-circle"></i> Builder
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <li *ngIf="settingsService.settings.developer" class="nav-item" [routerLinkActive]="'active'"
@@ -56,7 +71,7 @@
 
                 <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
                     <div class="card bg-primary px-2 py-1">
-                        <div class="form-check form-switch" >
+                        <div class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" role="button" name="nav_show_descriptions"
                                 id="nav_show_descriptions" [(ngModel)]="settings().settings.show_descriptions">
                             <label class="form-check-label" role="button" for="nav_show_descriptions">
@@ -78,7 +93,7 @@
                                     class="bi-github"></i> GitHub</a></li>
                     </ul>
                 </li>
-            
+
                 <li class="nav-item" [routerLinkActive]="'settings'" [routerLinkActiveOptions]="{exact: true}">
                     <a class="nav-link" [routerLink]="['/settings']">
                         <i class="bi-gear"></i> Settings
@@ -98,4 +113,95 @@
         </div>
     </div>
 </nav>
-<router-outlet></router-outlet>
+
+<main>
+    <router-outlet></router-outlet>
+</main>
+
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-3">
+                    <i class="bi-shield-check"></i> ASU SHARES Consent Portal
+                </h5>
+                <p class="mb-3">
+                    A comprehensive platform for managing healthcare consent documents and patient data sharing
+                    agreements
+                    for Substance Use Disorder (SUD) and other sensitive healthcare records.
+                </p>
+                <p class="text-muted small">
+                    A modern research initiative advancing healthcare data privacy through innovative FHIR-based consent
+                    management technology.
+                </p>
+            </div>
+            <div class="col-md-3">
+                <h6 class="mb-3">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a [routerLink]="['/']" class="text-light text-decoration-none">
+                            <i class="bi-house"></i> Home
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a [routerLink]="['/manager/browser']" class="text-light text-decoration-none">
+                            <i class="bi-eye"></i> Browse Consents
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a [routerLink]="['/manager/builder']" class="text-light text-decoration-none">
+                            <i class="bi-plus-circle"></i> Create Consent
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a [routerLink]="['/patient']" class="text-light text-decoration-none">
+                            <i class="bi-person"></i> Manage Patients
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="mb-3">Resources</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <a href="https://www.asushares.com" target="_blank" class="text-light text-decoration-none">
+                            <i class="bi-globe"></i> ASU SHARES Website
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="https://www.github.com/asushares" target="_blank"
+                            class="text-light text-decoration-none">
+                            <i class="bi-github"></i> GitHub Repository
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a href="https://www.asushares.com/contact/" target="_blank"
+                            class="text-light text-decoration-none">
+                            <i class="bi-envelope"></i> Contact Us
+                        </a>
+                    </li>
+                    <li class="mb-2">
+                        <a [routerLink]="['/settings']" class="text-light text-decoration-none">
+                            <i class="bi-gear"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <hr class="my-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <p class="mb-0 text-muted small">
+                    <strong>SHARES (Substance use HeAlth REcord Sharing)</strong> - An interdisciplinary research
+                    initiative
+                    at dedicated to improving care for individuals with Substance Use Disorders.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <p class="mb-0 text-muted small">
+                    <i class="bi-lightning-charge text-warning"></i> Powered by cutting-edge FHIR standards
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

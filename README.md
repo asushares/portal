@@ -34,9 +34,11 @@ On your local machine or container hosting environment:
 ```
 
 
-# Attribution
+# Attribution & Contributors
 
-Preston Lee
+- Preston Lee
+- Abhishek Dhadwal
+- Daniel Mendoza
 
 # License
 

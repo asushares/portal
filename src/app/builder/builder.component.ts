@@ -74,9 +74,7 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
         this.toastrService.success('Saved as consent id: ' + oo.id, 'Consent Created');
 
         this.consent = this.repairConsent(oo);
-        // this.consent = Object.assign({}, oo, this.consent);
         this.mode = 'update';
-        // console.log('MERGED: ' + JSON.stringify(this.consent, null, "\t"));
 
       }, error: error => {
         console.log(error);
@@ -103,8 +101,6 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
 
   addProvision() {
     this.consent.provision?.push(ConsentTemplate.templateProvision());
-    // this.loadConsentProvisionsMedicalInformation();
-    // this.loadConsentProvisionsPurposes();
   }
 
   removeProvision(cp: ConsentProvision) {
@@ -120,22 +116,7 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
         this.consent.provision.splice(at, 1);
       }
     }
-    // this.loadMedicalInformation();
-    // this.loadPurposes();
   }
-
-
-
-  // templateMedicalInformation() {
-  //   let medicalInformation = {
-  //     violence: true,
-  //     genetics: true,
-  //     behavioralHealth: true,
-  //     sexualAndReproductive: true,
-  //     substanceUse: false
-  //   };
-  //   return this.medicalInformation;
-  // }
 
   reset() {
     this.consent = ConsentTemplate.templateConsent();
@@ -144,22 +125,12 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     this.organizationList = null;
     this.organizationSelected = [];
     this.initializeNewProperties();
-    // this.medicalInformation = this.loadConsentProvisionsMedicalInformation();
-    // this.purpose = this.loadConsentProvisionsPurposes();
-    // this.toastrService.success("Go for it!", "Form Reset");
     console.log('Reset complete.');
   }
 
   addPeriod() {
-    // if (this.consent.provision) {
-    // const now = new Date();
-    // const today_str = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDay();
     const tomorrow = new Date(Date.now() + (24 * 60 * 60 * 1000));
-    tomorrow.toDateString()
-    const tomorrow_str = tomorrow.getFullYear() + '-' + tomorrow.getMonth() + '-' + tomorrow.getDay();
     this.consent.period = { start: new Date().toISOString().split('T')[0], end: tomorrow.toISOString().split('T')[0] };
-
-    // }
   }
 
   removePeriod() {
@@ -167,35 +138,11 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   pickPeriodStart() {
-    // let el = document.querySelector('input[name="consent_provision_period_start"]');
-    // if (el) {
-    //   console.log("Creating period start date picker...");
-    //   const datepicker = new Datepicker(el as HTMLElement, {
-    //     format: 'yyyy-mm-dd',
-    //     autohide: true,
-    //     todayButton: true,
-
-    //   });
-    //   datepicker.show();
-    //   datepicker.
-    // } else {
-    //   console.log("Period start input field not found.");
-    // }
+    // Placeholder for future date picker implementation
   }
 
   pickPeriodEnd() {
-    // let el = document.querySelector('input[name="consent_provision_period_end"]');
-    // if (el) {
-    //   console.log("Creating period end date picker...");
-    //   const datepicker = new Datepicker(el as HTMLElement, {
-    //     format: 'yyyy-mm-dd',
-    //     autohide: true,
-    //     todayButton: true,
-    //   });
-    //   datepicker.show();
-    // } else {
-    //   console.log("Period end input field not found.");
-    // }
+    // Placeholder for future date picker implementation
   }
 
   patientSearch(text: string) {
@@ -270,10 +217,6 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   downloadConsentJsonFile() {
-    // this.toastrService.success("JSON download started...", 'Downloading Document');
-    // let doc = new YAML.Document(r);
-    // console.log(doc.toString());
-
     // Download mechanism via: https://blog.logrocket.com/programmatic-file-downloads-in-the-browser-9a5186298d5c/
     const blob = new Blob([this.prettyConsentJson()], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -282,18 +225,6 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     a.download = 'consent.json';
     a.click();
   }
-
-  // medicalInformationEnabledFor(provision_id: string, category: string) {
-  //   let enabled = false;
-  //   // keyof type this.be
-  //   this.medicalInformation[provision_id].forEach(n => {
-  //     if (n.category == category) {
-  //       enabled = n.enabled;
-  //     }
-  //   })
-  //   return enabled;
-  // }
-
 
   createCategory() {
     this.consent.category?.push({ id: uuidv4() });
@@ -334,68 +265,56 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     }
   }
 
-  // Grantee management
-  addGrantee() {
-    if (!this.consent.grantee) {
-      this.consent.grantee = [];
+  // Generic array management methods
+  private addToArray<T>(array: T[] | undefined, item: T): T[] {
+    if (!array) {
+      array = [];
     }
-    this.consent.grantee.push({ reference: '', type: 'Patient' });
+    array.push(item);
+    return array;
+  }
+
+  private removeFromArray<T>(array: T[] | undefined, index: number): void {
+    if (array && index >= 0 && index < array.length) {
+      array.splice(index, 1);
+    }
+  }
+
+  // Specific array management methods using generic utilities
+  addGrantee() {
+    this.consent.grantee = this.addToArray(this.consent.grantee, { reference: '', type: 'Patient' });
   }
 
   removeGrantee(index: number) {
-    if (this.consent.grantee) {
-      this.consent.grantee.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.grantee, index);
   }
 
-  // Grantor management
   addGrantor() {
-    if (!this.consent.grantor) {
-      this.consent.grantor = [];
-    }
-    this.consent.grantor.push({ reference: '', type: 'Patient' });
+    this.consent.grantor = this.addToArray(this.consent.grantor, { reference: '', type: 'Patient' });
   }
 
   removeGrantor(index: number) {
-    if (this.consent.grantor) {
-      this.consent.grantor.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.grantor, index);
   }
 
-  // Manager management
   addManager() {
-    if (!this.consent.manager) {
-      this.consent.manager = [];
-    }
-    this.consent.manager.push({ reference: '', type: 'Organization' });
+    this.consent.manager = this.addToArray(this.consent.manager, { reference: '', type: 'Organization' });
   }
 
   removeManager(index: number) {
-    if (this.consent.manager) {
-      this.consent.manager.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.manager, index);
   }
 
-  // Policy text management
   addPolicyText() {
-    if (!this.consent.policyText) {
-      this.consent.policyText = [];
-    }
-    this.consent.policyText.push({ reference: '', type: 'DocumentReference' });
+    this.consent.policyText = this.addToArray(this.consent.policyText, { reference: '', type: 'DocumentReference' });
   }
 
   removePolicyText(index: number) {
-    if (this.consent.policyText) {
-      this.consent.policyText.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.policyText, index);
   }
 
-  // Source attachment management
   addSourceAttachment() {
-    if (!this.consent.sourceAttachment) {
-      this.consent.sourceAttachment = [];
-    }
-    this.consent.sourceAttachment.push({
+    this.consent.sourceAttachment = this.addToArray(this.consent.sourceAttachment, {
       contentType: 'application/pdf',
       language: 'en-US',
       url: ''
@@ -403,31 +322,19 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   removeSourceAttachment(index: number) {
-    if (this.consent.sourceAttachment) {
-      this.consent.sourceAttachment.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.sourceAttachment, index);
   }
 
-  // Source reference management
   addSourceReference() {
-    if (!this.consent.sourceReference) {
-      this.consent.sourceReference = [];
-    }
-    this.consent.sourceReference.push({ reference: '', type: 'Consent' });
+    this.consent.sourceReference = this.addToArray(this.consent.sourceReference, { reference: '', type: 'Consent' });
   }
 
   removeSourceReference(index: number) {
-    if (this.consent.sourceReference) {
-      this.consent.sourceReference.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.sourceReference, index);
   }
 
-  // Regulatory basis management
   addRegulatoryBasis() {
-    if (!this.consent.regulatoryBasis) {
-      this.consent.regulatoryBasis = [];
-    }
-    this.consent.regulatoryBasis.push({
+    this.consent.regulatoryBasis = this.addToArray(this.consent.regulatoryBasis, {
       coding: [{
         system: 'http://example.com/codes',
         code: '',
@@ -437,17 +344,11 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   removeRegulatoryBasis(index: number) {
-    if (this.consent.regulatoryBasis) {
-      this.consent.regulatoryBasis.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.regulatoryBasis, index);
   }
 
-  // Verification management
   addVerification() {
-    if (!this.consent.verification) {
-      this.consent.verification = [];
-    }
-    this.consent.verification.push({
+    this.consent.verification = this.addToArray(this.consent.verification, {
       verified: false,
       verificationDate: [],
       verificationType: { coding: [{ code: 'VERIFIED' }] }
@@ -455,22 +356,13 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   removeVerification(index: number) {
-    if (this.consent.verification) {
-      this.consent.verification.splice(index, 1);
-    }
+    this.removeFromArray(this.consent.verification, index);
   }
 
   // Initialize policy basis if not present
   initializePolicyBasis() {
     if (!this.consent.policyBasis) {
       this.consent.policyBasis = { url: '', reference: { reference: '' } };
-    }
-  }
-
-  // Helper method to ensure arrays are initialized
-  ensureArrayInitialized(property: keyof Consent) {
-    if (!this.consent[property]) {
-      (this.consent as any)[property] = [];
     }
   }
 
@@ -493,32 +385,19 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   getIdentifierUse(index: number): string {
-    return this.consent.identifier?.[index]?.use || '';
+    return this.getArrayIdentifierUse(this.consent.identifier || [], index);
   }
 
   setIdentifierUse(index: number, value: string) {
-    if (this.consent.identifier?.[index]) {
-      this.consent.identifier[index].use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.identifier || [], index, value);
   }
 
   getIdentifierTypeCode(index: number): string {
-    return this.consent.identifier?.[index]?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.identifier || [], index);
   }
 
   setIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.identifier?.[index]) {
-      if (!this.consent.identifier[index].type) {
-        this.consent.identifier[index].type = { coding: [{}] };
-      }
-      if (!this.consent.identifier[index].type!.coding) {
-        this.consent.identifier[index].type!.coding = [{}];
-      }
-      if (!this.consent.identifier[index].type!.coding[0]) {
-        this.consent.identifier[index].type!.coding[0] = {};
-      }
-      this.consent.identifier[index].type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.identifier || [], index, value);
   }
 
   getPolicyBasisUrl(): string {
@@ -546,78 +425,91 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     }
   }
 
+  // Generic coding getter/setter methods
+  private getCodingValue(array: any[], index: number, property: string, nestedProperty?: string): string {
+    if (nestedProperty) {
+      return array?.[index]?.[property]?.coding?.[0]?.[nestedProperty] || '';
+    }
+    return array?.[index]?.coding?.[0]?.[property] || '';
+  }
+
+  private setCodingValue(array: any[], index: number, property: string, value: string, nestedProperty?: string) {
+    if (array?.[index]) {
+      if (nestedProperty) {
+        if (!array[index][property]) {
+          array[index][property] = { coding: [{}] };
+        }
+        if (!array[index][property].coding) {
+          array[index][property].coding = [{}];
+        }
+        if (!array[index][property].coding[0]) {
+          array[index][property].coding[0] = {};
+        }
+        array[index][property].coding[0][nestedProperty] = value;
+      } else {
+        if (!array[index].coding) {
+          array[index].coding = [{}];
+        }
+        if (!array[index].coding[0]) {
+          array[index].coding[0] = {};
+        }
+        array[index].coding[0][property] = value;
+      }
+    }
+  }
+
   getRegulatoryBasisSystem(index: number): string {
-    return this.consent.regulatoryBasis?.[index]?.coding?.[0]?.system || '';
+    return this.getCodingValue(this.consent.regulatoryBasis || [], index, 'system');
   }
 
   setRegulatoryBasisSystem(index: number, value: string) {
-    if (this.consent.regulatoryBasis?.[index]) {
-      if (!this.consent.regulatoryBasis[index].coding) {
-        this.consent.regulatoryBasis[index].coding = [{}];
-      }
-      if (!this.consent.regulatoryBasis[index].coding[0]) {
-        this.consent.regulatoryBasis[index].coding[0] = {};
-      }
-      this.consent.regulatoryBasis[index].coding[0].system = value;
-    }
+    this.setCodingValue(this.consent.regulatoryBasis || [], index, 'system', value);
   }
 
   getRegulatoryBasisCode(index: number): string {
-    return this.consent.regulatoryBasis?.[index]?.coding?.[0]?.code || '';
+    return this.getCodingValue(this.consent.regulatoryBasis || [], index, 'code');
   }
 
   setRegulatoryBasisCode(index: number, value: string) {
-    if (this.consent.regulatoryBasis?.[index]) {
-      if (!this.consent.regulatoryBasis[index].coding) {
-        this.consent.regulatoryBasis[index].coding = [{}];
-      }
-      if (!this.consent.regulatoryBasis[index].coding[0]) {
-        this.consent.regulatoryBasis[index].coding[0] = {};
-      }
-      this.consent.regulatoryBasis[index].coding[0].code = value;
-    }
+    this.setCodingValue(this.consent.regulatoryBasis || [], index, 'code', value);
   }
 
   getRegulatoryBasisDisplay(index: number): string {
-    return this.consent.regulatoryBasis?.[index]?.coding?.[0]?.display || '';
+    return this.getCodingValue(this.consent.regulatoryBasis || [], index, 'display');
   }
 
   setRegulatoryBasisDisplay(index: number, value: string) {
-    if (this.consent.regulatoryBasis?.[index]) {
-      if (!this.consent.regulatoryBasis[index].coding) {
-        this.consent.regulatoryBasis[index].coding = [{}];
+    this.setCodingValue(this.consent.regulatoryBasis || [], index, 'display', value);
+  }
+
+  // Generic reference getter/setter methods
+  private getReferenceValue(array: any[], index: number, property: string): string {
+    return array?.[index]?.[property]?.reference || '';
+  }
+
+  private setReferenceValue(array: any[], index: number, property: string, value: string) {
+    if (array?.[index]) {
+      if (!array[index][property]) {
+        array[index][property] = { reference: '' };
       }
-      if (!this.consent.regulatoryBasis[index].coding[0]) {
-        this.consent.regulatoryBasis[index].coding[0] = {};
-      }
-      this.consent.regulatoryBasis[index].coding[0].display = value;
+      array[index][property].reference = value;
     }
   }
 
   getVerificationVerifiedBy(index: number): string {
-    return this.consent.verification?.[index]?.verifiedBy?.reference || '';
+    return this.getReferenceValue(this.consent.verification || [], index, 'verifiedBy');
   }
 
   setVerificationVerifiedBy(index: number, value: string) {
-    if (this.consent.verification?.[index]) {
-      if (!this.consent.verification[index].verifiedBy) {
-        this.consent.verification[index].verifiedBy = { reference: '' };
-      }
-      this.consent.verification[index].verifiedBy!.reference = value;
-    }
+    this.setReferenceValue(this.consent.verification || [], index, 'verifiedBy', value);
   }
 
   getVerificationVerifiedWith(index: number): string {
-    return this.consent.verification?.[index]?.verifiedWith?.reference || '';
+    return this.getReferenceValue(this.consent.verification || [], index, 'verifiedWith');
   }
 
   setVerificationVerifiedWith(index: number, value: string) {
-    if (this.consent.verification?.[index]) {
-      if (!this.consent.verification[index].verifiedWith) {
-        this.consent.verification[index].verifiedWith = { reference: '' };
-      }
-      this.consent.verification[index].verifiedWith!.reference = value;
-    }
+    this.setReferenceValue(this.consent.verification || [], index, 'verifiedWith', value);
   }
 
   getVerificationDate(index: number): string {
@@ -634,270 +526,184 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
   }
 
   getVerificationTypeCode(index: number): string {
-    return this.consent.verification?.[index]?.verificationType?.coding?.[0]?.code || '';
+    return this.getCodingValue(this.consent.verification || [], index, 'verificationType', 'code');
   }
 
   setVerificationTypeCode(index: number, value: string) {
-    if (this.consent.verification?.[index]) {
-      if (!this.consent.verification[index].verificationType) {
-        this.consent.verification[index].verificationType = { coding: [{}] };
+    this.setCodingValue(this.consent.verification || [], index, 'verificationType', value, 'code');
+  }
+
+  // Generic identifier utility methods
+  private getArrayIdentifierUse(array: any[], index: number): string {
+    return array?.[index]?.identifier?.use || '';
+  }
+
+  private setArrayIdentifierUse(array: any[], index: number, value: string) {
+    if (array?.[index]) {
+      if (!array[index].identifier) {
+        array[index].identifier = { use: 'usual' };
       }
-      if (!this.consent.verification[index].verificationType!.coding) {
-        this.consent.verification[index].verificationType!.coding = [{}];
-      }
-      if (!this.consent.verification[index].verificationType!.coding[0]) {
-        this.consent.verification[index].verificationType!.coding[0] = {};
-      }
-      this.consent.verification[index].verificationType!.coding[0].code = value;
+      array[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
     }
   }
 
-  // Grantee identifier methods
+  private getArrayIdentifierTypeCode(array: any[], index: number): string {
+    return array?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+  }
+
+  private setArrayIdentifierTypeCode(array: any[], index: number, value: string) {
+    if (array?.[index]) {
+      if (!array[index].identifier) {
+        array[index].identifier = { use: 'usual' };
+      }
+      if (!array[index].identifier!.type) {
+        array[index].identifier!.type = { coding: [{}] };
+      }
+      if (!array[index].identifier!.type!.coding) {
+        array[index].identifier!.type!.coding = [{}];
+      }
+      if (!array[index].identifier!.type!.coding[0]) {
+        array[index].identifier!.type!.coding[0] = {};
+      }
+      array[index].identifier!.type!.coding[0].code = value;
+    }
+  }
+
+  private getArrayIdentifierValue(array: any[], index: number): string {
+    return array?.[index]?.identifier?.value || '';
+  }
+
+  private setArrayIdentifierValue(array: any[], index: number, value: string) {
+    if (array?.[index]) {
+      if (!array[index].identifier) {
+        array[index].identifier = { use: 'usual' };
+      }
+      array[index].identifier!.value = value;
+    }
+  }
+
+  // Specific identifier methods using generic utilities
   getGranteeIdentifierUse(index: number): string {
-    return this.consent.grantee?.[index]?.identifier?.use || '';
+    return this.getArrayIdentifierUse(this.consent.grantee || [], index);
   }
 
   setGranteeIdentifierUse(index: number, value: string) {
-    if (this.consent.grantee?.[index]) {
-      if (!this.consent.grantee[index].identifier) {
-        this.consent.grantee[index].identifier = { use: 'usual' };
-      }
-      this.consent.grantee[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.grantee || [], index, value);
   }
 
   getGranteeIdentifierTypeCode(index: number): string {
-    return this.consent.grantee?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.grantee || [], index);
   }
 
   setGranteeIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.grantee?.[index]) {
-      if (!this.consent.grantee[index].identifier) {
-        this.consent.grantee[index].identifier = { use: 'usual' };
-      }
-      if (!this.consent.grantee[index].identifier!.type) {
-        this.consent.grantee[index].identifier!.type = { coding: [{}] };
-      }
-      if (!this.consent.grantee[index].identifier!.type!.coding) {
-        this.consent.grantee[index].identifier!.type!.coding = [{}];
-      }
-      if (!this.consent.grantee[index].identifier!.type!.coding[0]) {
-        this.consent.grantee[index].identifier!.type!.coding[0] = {};
-      }
-      this.consent.grantee[index].identifier!.type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.grantee || [], index, value);
   }
 
   getGranteeIdentifierValue(index: number): string {
-    return this.consent.grantee?.[index]?.identifier?.value || '';
+    return this.getArrayIdentifierValue(this.consent.grantee || [], index);
   }
 
   setGranteeIdentifierValue(index: number, value: string) {
-    if (this.consent.grantee?.[index]) {
-      if (!this.consent.grantee[index].identifier) {
-        this.consent.grantee[index].identifier = { use: 'usual' };
-      }
-      this.consent.grantee[index].identifier!.value = value;
-    }
+    this.setArrayIdentifierValue(this.consent.grantee || [], index, value);
   }
 
-  // Grantor identifier methods
   getGrantorIdentifierUse(index: number): string {
-    return this.consent.grantor?.[index]?.identifier?.use || '';
+    return this.getArrayIdentifierUse(this.consent.grantor || [], index);
   }
 
   setGrantorIdentifierUse(index: number, value: string) {
-    if (this.consent.grantor?.[index]) {
-      if (!this.consent.grantor[index].identifier) {
-        this.consent.grantor[index].identifier = { use: 'usual' };
-      }
-      this.consent.grantor[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.grantor || [], index, value);
   }
 
   getGrantorIdentifierTypeCode(index: number): string {
-    return this.consent.grantor?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.grantor || [], index);
   }
 
   setGrantorIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.grantor?.[index]) {
-      if (!this.consent.grantor[index].identifier) {
-        this.consent.grantor[index].identifier = { use: 'usual' };
-      }
-      if (!this.consent.grantor[index].identifier!.type) {
-        this.consent.grantor[index].identifier!.type = { coding: [{}] };
-      }
-      if (!this.consent.grantor[index].identifier!.type!.coding) {
-        this.consent.grantor[index].identifier!.type!.coding = [{}];
-      }
-      if (!this.consent.grantor[index].identifier!.type!.coding[0]) {
-        this.consent.grantor[index].identifier!.type!.coding[0] = {};
-      }
-      this.consent.grantor[index].identifier!.type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.grantor || [], index, value);
   }
 
   getGrantorIdentifierValue(index: number): string {
-    return this.consent.grantor?.[index]?.identifier?.value || '';
+    return this.getArrayIdentifierValue(this.consent.grantor || [], index);
   }
 
   setGrantorIdentifierValue(index: number, value: string) {
-    if (this.consent.grantor?.[index]) {
-      if (!this.consent.grantor[index].identifier) {
-        this.consent.grantor[index].identifier = { use: 'usual' };
-      }
-      this.consent.grantor[index].identifier!.value = value;
-    }
+    this.setArrayIdentifierValue(this.consent.grantor || [], index, value);
   }
 
-  // Manager identifier methods
   getManagerIdentifierUse(index: number): string {
-    return this.consent.manager?.[index]?.identifier?.use || '';
+    return this.getArrayIdentifierUse(this.consent.manager || [], index);
   }
 
   setManagerIdentifierUse(index: number, value: string) {
-    if (this.consent.manager?.[index]) {
-      if (!this.consent.manager[index].identifier) {
-        this.consent.manager[index].identifier = { use: 'usual' };
-      }
-      this.consent.manager[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.manager || [], index, value);
   }
 
   getManagerIdentifierTypeCode(index: number): string {
-    return this.consent.manager?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.manager || [], index);
   }
 
   setManagerIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.manager?.[index]) {
-      if (!this.consent.manager[index].identifier) {
-        this.consent.manager[index].identifier = { use: 'usual' };
-      }
-      if (!this.consent.manager[index].identifier!.type) {
-        this.consent.manager[index].identifier!.type = { coding: [{}] };
-      }
-      if (!this.consent.manager[index].identifier!.type!.coding) {
-        this.consent.manager[index].identifier!.type!.coding = [{}];
-      }
-      if (!this.consent.manager[index].identifier!.type!.coding[0]) {
-        this.consent.manager[index].identifier!.type!.coding[0] = {};
-      }
-      this.consent.manager[index].identifier!.type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.manager || [], index, value);
   }
 
   getManagerIdentifierValue(index: number): string {
-    return this.consent.manager?.[index]?.identifier?.value || '';
+    return this.getArrayIdentifierValue(this.consent.manager || [], index);
   }
 
   setManagerIdentifierValue(index: number, value: string) {
-    if (this.consent.manager?.[index]) {
-      if (!this.consent.manager[index].identifier) {
-        this.consent.manager[index].identifier = { use: 'usual' };
-      }
-      this.consent.manager[index].identifier!.value = value;
-    }
+    this.setArrayIdentifierValue(this.consent.manager || [], index, value);
   }
 
-  // Policy Text identifier methods
   getPolicyTextIdentifierUse(index: number): string {
-    return this.consent.policyText?.[index]?.identifier?.use || '';
+    return this.getArrayIdentifierUse(this.consent.policyText || [], index);
   }
 
   setPolicyTextIdentifierUse(index: number, value: string) {
-    if (this.consent.policyText?.[index]) {
-      if (!this.consent.policyText[index].identifier) {
-        this.consent.policyText[index].identifier = { use: 'usual' };
-      }
-      this.consent.policyText[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.policyText || [], index, value);
   }
 
   getPolicyTextIdentifierTypeCode(index: number): string {
-    return this.consent.policyText?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.policyText || [], index);
   }
 
   setPolicyTextIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.policyText?.[index]) {
-      if (!this.consent.policyText[index].identifier) {
-        this.consent.policyText[index].identifier = { use: 'usual' };
-      }
-      if (!this.consent.policyText[index].identifier!.type) {
-        this.consent.policyText[index].identifier!.type = { coding: [{}] };
-      }
-      if (!this.consent.policyText[index].identifier!.type!.coding) {
-        this.consent.policyText[index].identifier!.type!.coding = [{}];
-      }
-      if (!this.consent.policyText[index].identifier!.type!.coding[0]) {
-        this.consent.policyText[index].identifier!.type!.coding[0] = {};
-      }
-      this.consent.policyText[index].identifier!.type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.policyText || [], index, value);
   }
 
   getPolicyTextIdentifierValue(index: number): string {
-    return this.consent.policyText?.[index]?.identifier?.value || '';
+    return this.getArrayIdentifierValue(this.consent.policyText || [], index);
   }
 
   setPolicyTextIdentifierValue(index: number, value: string) {
-    if (this.consent.policyText?.[index]) {
-      if (!this.consent.policyText[index].identifier) {
-        this.consent.policyText[index].identifier = { use: 'usual' };
-      }
-      this.consent.policyText[index].identifier!.value = value;
-    }
+    this.setArrayIdentifierValue(this.consent.policyText || [], index, value);
   }
 
-  // Source Reference identifier methods
   getSourceReferenceIdentifierUse(index: number): string {
-    return this.consent.sourceReference?.[index]?.identifier?.use || '';
+    return this.getArrayIdentifierUse(this.consent.sourceReference || [], index);
   }
 
   setSourceReferenceIdentifierUse(index: number, value: string) {
-    if (this.consent.sourceReference?.[index]) {
-      if (!this.consent.sourceReference[index].identifier) {
-        this.consent.sourceReference[index].identifier = { use: 'usual' };
-      }
-      this.consent.sourceReference[index].identifier!.use = value as "usual" | "official" | "temp" | "secondary" | "old";
-    }
+    this.setArrayIdentifierUse(this.consent.sourceReference || [], index, value);
   }
 
   getSourceReferenceIdentifierTypeCode(index: number): string {
-    return this.consent.sourceReference?.[index]?.identifier?.type?.coding?.[0]?.code || '';
+    return this.getArrayIdentifierTypeCode(this.consent.sourceReference || [], index);
   }
 
   setSourceReferenceIdentifierTypeCode(index: number, value: string) {
-    if (this.consent.sourceReference?.[index]) {
-      if (!this.consent.sourceReference[index].identifier) {
-        this.consent.sourceReference[index].identifier = { use: 'usual' };
-      }
-      if (!this.consent.sourceReference[index].identifier!.type) {
-        this.consent.sourceReference[index].identifier!.type = { coding: [{}] };
-      }
-      if (!this.consent.sourceReference[index].identifier!.type!.coding) {
-        this.consent.sourceReference[index].identifier!.type!.coding = [{}];
-      }
-      if (!this.consent.sourceReference[index].identifier!.type!.coding[0]) {
-        this.consent.sourceReference[index].identifier!.type!.coding[0] = {};
-      }
-      this.consent.sourceReference[index].identifier!.type!.coding[0].code = value;
-    }
+    this.setArrayIdentifierTypeCode(this.consent.sourceReference || [], index, value);
   }
 
   getSourceReferenceIdentifierValue(index: number): string {
-    return this.consent.sourceReference?.[index]?.identifier?.value || '';
+    return this.getArrayIdentifierValue(this.consent.sourceReference || [], index);
   }
 
   setSourceReferenceIdentifierValue(index: number, value: string) {
-    if (this.consent.sourceReference?.[index]) {
-      if (!this.consent.sourceReference[index].identifier) {
-        this.consent.sourceReference[index].identifier = { use: 'usual' };
-      }
-      this.consent.sourceReference[index].identifier!.value = value;
-    }
+    this.setArrayIdentifierValue(this.consent.sourceReference || [], index, value);
   }
 
-  // Verification identifier methods
+  // Verification identifier methods (special case due to nested structure)
   getVerificationVerifiedByIdentifierUse(index: number): string {
     return this.consent.verification?.[index]?.verifiedBy?.identifier?.use || '';
   }

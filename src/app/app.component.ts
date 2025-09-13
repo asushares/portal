@@ -20,6 +20,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class AppComponent implements OnInit {
 
+	currentYear: number = new Date().getFullYear();
+
 	constructor(protected http: HttpClient, protected backendService: BackendService, protected settingsService: SettingsService) {
 		console.log("AppComponent has been initialized to establish router element.");
 	}
