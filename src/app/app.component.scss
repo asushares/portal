@@ -27,8 +27,8 @@ footer hr {
     border-color: #495057;
 }
 
-/* Ensure main content pushes footer to bottom */
-body {
+/* Ensure footer stays at bottom of page */
+:host {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -36,4 +36,17 @@ body {
 
 main {
     flex: 1;
+}
+
+/* Global body styles for sticky footer */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
