@@ -12,6 +12,38 @@
                 aria-selected="true"><span class="bi bi-file-check"></span> Provisions</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" data-bs-target="#metadata-tab-pane"
+                type="button" role="tab" aria-controls="metadata-tab-pane" aria-selected="false">
+                <span class="bi bi-tags"></span> Metadata
+                <span *ngIf="hasArrayItems('identifier') || consent.language || consent.implicitRules || consent.date || consent.text?.div" 
+                    class="badge bg-success ms-1">{{getArrayLength('identifier') + (consent.language ? 1 : 0) + (consent.implicitRules ? 1 : 0) + (consent.date ? 1 : 0) + (consent.text?.div ? 1 : 0)}}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="references-tab" data-bs-toggle="tab" data-bs-target="#references-tab-pane"
+                type="button" role="tab" aria-controls="references-tab-pane" aria-selected="false">
+                <span class="bi bi-people"></span> References
+                <span *ngIf="hasArrayItems('grantee') || hasArrayItems('grantor') || hasArrayItems('manager')" 
+                    class="badge bg-success ms-1">{{getArrayLength('grantee') + getArrayLength('grantor') + getArrayLength('manager')}}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="sources-tab" data-bs-toggle="tab" data-bs-target="#sources-tab-pane"
+                type="button" role="tab" aria-controls="sources-tab-pane" aria-selected="false">
+                <span class="bi bi-file-text"></span> Sources
+                <span *ngIf="hasArrayItems('policyText') || hasArrayItems('sourceAttachment') || hasArrayItems('sourceReference') || hasArrayItems('regulatoryBasis') || consent.policyBasis?.url || consent.policyBasis?.reference?.reference" 
+                    class="badge bg-success ms-1">{{getArrayLength('policyText') + getArrayLength('sourceAttachment') + getArrayLength('sourceReference') + getArrayLength('regulatoryBasis') + (consent.policyBasis?.url ? 1 : 0) + (consent.policyBasis?.reference?.reference ? 1 : 0)}}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="verification-tab" data-bs-toggle="tab" data-bs-target="#verification-tab-pane"
+                type="button" role="tab" aria-controls="verification-tab-pane" aria-selected="false">
+                <span class="bi bi-shield-check"></span> Verification
+                <span *ngIf="hasArrayItems('verification')" 
+                    class="badge bg-success ms-1">{{getArrayLength('verification')}}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="advanced-tab" data-bs-toggle="tab" data-bs-target="#advanced-tab-pane"
                 type="button" role="tab" aria-controls="advanced-tab-pane" aria-selected="false"><span
                     class="bi bi-code-slash"></span> Advanced</button>
@@ -21,22 +53,41 @@
                 role="tab" aria-controls="fhir-tab-pane" aria-selected="false"><span class="bi bi-fire"></span>
                 FHIR</button>
         </li>
-        <li class="nav-item" role="presentation">
-
-            <!-- <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact-tab-pane"
-                type="button" role="tab" aria-controls="contact-tab-pane" aria-selected="false">Contact</button> -->
-        </li>
     </ul>
     <div class="">
         <br />
-        <button *ngIf="mode == 'create'" class="btn btn-md btn-primary" (click)="save()"><span class="bi-save"></span>
-            Save as New Consent</button>
-        <button *ngIf="mode == 'update'" class="btn btn-md btn-primary" (click)="update()"><span class="bi-save"></span>
-            Update Consent <span *ngIf="consent.id">: {{consent.id}}</span></button>
-        <a *ngIf="mode == 'update'" role="button" class="btn btn-md btn-outline-secondary ms-2"
-            [routerLink]="['/simulator', consent.id]"><span class="bi-tags"></span>
-            Simulate</a>
-
+        <div class="row">
+            <div class="col-md-8">
+                <div class="alert alert-info" *ngIf="validateRequiredFields().length > 0">
+                    <strong>Validation Issues:</strong>
+                    <ul class="mb-0">
+                        <li *ngFor="let error of validateRequiredFields()">{{error}}</li>
+                    </ul>
+                </div>
+                <div class="alert alert-success" *ngIf="validateRequiredFields().length === 0">
+                    <strong>✓ Consent is valid</strong> - {{getConsentSummary()}}
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-sm btn-outline-secondary me-2" (click)="clearOptionalArrays()">
+                    <span class="bi bi-trash"></span> Clear Optional Fields
+                </button>
+                <button class="btn btn-sm btn-outline-secondary me-2" (click)="initializeAllArrays()">
+                    <span class="bi bi-plus-circle"></span> Initialize All Arrays
+                </button>
+            </div>
+        </div>
+        <div class="mt-2">
+            <button *ngIf="mode == 'create'" class="btn btn-md btn-primary" (click)="save()" [disabled]="validateRequiredFields().length > 0">
+                <span class="bi-save"></span> Save as New Consent
+            </button>
+            <button *ngIf="mode == 'update'" class="btn btn-md btn-primary" (click)="update()" [disabled]="validateRequiredFields().length > 0">
+                <span class="bi-save"></span> Update Consent <span *ngIf="consent.id">: {{consent.id}}</span>
+            </button>
+            <a *ngIf="mode == 'update'" role="button" class="btn btn-md btn-outline-secondary ms-2"
+                [routerLink]="['/simulator', consent.id]"><span class="bi-tags"></span>
+                Simulate</a>
+        </div>
     </div>
 
     <div class="tab-content" id="myTabContent">
@@ -265,7 +316,7 @@
                             </h2>
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="input form-control form-control-sm date datepicker-input" type="text"
+                                    <input class="form-control" type="date"
                                         name="consent_provision_period_start"
                                         *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period.start"
                                         (click)="pickPeriodStart()">
@@ -276,7 +327,7 @@
 
                             <div class="col-sm-6">
                                 <div class="form-floating" *ngIf="consent.period">
-                                    <input class="form-control form-control-sm date datepicker-input" type="text"
+                                    <input class="form-control" type="date"
                                         placeholder="yyyy-mm-dd" name="consent_provision_period_end"
                                         *ngIf="consent.provision && consent.period" [(ngModel)]="consent.period!.end"
                                         (click)="pickPeriodEnd()" />
@@ -307,6 +358,602 @@
 
                 <!-- <div class="provision mt-4 p-2" *ngFor="let p of consent.provision"> -->
                 <!-- </div> -->
+            </section>
+        </div>
+
+        <div class="tab-pane" id="metadata-tab-pane" role="tabpanel" aria-labelledby="metadata-tab" tabindex="0">
+            <section class="mt-4">
+                <h2>Resource Metadata</h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input class="form-control" type="text" name="consent_id" [(ngModel)]="consent.id" 
+                                placeholder="Auto-generated if empty" />
+                            <label for="consent_id">Resource ID</label>
+                            <small class="form-text">Unique identifier for this consent resource.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input class="form-control" type="text" name="consent_language" [(ngModel)]="consent.language" 
+                                placeholder="en-US" />
+                            <label for="consent_language">Language</label>
+                            <small class="form-text">Language code (e.g., en-US, es-MX).</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input class="form-control" type="text" name="consent_implicit_rules" [(ngModel)]="consent.implicitRules" 
+                                placeholder="http://example.com/rules" />
+                            <label for="consent_implicit_rules">Implicit Rules</label>
+                            <small class="form-text">URL to implicit rules for this resource.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input class="form-control" type="datetime-local" name="consent_date" [(ngModel)]="consent.date" />
+                            <label for="consent_date">Consent Date</label>
+                            <small class="form-text">Date the consent instance was agreed to.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Text Narrative</h3>
+                    <div class="form-floating">
+                        <textarea class="form-control" name="consent_text" [ngModel]="getTextDiv()" (ngModelChange)="setTextDiv($event)" 
+                            style="height: 150px" placeholder="Human-readable summary of this consent..."></textarea>
+                        <label for="consent_text">Narrative Text</label>
+                        <small class="form-text">Human-readable summary of this consent resource.</small>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Identifiers</h3>
+                    <button class="btn btn-sm btn-primary" (click)="addIdentifier()">
+                        <span class="bi bi-plus-circle"></span> Add Identifier
+                    </button>
+                    <div *ngFor="let identifier of consent.identifier; let i = index" class="mt-2 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getIdentifierUse(i)" (ngModelChange)="setIdentifierUse(i, $event)" 
+                                        placeholder="usual" />
+                                    <label>Use</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getIdentifierTypeCode(i)" (ngModelChange)="setIdentifierTypeCode(i, $event)" 
+                                        placeholder="MR" />
+                                    <label>Type Code</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="identifier.value" 
+                                        placeholder="12345" />
+                                    <label>Value</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-danger" (click)="removeIdentifier(i)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-pane" id="references-tab-pane" role="tabpanel" aria-labelledby="references-tab" tabindex="0">
+            <section class="mt-4">
+                <h2>References</h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Grantee</h3>
+                        <p class="form-text">The entity that receives the rights listed in a Consent Directive.</p>
+                        <button class="btn btn-sm btn-primary" (click)="addGrantee()">
+                            <span class="bi bi-plus-circle"></span> Add Grantee
+                        </button>
+                        <div *ngFor="let grantee of consent.grantee; let i = index" class="mt-2 p-3 border rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="grantee.reference" 
+                                            placeholder="Patient/123" />
+                                        <label>Reference</label>
+                                        <small class="form-text">Direct reference (e.g., Patient/123)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="grantee.type" 
+                                            placeholder="Patient" />
+                                        <label>Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-sm btn-danger" (click)="removeGrantee(i)">
+                                        <span class="bi bi-trash"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGranteeIdentifierUse(i)" (ngModelChange)="setGranteeIdentifierUse(i, $event)" 
+                                            placeholder="usual" />
+                                        <label>Identifier Use</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGranteeIdentifierTypeCode(i)" (ngModelChange)="setGranteeIdentifierTypeCode(i, $event)" 
+                                            placeholder="MR" />
+                                        <label>Identifier Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGranteeIdentifierValue(i)" (ngModelChange)="setGranteeIdentifierValue(i, $event)" 
+                                            placeholder="12345" />
+                                        <label>Identifier Value</label>
+                                        <small class="form-text">Alternative to reference</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h3>Grantor</h3>
+                        <p class="form-text">The entity responsible for granting the rights listed in a Consent Directive.</p>
+                        <button class="btn btn-sm btn-primary" (click)="addGrantor()">
+                            <span class="bi bi-plus-circle"></span> Add Grantor
+                        </button>
+                        <div *ngFor="let grantor of consent.grantor; let i = index" class="mt-2 p-3 border rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="grantor.reference" 
+                                            placeholder="Patient/123" />
+                                        <label>Reference</label>
+                                        <small class="form-text">Direct reference (e.g., Patient/123)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="grantor.type" 
+                                            placeholder="Patient" />
+                                        <label>Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-sm btn-danger" (click)="removeGrantor(i)">
+                                        <span class="bi bi-trash"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGrantorIdentifierUse(i)" (ngModelChange)="setGrantorIdentifierUse(i, $event)" 
+                                            placeholder="usual" />
+                                        <label>Identifier Use</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGrantorIdentifierTypeCode(i)" (ngModelChange)="setGrantorIdentifierTypeCode(i, $event)" 
+                                            placeholder="MR" />
+                                        <label>Identifier Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getGrantorIdentifierValue(i)" (ngModelChange)="setGrantorIdentifierValue(i, $event)" 
+                                            placeholder="12345" />
+                                        <label>Identifier Value</label>
+                                        <small class="form-text">Alternative to reference</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Manager</h3>
+                    <p class="form-text">The actor that manages the consent through its lifecycle.</p>
+                    <button class="btn btn-sm btn-primary" (click)="addManager()">
+                        <span class="bi bi-plus-circle"></span> Add Manager
+                    </button>
+                    <div *ngFor="let manager of consent.manager; let i = index" class="mt-2 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="manager.reference" 
+                                        placeholder="Organization/123" />
+                                    <label>Reference</label>
+                                    <small class="form-text">Direct reference (e.g., Organization/123)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="manager.type" 
+                                        placeholder="Organization" />
+                                    <label>Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-danger" (click)="removeManager(i)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getManagerIdentifierUse(i)" (ngModelChange)="setManagerIdentifierUse(i, $event)" 
+                                        placeholder="usual" />
+                                    <label>Identifier Use</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getManagerIdentifierTypeCode(i)" (ngModelChange)="setManagerIdentifierTypeCode(i, $event)" 
+                                        placeholder="MR" />
+                                    <label>Identifier Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getManagerIdentifierValue(i)" (ngModelChange)="setManagerIdentifierValue(i, $event)" 
+                                        placeholder="12345" />
+                                    <label>Identifier Value</label>
+                                    <small class="form-text">Alternative to reference</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-pane" id="sources-tab-pane" role="tabpanel" aria-labelledby="sources-tab" tabindex="0">
+            <section class="mt-4">
+                <h2>Sources</h2>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3>Policy Basis</h3>
+                        <div class="form-floating">
+                            <input class="form-control" type="text" [ngModel]="getPolicyBasisUrl()" (ngModelChange)="setPolicyBasisUrl($event)" 
+                                placeholder="https://example.com/policy" />
+                            <label>Policy URL</label>
+                            <small class="form-text">URL to the policy document.</small>
+                        </div>
+                        <div class="form-floating mt-2">
+                            <input class="form-control" type="text" [ngModel]="getPolicyBasisReference()" (ngModelChange)="setPolicyBasisReference($event)" 
+                                placeholder="DocumentReference/123" />
+                            <label>Policy Reference</label>
+                            <small class="form-text">Reference to the policy document.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h3>Policy Text References</h3>
+                        <button class="btn btn-sm btn-primary" (click)="addPolicyText()">
+                            <span class="bi bi-plus-circle"></span> Add Policy Text Reference
+                        </button>
+                        <div *ngFor="let policyText of consent.policyText; let i = index" class="mt-2 p-3 border rounded">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="policyText.reference" 
+                                            placeholder="DocumentReference/123" />
+                                        <label>Reference</label>
+                                        <small class="form-text">Direct reference (e.g., DocumentReference/123)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [(ngModel)]="policyText.type" 
+                                            placeholder="DocumentReference" />
+                                        <label>Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-sm btn-danger" (click)="removePolicyText(i)">
+                                        <span class="bi bi-trash"></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getPolicyTextIdentifierUse(i)" (ngModelChange)="setPolicyTextIdentifierUse(i, $event)" 
+                                            placeholder="usual" />
+                                        <label>Identifier Use</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getPolicyTextIdentifierTypeCode(i)" (ngModelChange)="setPolicyTextIdentifierTypeCode(i, $event)" 
+                                            placeholder="MR" />
+                                        <label>Identifier Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getPolicyTextIdentifierValue(i)" (ngModelChange)="setPolicyTextIdentifierValue(i, $event)" 
+                                            placeholder="12345" />
+                                        <label>Identifier Value</label>
+                                        <small class="form-text">Alternative to reference</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Source Attachments</h3>
+                    <button class="btn btn-sm btn-primary" (click)="addSourceAttachment()">
+                        <span class="bi bi-plus-circle"></span> Add Source Attachment
+                    </button>
+                    <div *ngFor="let attachment of consent.sourceAttachment; let i = index" class="mt-2 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="attachment.contentType" 
+                                        placeholder="application/pdf" />
+                                    <label>Content Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="attachment.language" 
+                                        placeholder="en-US" />
+                                    <label>Language</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="attachment.url" 
+                                        placeholder="https://example.com/document.pdf" />
+                                    <label>URL</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-danger" (click)="removeSourceAttachment(i)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Source References</h3>
+                    <button class="btn btn-sm btn-primary" (click)="addSourceReference()">
+                        <span class="bi bi-plus-circle"></span> Add Source Reference
+                    </button>
+                    <div *ngFor="let sourceRef of consent.sourceReference; let i = index" class="mt-2 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="sourceRef.reference" 
+                                        placeholder="Consent/123" />
+                                    <label>Reference</label>
+                                    <small class="form-text">Direct reference (e.g., Consent/123)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [(ngModel)]="sourceRef.type" 
+                                        placeholder="Consent" />
+                                    <label>Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-danger" (click)="removeSourceReference(i)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getSourceReferenceIdentifierUse(i)" (ngModelChange)="setSourceReferenceIdentifierUse(i, $event)" 
+                                        placeholder="usual" />
+                                    <label>Identifier Use</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getSourceReferenceIdentifierTypeCode(i)" (ngModelChange)="setSourceReferenceIdentifierTypeCode(i, $event)" 
+                                        placeholder="MR" />
+                                    <label>Identifier Type</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getSourceReferenceIdentifierValue(i)" (ngModelChange)="setSourceReferenceIdentifierValue(i, $event)" 
+                                        placeholder="12345" />
+                                    <label>Identifier Value</label>
+                                    <small class="form-text">Alternative to reference</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Regulatory Basis</h3>
+                    <button class="btn btn-sm btn-primary" (click)="addRegulatoryBasis()">
+                        <span class="bi bi-plus-circle"></span> Add Regulatory Basis
+                    </button>
+                    <div *ngFor="let regBasis of consent.regulatoryBasis; let i = index" class="mt-2 p-3 border rounded">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getRegulatoryBasisSystem(i)" (ngModelChange)="setRegulatoryBasisSystem(i, $event)" 
+                                        placeholder="http://example.com/codes" />
+                                    <label>System</label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getRegulatoryBasisCode(i)" (ngModelChange)="setRegulatoryBasisCode(i, $event)" 
+                                        placeholder="HIPAA" />
+                                    <label>Code</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input class="form-control" type="text" [ngModel]="getRegulatoryBasisDisplay(i)" (ngModelChange)="setRegulatoryBasisDisplay(i, $event)" 
+                                        placeholder="HIPAA Privacy Rule" />
+                                    <label>Display</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-sm btn-danger" (click)="removeRegulatoryBasis(i)">
+                                    <span class="bi bi-trash"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="tab-pane" id="verification-tab-pane" role="tabpanel" aria-labelledby="verification-tab" tabindex="0">
+            <section class="mt-4">
+                <h2>Verification</h2>
+                <p class="form-text">Whether a treatment instruction was verified with the patient, family, or authorized person.</p>
+                
+                <button class="btn btn-sm btn-primary" (click)="addVerification()">
+                    <span class="bi bi-plus-circle"></span> Add Verification
+                </button>
+                
+                <div *ngFor="let verification of consent.verification; let i = index" class="mt-3 p-3 border rounded">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" [(ngModel)]="verification.verified" 
+                                    id="verified_{{i}}" />
+                                <label class="form-check-label" for="verified_{{i}}">
+                                    Verified
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <button class="btn btn-sm btn-danger float-end" (click)="removeVerification(i)">
+                                <span class="bi bi-trash"></span> Remove
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input class="form-control" type="text" [ngModel]="getVerificationVerifiedBy(i)" (ngModelChange)="setVerificationVerifiedBy(i, $event)" 
+                                    placeholder="Practitioner/123" />
+                                <label>Verified By Reference</label>
+                                <small class="form-text">Person who conducted the verification.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input class="form-control" type="text" [ngModel]="getVerificationVerifiedWith(i)" (ngModelChange)="setVerificationVerifiedWith(i, $event)" 
+                                    placeholder="Patient/123" />
+                                <label>Verified With Reference</label>
+                                <small class="form-text">Who verified the instruction.</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <h6>Verified By Identifier</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedByIdentifierUse(i)" (ngModelChange)="setVerificationVerifiedByIdentifierUse(i, $event)" 
+                                            placeholder="usual" />
+                                        <label>Use</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedByIdentifierTypeCode(i)" (ngModelChange)="setVerificationVerifiedByIdentifierTypeCode(i, $event)" 
+                                            placeholder="MR" />
+                                        <label>Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedByIdentifierValue(i)" (ngModelChange)="setVerificationVerifiedByIdentifierValue(i, $event)" 
+                                            placeholder="12345" />
+                                        <label>Value</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Verified With Identifier</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedWithIdentifierUse(i)" (ngModelChange)="setVerificationVerifiedWithIdentifierUse(i, $event)" 
+                                            placeholder="usual" />
+                                        <label>Use</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedWithIdentifierTypeCode(i)" (ngModelChange)="setVerificationVerifiedWithIdentifierTypeCode(i, $event)" 
+                                            placeholder="MR" />
+                                        <label>Type</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input class="form-control" type="text" [ngModel]="getVerificationVerifiedWithIdentifierValue(i)" (ngModelChange)="setVerificationVerifiedWithIdentifierValue(i, $event)" 
+                                            placeholder="12345" />
+                                        <label>Value</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input class="form-control" type="datetime-local" [ngModel]="getVerificationDate(i)" (ngModelChange)="setVerificationDate(i, $event)" />
+                                <label>Verification Date</label>
+                                <small class="form-text">Date verification was collected.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input class="form-control" type="text" [ngModel]="getVerificationTypeCode(i)" (ngModelChange)="setVerificationTypeCode(i, $event)" 
+                                    placeholder="VERIFIED" />
+                                <label>Verification Type</label>
+                                <small class="form-text">Type of verification performed.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </section>
         </div>
 
