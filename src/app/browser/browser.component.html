@@ -5,6 +5,21 @@
 
     <div class="m-1">
 
+        <!-- Search by Subject -->
+        <div class="form-floating mb-2">
+            <input type="text" class="form-control form-control-sm" id="subjectSearch" 
+                   [(ngModel)]="subjectSearch" 
+                   (input)="onSubjectSearchChange()"
+                   placeholder="Search by subject...">
+            <label for="subjectSearch">Search by Subject</label>
+            <button *ngIf="subjectSearch" class="btn btn-sm btn-outline-secondary position-absolute" 
+                    style="right: 5px; top: 50%; transform: translateY(-50%); z-index: 10;"
+                    (click)="clearSubjectSearch()" 
+                    title="Clear search">
+                <span class="bi bi-x"></span>
+            </button>
+        </div>
+
         <!-- <div class="form-floating mt-2"> -->
         <select class="form-control form-control-sm" [(ngModel)]="consentService.pageSize" (change)="reload()">
             <option value="10" [selected]="consentService.pageSize == 10">10 per page</option>
@@ -109,8 +124,13 @@
                 </td> -->
                 <td>
                     <p *ngIf="c.resource?.period">
-                        {{c.resource?.period?.start}} -
-                        {{c.resource?.period?.end}}
+                        <span *ngIf="c.resource?.period?.start">
+                            {{ c.resource?.period?.start | date:'medium' }}
+                        </span>
+                        <span *ngIf="c.resource?.period?.start && c.resource?.period?.end"> - </span>
+                        <span *ngIf="c.resource?.period?.end">
+                            {{ c.resource?.period?.end | date:'medium' }}
+                        </span>
                     </p>
                 </td>
                 <td>{{c.resource?.decision}}</td>
@@ -126,7 +146,7 @@
                 </td>
                 <!-- <td>{{c.resource?.provision}}</td> -->
 
-                <td>{{c.resource?.meta?.lastUpdated}}</td>
+                <td>{{c.resource?.meta?.lastUpdated | date:'medium'}}</td>
                 <td><button *ngIf="c.resource" class="btn btn-danger" role="button" (click)="delete(c.resource)"><span
                             class="bi bi-trash"> </span></button></td>
             </tr>

@@ -21,6 +21,7 @@ export class ConsentService extends BaseService {
 	public order: 'asc' | 'desc' = 'asc';
 	public pageSize = 10;
 	public offset = 0;
+	public subjectSearch: string = '';
 
 	url(): string {
 		return this.backendService.url + ConsentService.CONSENT_PATH;
@@ -31,6 +32,8 @@ export class ConsentService extends BaseService {
 		if (p_id) {
 			p += `&subject=Patient/${p_id}`
 		}
+		// Note: Removed subject:contains as it's not supported by this FHIR server
+		// Client-side filtering will be implemented instead
 		return p;
 	}
 

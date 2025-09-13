@@ -886,18 +886,6 @@ export class BuilderComponent extends ConsentBasedComponent implements OnInit {
     this.consent.verification = undefined;
   }
 
-  // Method to initialize all arrays as empty
-  initializeAllArrays() {
-    this.consent.identifier = [];
-    this.consent.grantee = [];
-    this.consent.grantor = [];
-    this.consent.manager = [];
-    this.consent.policyText = [];
-    this.consent.sourceAttachment = [];
-    this.consent.sourceReference = [];
-    this.consent.regulatoryBasis = [];
-    this.consent.verification = [];
-  }
 
   // Method to export consent as a clean JSON (removing empty arrays and undefined values)
   exportCleanConsent(): Consent {

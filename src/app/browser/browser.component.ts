@@ -8,7 +8,7 @@ import { PatientService } from '../patient.service';
 import { OrganizationService } from '../organization.service';
 import { ConsentSearchField } from '../consent/consent.search.field';
 import { BaseComponent } from '../base/base.component';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -17,7 +17,7 @@ import { ToastrService } from 'ngx-toastr';
     selector: 'app-browser',
     templateUrl: './browser.component.html',
     styleUrls: ['./browser.component.scss'],
-    imports: [NgIf, FormsModule, NgFor, RouterLink]
+    imports: [NgIf, FormsModule, NgFor, RouterLink, DatePipe]
 })
 export class BrowserComponent extends BaseComponent implements OnInit {
 
@@ -67,6 +67,8 @@ export class BrowserComponent extends BaseComponent implements OnInit {
 
   public patientSummaries: { [key: string]: Patient } = {};
   public organizationSummaries: { [key: string]: Organization } = {};
+  
+  public subjectSearch: string = '';
 
   constructor(protected consentService: ConsentService, protected patientService: PatientService, protected organizationService: OrganizationService, protected toastrService: ToastrService) {
     super();
@@ -76,12 +78,53 @@ export class BrowserComponent extends BaseComponent implements OnInit {
     this.reload();
   }
 
+  onSubjectSearchChange() {
+    // Reset offset when searching
+    this.consentService.offset = 0;
+    // Increase page size for better search results when filtering client-side
+    if (this.subjectSearch && this.subjectSearch.trim()) {
+      this.consentService.pageSize = 50; // Use larger page size for search
+    } else {
+      this.consentService.pageSize = 10; // Reset to default when not searching
+    }
+    this.reload();
+  }
+
+  clearSubjectSearch() {
+    this.subjectSearch = '';
+    this.consentService.offset = 0;
+    this.consentService.pageSize = 10; // Reset to default page size
+    this.reload();
+  }
+
+  getPatientName(patientRef: string): string {
+    if (this.patientSummaries[patientRef]) {
+      return this.nameFor(this.patientSummaries[patientRef]);
+    }
+    return '';
+  }
+
   reload() {
+    // Update the consent service with current subject search
+    this.consentService.subjectSearch = this.subjectSearch;
     this.consentService.index().subscribe(b => {
       this.bundle = b;
       // FIXME Remove these lines once real data is available on the server
       // this.bundle.entry = [];
       // this.bundle.entry.push({resource: BrowserComponent.CONSENT_1});
+      
+      // Apply client-side filtering for subject search
+      if (this.bundle.entry && this.subjectSearch && this.subjectSearch.trim()) {
+        this.bundle.entry = this.bundle.entry.filter(entry => {
+          const subjectRef = entry.resource?.subject?.reference || '';
+          const patientName = this.getPatientName(entry.resource?.subject?.reference || '');
+          const searchTerm = this.subjectSearch.toLowerCase().trim();
+          
+          return subjectRef.toLowerCase().includes(searchTerm) || 
+                 patientName.toLowerCase().includes(searchTerm);
+        });
+      }
+      
       if (this.bundle.entry) {
         this.bundle.entry.forEach(e => {
 
