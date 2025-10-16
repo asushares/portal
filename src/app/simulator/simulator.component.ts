@@ -591,6 +591,7 @@ export class SimulatorComponent extends ConsentBasedComponent {
                 }
             ]
         }
+        // FIXME
         this.libraryService.evaluate('840', parameters).subscribe({
             next: (result) => {
                 console.log('Result: ', result);
