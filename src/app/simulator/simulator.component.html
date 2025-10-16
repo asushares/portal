@@ -6,7 +6,7 @@
 
             <h4 class="m-0">
                 {{nameFor(patientSelected!)}}
-                <button class="btn btn-sm btn-outline-secondary" role="button" [routerLink]="['/builder', consent.id]">
+                <button class="btn btn-sm btn-outline-secondary" role="button" [routerLink]="['/','manager','builder', this.consent.id]">
                     <span class="bi bi-pencil"></span>
                     Edit consent: {{consent.id}}
                 </button>
