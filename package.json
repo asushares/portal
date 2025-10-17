@@ -42,7 +42,7 @@
         "@types/bootstrap": "^5.2.10",
         "@types/fhir": "^0.0.41",
         "@types/jasmine": "~5.1.11",
-        "@types/node": "^24.8.0",
+        "@types/node": "^24.8.1",
         "@types/uuid": "^11.0.0",
         "@types/vanillajs-datepicker": "^1.3.5",
         "jasmine-core": "~5.12.0",
