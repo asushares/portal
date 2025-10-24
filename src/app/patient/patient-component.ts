@@ -33,6 +33,6 @@ export class PatientComponent {
   }
 
   launchPatientPortal(p: Patient) {
-    this.router.navigate(['portal', p.id, 'consent-list']);
+    this.router.navigate(['portal', p.id]);
   }
 }

@@ -7,10 +7,14 @@ import { SandboxComponent } from './sandbox/sandbox.component';
 import { SimulatorComponent } from './simulator/simulator.component';
 import { PatientComponent } from './patient/patient-component';
 import { LandingComponent } from './landing/landing.component';
+import { LoginComponent } from './login/login.component';
+import { PatientPortalComponent } from './patient-portal/patient-portal.component';
+import { PatientConsentBuilderComponent } from './patient-consent-builder/patient-consent-builder.component';
 
 
 const routes: Routes = [
   { path: '', component: LandingComponent },
+  { path: 'login', component: LoginComponent },
   { path: 'manager/browser', component: BrowserComponent },
   { path: 'manager/builder', component: BuilderComponent },
   { path: 'manager/builder/:consent_id', component: BuilderComponent },
@@ -19,7 +23,9 @@ const routes: Routes = [
   { path: 'sandbox', component: SandboxComponent },
   {
     path: 'patient', component: PatientComponent
-  }
+  },
+  { path: 'portal/:patient_id', component: PatientPortalComponent },
+  { path: 'portal/:patient_id/consent', component: PatientConsentBuilderComponent }
 ]
 
 @NgModule({

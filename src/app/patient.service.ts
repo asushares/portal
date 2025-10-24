@@ -49,6 +49,15 @@ export class PatientService extends BaseService {
         return this.http.get<Bundle<Patient>>(this.url() + '?name:contains=' + text);
     }
 
+  // prefer exact given/family when available
+  searchByNames(given: string, family: string) {
+    const parts: string[] = [];
+    if (given && given.trim().length > 0) parts.push('given=' + encodeURIComponent(given.trim()));
+    if (family && family.trim().length > 0) parts.push('family=' + encodeURIComponent(family.trim()));
+    const qp = parts.length > 0 ? ('?' + parts.join('&')) : '';
+    return this.http.get<Bundle<Patient>>(this.url() + qp, { headers: this.backendService.headers() });
+  }
+
 	summary(id: string) {
 		return this.http.get<Patient>(this.urlFor(id) + '?_summary=true');
 	}
