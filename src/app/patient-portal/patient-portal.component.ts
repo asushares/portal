@@ -21,7 +21,7 @@ type ResourceIndex = { [key: string]: FhirResource[] };
     <div class="container my-4" *ngIf="patientEverything; else loadingTpl">
       <div class="d-flex align-items-center mb-3">
         <div>
-          <h1 class="h4 mb-0">patient overview</h1>
+          <h1 class="h4 mb-0">Patient Overview</h1>
           <small class="text-muted" *ngIf="patientName">{{ patientName }}</small>
         </div>
         <div class="ms-auto d-flex gap-2 align-items-center">
@@ -35,27 +35,60 @@ type ResourceIndex = { [key: string]: FhirResource[] };
             <input type="range" class="form-range" min="0" max="1" step="0.01" [(ngModel)]="confidenceThreshold" (change)="onConfidenceChange()" style="width: 150px;" />
             <span class="badge rounded-pill" [ngClass]="thresholdBadgeClass()">{{ (confidenceThreshold * 100) | number:'1.0-0' }}%</span>
           </ng-container>
-          <a class="btn btn-sm btn-primary ms-2" [routerLink]="['/portal', patientId, 'consent']">build consent</a>
+          <a class="btn btn-sm btn-primary ms-2" [routerLink]="['/portal', patientId, 'consent']">Build Consent</a>
         </div>
       </div>
 
       <div class="row">
         <div class="col-md-3">
-          <div class="list-group small position-sticky" style="top: 0.5rem;">
+          <div class="list-group small">
             <div class="list-group-item d-flex align-items-center justify-content-between">
-              <label class="form-check-label me-2">show sensitivity categories</label>
+              <label class="form-check-label me-2 fw-semibold">Show Sensitivity Categories</label>
               <div class="form-check form-switch m-0">
-                <input class="form-check-input" type="checkbox" [disabled]="!isEverythingComplete" [(ngModel)]="labelsEnabled" (ngModelChange)="onLabelsToggle($event)" />
+                <input class="form-check-input" type="checkbox" [disabled]="!isEverythingComplete" [(ngModel)]="labelsEnabled" (ngModelChange)="onLabelsToggle($event); filtersVisible = $event || (viewAs !== 'patient')" />
               </div>
             </div>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('medications', $event)">medications</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('conditions', $event)">conditions</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('encounters', $event)">encounters</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('labs', $event)">lab results</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('allergies', $event)">allergies</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('procedures', $event)">procedures</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('careplans', $event)">care plans</a>
-            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('documents', $event)">documents and notes</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('medications', $event)">Medications</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('conditions', $event)">Conditions</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('encounters', $event)">Encounters</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('labs', $event)">Lab Results</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('allergies', $event)">Allergies</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('procedures', $event)">Procedures</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('careplans', $event)">Care Plans</a>
+            <a class="list-group-item list-group-item-action" href="#" (click)="scrollTo('documents', $event)">Documents And Notes</a>
+          </div>
+          <div *ngIf="filtersVisible" class="mt-3 position-sticky" style="top: 0.5rem;">
+            <div class="card">
+              <div class="card-header py-2">Post-Simulation Filtering</div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label small mb-1 fw-semibold">Data Category Security Labels</label>
+                  <div class="d-flex gap-2 align-items-center">
+                    <select class="form-select form-select-sm" [(ngModel)]="filterCategoryMode">
+                      <option value="all">Show everything</option>
+                      <option value="only">Only data labeled as</option>
+                      <option value="except">Except data labeled as</option>
+                    </select>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" (click)="setAllFilterCategories(true)">all</button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" (click)="setAllFilterCategories(false)">none</button>
+                  </div>
+                  <div *ngIf="filterCategoryMode !== 'all'" class="mt-2 small">
+                    <div class="form-check form-check-inline" *ngFor="let c of filterCategorySettings.allCategories()">
+                      <input class="form-check-input" type="checkbox" [id]="'fc_'+c.act_code" [(ngModel)]="c.enabled">
+                      <label class="form-check-label" [for]="'fc_'+c.act_code">{{ c.name }}</label>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="form-label small mb-1 fw-semibold">Sharing Decision</label>
+                  <select class="form-select form-select-sm" [(ngModel)]="sharingDecisionMode">
+                    <option value="all">everything</option>
+                    <option value="permit">only shared data</option>
+                    <option value="deny">only redacted data</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="col-md-9">
@@ -68,7 +101,7 @@ type ResourceIndex = { [key: string]: FhirResource[] };
               <div class="card-body p-0">
                 <div *ngIf="getCount(s.types) === 0" class="p-3 text-muted small">no data</div>
                 <div *ngIf="getCount(s.types) > 0" class="table-responsive">
-                  <table class="table table-sm table-striped table-hover mb-0">
+                  <table class="table table-sm table-hover mb-0">
                     <thead>
                       <tr>
                         <th *ngFor="let h of s.headers; let i = index" class="small text-uppercase text-muted fw-semibold">
@@ -80,11 +113,11 @@ type ResourceIndex = { [key: string]: FhirResource[] };
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let row of getRows(s.types, s.id) | slice:0:initialRows" [class.text-muted]="isDenied(row.rid)" [class.denied-row]="isDenied(row.rid)" [class.table-danger]="isDenied(row.rid)" (click)="onRowClick(s.id, row.cols)">
+                      <tr *ngFor="let row of getRows(s.types, s.id) | slice:0:initialRows" [hidden]="!resourceShown(row.rid)" [class.text-muted]="isDenied(row.rid)" [class.denied-row]="isDenied(row.rid)" [class.table-danger]="isDenied(row.rid)" (click)="onRowClick(s.id, row.cols)">
                         <td *ngFor="let col of row.cols; let ci = index" [attr.title]="col">
                           <span [class]="ci === 0 ? 'truncate' : ''">{{ col }}</span>
                           <ng-container *ngIf="labelsEnabled && ci === 0 && labelsForId(row.rid).length > 0">
-                            <span class="badge rounded-pill ms-1" [ngClass]="labelClassFor(lb)" [attr.title]="labelTitleFor(lb)" *ngFor="let lb of labelsForId(row.rid)">{{ lb }}</span>
+                            <span class="badge rounded-pill ms-1" [ngClass]="labelClassFor(lb)" [attr.title]="labelTitleFor(lb)" *ngFor="let lb of labelsForId(row.rid)">{{ categoryNameFor(lb) }}</span>
                           </ng-container>
                           <ng-container *ngIf="isDenied(row.rid) && ci === 0">
                             <span class="badge rounded-pill ms-1 text-bg-danger" title="denied by consent">redacted</span>
@@ -137,6 +170,12 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
   private labelsByResourceId: { [id: string]: string[] } = {};
   private loadingCompleteTimer: any = null;
 
+  // post-consent filters
+  filtersVisible: boolean = false;
+  sharingDecisionMode: 'all' | 'permit' | 'deny' = 'all';
+  filterCategoryMode: 'all' | 'only' | 'except' = 'all';
+  filterCategorySettings = new ConsentCategorySettings();
+
   sections = [
     { id: 'medications', title: 'medications', types: ['MedicationStatement','MedicationRequest'], headers: ['medication','dosage','frequency','route','status'], keys: ['medication','dosage','frequency','route','status'] },
     { id: 'conditions', title: 'conditions', types: ['Condition'], headers: ['condition','date','status'], keys: ['condition','date','status'] },
@@ -153,6 +192,13 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.patientId = this.route.snapshot.paramMap.get('patient_id');
     if (this.patientId) {
+      // clear prior state in portal to avoid duplicate rendering on re-entry
+      this.patientEverything = null;
+      this.index = {};
+      this.byResourceKey.clear();
+      this.byFullUrl.clear();
+      this.labelsByResourceId = {};
+      this.currentDeniedIds = new Set<string>();
       this.patientService.loadEverything(this.patientId);
       this.patientService.currentPatientEverything$.subscribe({
         next: (bundle) => {
@@ -181,6 +227,10 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
   onViewAsChange(val: string) {
     if (val === 'patient') {
       this.currentDeniedIds = new Set<string>();
+      // reset filters and hide panel for base view
+      this.sharingDecisionMode = 'all';
+      this.filterCategoryMode = 'all';
+      this.filtersVisible = false;
       return;
     }
     const consent = this.patientConsents.find(c => c.id === val);
@@ -206,6 +256,7 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
     }
     data.context.patientId = [{ value: 'Patient/' + this.patientId }];
     data.context.content = bundle;
+    this.filtersVisible = true;
     this.toastr.clear();
     const toastId = this.toastr.info('labeling resources...', 'view as', { timeOut: 0, extendedTimeOut: 0, closeButton: true }).toastId;
     this.cdsService.patientConsentConsult(data, this.confidenceThreshold.toFixed(2)).subscribe({
@@ -273,6 +324,7 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
     }
     data.context.patientId = [{ value: 'Patient/' + this.patientId }];
     data.context.content = bundle;
+    this.filtersVisible = true;
     this.cdsService.patientConsentConsult(data, '0.0').subscribe({
       next: (result: Card | any) => {
         const labeledResources: any[] = (result?.extension?.content?.entry || [])
@@ -339,6 +391,51 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
     return map[code] || code;
   }
 
+  categoryNameFor(code: string): string {
+    const cat = this.filterCategorySettings.categoryForCode(code as any);
+    return (cat && (cat as any).name) ? (cat as any).name : code;
+  }
+
+  // filters: logic mirrors simulator semantics
+  setAllFilterCategories(enabled: boolean) {
+    this.filterCategorySettings.allCategories().forEach(c => c.enabled = enabled);
+  }
+
+  private resourceShownForLabelFilter(resourceId?: string): boolean {
+    if (!resourceId) return true;
+    if (this.filterCategoryMode === 'all') return true;
+    const labels = this.labelsByResourceId[resourceId] || [];
+    if (this.filterCategoryMode === 'only') {
+      let ok = false;
+      this.filterCategorySettings.allCategories().forEach(c => {
+        if (c.enabled && labels.includes(c.act_code)) ok = true;
+      });
+      return ok;
+    }
+    if (this.filterCategoryMode === 'except') {
+      let ok = true;
+      this.filterCategorySettings.allCategories().forEach(c => {
+        if (c.enabled && labels.includes(c.act_code)) ok = false;
+      });
+      return ok;
+    }
+    return true;
+  }
+
+  private resourceShownForSharingFilter(resourceId?: string): boolean {
+    if (!resourceId) return true;
+    if (this.sharingDecisionMode === 'all') return true;
+    const denied = this.currentDeniedIds.has(resourceId);
+    if (this.sharingDecisionMode === 'permit') return !denied;
+    if (this.sharingDecisionMode === 'deny') return denied;
+    return true;
+  }
+
+  resourceShown(resourceId?: string): boolean {
+    if (this.viewAs === 'patient') return true;
+    return this.resourceShownForLabelFilter(resourceId) && this.resourceShownForSharingFilter(resourceId);
+  }
+
   ngOnDestroy(): void {}
 
   scrollTo(id: string, event: Event) {
@@ -352,9 +449,13 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
     this.byResourceKey = new Map<string, any>();
     this.byFullUrl = new Map<string, any>();
     const entries = this.patientEverything?.entry || [];
+    const seen: Set<string> = new Set<string>();
     for (const e of entries as any[]) {
       const r = e.resource as FhirResource;
       if (!r || !r.resourceType) continue;
+      const key = (r as any).id ? `${r.resourceType}/${(r as any).id}` : (e.fullUrl || `${r.resourceType}|${Math.random()}`);
+      if (seen.has(key)) continue;
+      seen.add(key);
       if (!this.index[r.resourceType]) this.index[r.resourceType] = [];
       this.index[r.resourceType].push(r);
       if ((r as any).id && r.resourceType) {

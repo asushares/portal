@@ -10,14 +10,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { PatientService } from '../patient.service';
 import { ConsentService } from '../consent/consent.service';
 import { OrganizationService } from '../organization.service';
-// no advanced provision component; patient flow uses per-category resource toggles
+import { Highlight } from 'ngx-highlightjs';
+// no advanced provision component (yet :s); patient flow uses per-category resource toggles
 
 type CategoryKey = 'Demographics' | 'Diagnoses' | 'Disabilities' | 'Genetics' | 'InfectiousDiseases' | 'Medications' | 'MentalHealth' | 'SexualAndReproductiveHealth' | 'SocialDeterminantsOfHealth' | 'SubstanceUse' | 'Violence';
 
 @Component({
   selector: 'app-patient-consent-builder',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, Highlight],
   template: `
     <div class="container my-4">
       <div *ngIf="saveAlertVisible" class="alert alert-success alert-dismissible fade show position-fixed" style="top: 1rem; right: 1rem; z-index: 1080; min-width: 260px;" role="alert">
@@ -25,7 +26,7 @@ type CategoryKey = 'Demographics' | 'Diagnoses' | 'Disabilities' | 'Genetics' | 
         <button type="button" class="btn-close" aria-label="Close" (click)="dismissSaveAlert()"></button>
       </div>
       <div class="d-flex align-items-center mb-3">
-        <h1 class="h4 mb-0">Build consent</h1>
+        <h1 class="h4 mb-0">Build Consent</h1>
         <a class="btn btn-link ms-auto" [routerLink]="['/portal', patientId]">Back to overview</a>
       </div>
 
@@ -182,18 +183,18 @@ type CategoryKey = 'Demographics' | 'Diagnoses' | 'Disabilities' | 'Genetics' | 
           </div>
           <div class="row g-3">
             <div class="col-md-6">
-              <h6>Summary</h6>
-              <div class="small text-muted" [innerHTML]="narrativeHtml"></div>
+              <h6 class="mb-2 fw-semibold">Summary</h6>
+              <div class="border rounded p-3 bg-light" [innerHTML]="narrativeHtml"></div>
             </div>
             <div class="col-md-6">
-              <h6>FHIR Consent</h6>
-              <pre class="small bg-light p-2 border" style="max-height: 300px; overflow: auto;">{{ consentDraft | json }}</pre>
+              <h6 class="mb-2 fw-semibold">FHIR Consent</h6>
+              <pre class="bg-light p-2 border" style="max-height: 600px; min-height: 360px; overflow: auto;"><code [highlight]="consentJson" [language]="'json'"></code></pre>
             </div>
           </div>
           <hr />
           <div class="row g-3 align-items-end">
             <div class="col-md-6">
-              <label class="form-label">Signature</label>
+              <label class="form-label fw-semibold">Signature</label>
               <div class="border rounded p-2 bg-white">
                 <canvas #sigCanvas width="600" height="160"
                         style="touch-action: none; width: 100%; max-width: 100%; height: 160px;"
@@ -272,6 +273,7 @@ export class PatientConsentBuilderComponent implements OnInit {
   attest = false;
   narrative = '';
   narrativeHtml = '';
+  consentJson = '';
   shareMode: 'all' | 'none' | 'custom' | 'allExcept' = 'custom';
 
   // signature capture
@@ -538,6 +540,7 @@ export class PatientConsentBuilderComponent implements OnInit {
     this.buildProvisions();
     this.narrative = this.buildNarrative();
     this.narrativeHtml = this.buildNarrativeHtml();
+    this.consentJson = JSON.stringify(this.consentDraft, null, 2);
     this.step = 'review';
   }
 
@@ -568,15 +571,45 @@ export class PatientConsentBuilderComponent implements OnInit {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-    const badge = (text: string) => `<span class="badge text-bg-secondary me-1">${esc(text)}</span>`;
-    const orgs = this.recipients.map(r => badge(esc(r.display))).join(' ') || '<span class="text-muted">none</span>';
-    const ps = [ this.purposes.treatment ? 'treatment' : '', this.purposes.research ? 'research' : '' ]
-      .filter(Boolean).map(badge).join(' ') || '<span class="text-muted">none</span>';
+    const list = (items: string[]) => items.length ? `<ul class="mb-0">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>` : '<span class="text-muted">none</span>';
+    const allLabels = this.categoryList.map(x => x.label);
+    const selectedLabels = this.categoryList.filter(x => this.selected[x.key]).map(x => x.label);
+    const unselectedLabels = this.categoryList.filter(x => !this.selected[x.key]).map(x => x.label);
+
+    let masked: string[] = [];
+    let shared: string[] = [];
+    const decision = (this.shareMode === 'none' || this.shareMode === 'custom') ? 'Deny' : 'Permit';
+    let modeLine = '';
+    if (this.shareMode === 'all') {
+      modeLine = 'Share all data';
+      masked = [];
+      shared = allLabels;
+    } else if (this.shareMode === 'none') {
+      modeLine = 'Share none';
+      masked = allLabels;
+      shared = [];
+    } else if (this.shareMode === 'custom') {
+      modeLine = 'Share only the following categories:';
+      masked = selectedLabels;
+      shared = unselectedLabels;
+    } else { // allExcept
+      modeLine = 'Share all except selected categories';
+      masked = selectedLabels;
+      shared = unselectedLabels;
+    }
+
+    const recipients = this.recipients.map(r => r.display).filter(Boolean);
+    const purposes = [ this.purposes.treatment ? 'Treatment' : '', this.purposes.research ? 'Research' : '' ].filter(Boolean);
+
     const htmlInner = `
-      <div class="small">
-        <div class="mb-1"><strong>with</strong>: ${orgs}</div>
-        <div class="mb-1"><strong>purposes</strong>: ${ps}</div>
-        <div class="mb-1"><strong>valid until</strong>: ${esc(this.validUntilStr)}</div>
+      <div>
+        <div class="mb-2"><strong>Decision</strong>: ${esc(decision)}</div>
+        <div class="mb-2"><strong>Mode</strong>: ${esc(modeLine)}</div>
+        <div class="mb-2"><strong>Masked categories</strong>: ${list(masked)}</div>
+        <div class="mb-2"><strong>Shown categories</strong>: ${list(shared)}</div>
+        <div class="mb-2"><strong>Recipients</strong>: ${recipients.length ? list(recipients) : '<span class=\"text-muted\">none</span>'}</div>
+        <div class="mb-2"><strong>Purposes</strong>: ${purposes.length ? list(purposes) : '<span class=\"text-muted\">none</span>'}</div>
+        <div class="mb-0"><strong>Valid until</strong>: ${esc(this.validUntilStr)}</div>
       </div>
     `;
     // expected output keeps text.div empty; return HTML only for UI
