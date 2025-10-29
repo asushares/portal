@@ -266,31 +266,32 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
         const labeledResources: FhirResource[] = (result?.extension?.content?.entry || [])
           .map((x: any) => x.resource)
           .filter((r: any) => !!r);
-        const engine = new ConsoleDataSharingEngine(new DummyRuleProvider(), this.confidenceThreshold, false, false);
-        const categorySettings = new ConsentCategorySettings();
-        const decisions = engine.computeConsentDecisionsForResources(labeledResources, consent, categorySettings) as { [id: string]: any };
+        // derive masked codes from selected consent and deny any resource whose labels intersect masked set
+        const maskedCodes = new Set<string>();
+        try {
+          (consent?.provision || []).forEach((p: any) => {
+            (p.securityLabel || []).forEach((sl: any) => { if (sl?.code) maskedCodes.add(sl.code); });
+          });
+        } catch {}
         const denied = new Set<string>();
-        Object.keys(decisions || {}).forEach(id => {
-          const card = decisions[id];
-          if (card && card.summary === ConsentDecision.CONSENT_DENY) {
-            denied.add(id);
-          }
+        // update labels map for this run and compute denies by intersection
+        const map: { [id: string]: string[] } = {};
+        (labeledResources as any[]).forEach((r: any) => {
+          const rid = r?.id;
+          if (!rid) return;
+          const labels: string[] = (r?.meta?.security || []).map((s: any) => s?.code).filter((c: any) => !!c);
+          map[rid] = labels;
+          if (labels.some(c => maskedCodes.has(c))) denied.add(rid);
         });
+        this.labelsByResourceId = map;
         // log accepted and denied resources with labels for debugging
         try {
           const acceptedLog: any[] = [];
           const deniedLog: any[] = [];
-          (labeledResources as any[]).forEach((r: any) => {
-            const rid = r?.id;
-            if (!rid) return;
-            const labels: string[] = (r?.meta?.security || []).map((s: any) => s?.code).filter((c: any) => !!c);
-            const entry = { type: r?.resourceType, id: rid, labels };
-            const card = decisions?.[rid];
-            if (card?.summary === ConsentDecision.CONSENT_DENY) {
-              deniedLog.push(entry);
-            } else {
-              acceptedLog.push(entry);
-            }
+          Object.keys(map).forEach(rid => {
+            const labels = map[rid];
+            const entry = { id: rid, labels };
+            if (denied.has(rid)) deniedLog.push(entry); else acceptedLog.push(entry);
           });
           console.log('consent decision results', { accepted: acceptedLog, denied: deniedLog });
         } catch {}
@@ -679,7 +680,18 @@ export class PatientPortalComponent implements OnInit, OnDestroy {
         }
       }
     }
-    if (sectionId && this.sortState[sectionId]) {
+    // when a consent view has been applied, show redacted first (alphabetical), then non-redacted (alphabetical)
+    if (this.viewAs !== 'patient') {
+      rows.sort((a, b) => {
+        const ad = this.isDenied(a.rid);
+        const bd = this.isDenied(b.rid);
+        if (ad !== bd) return ad ? -1 : 1; // redacted first
+        const an = (a.cols[0] || '').toString().toLowerCase();
+        const bn = (b.cols[0] || '').toString().toLowerCase();
+        if (an === bn) return 0;
+        return an < bn ? -1 : 1;
+      });
+    } else if (sectionId && this.sortState[sectionId]) {
       const { key, dir } = this.sortState[sectionId];
       const keys = this.sections.find(s => s.id === sectionId)?.keys || [];
       const colIndex = keys.indexOf(key);
