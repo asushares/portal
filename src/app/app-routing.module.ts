@@ -10,6 +10,7 @@ import { LandingComponent } from './landing/landing.component';
 import { LoginComponent } from './login/login.component';
 import { PatientPortalComponent } from './patient-portal/patient-portal.component';
 import { PatientConsentBuilderComponent } from './patient-consent-builder/patient-consent-builder.component';
+import { ProviderPortalComponent } from './provider-portal/provider-portal.component';
 
 
 const routes: Routes = [
@@ -25,7 +26,8 @@ const routes: Routes = [
     path: 'patient', component: PatientComponent
   },
   { path: 'portal/:patient_id', component: PatientPortalComponent },
-  { path: 'portal/:patient_id/consent', component: PatientConsentBuilderComponent }
+  { path: 'portal/:patient_id/consent', component: PatientConsentBuilderComponent },
+  { path: 'provider', component: ProviderPortalComponent }
 ]
 
 @NgModule({
