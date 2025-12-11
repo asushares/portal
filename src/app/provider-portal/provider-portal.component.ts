@@ -21,38 +21,38 @@ type ResourceGroups = { [resourceType: string]: FhirResource[] };
   template: `
     <div class="container my-4">
       <div class="d-flex align-items-center mb-3">
-        <h1 class="h4 mb-0">provider portal</h1>
+        <h1 class="h4 mb-0">Provider Portal</h1>
       </div>
 
       <!-- step 1: select organization and purposes -->
       <div *ngIf="step==='provider'" class="card mb-3">
-        <div class="card-header fw-semibold">select organization and purposes</div>
+        <div class="card-header fw-semibold">Select Organization and Purposes</div>
         <div class="card-body">
           <div class="row g-3 align-items-end">
             <div class="col-md-6">
-              <label class="form-label">organization</label>
+              <label class="form-label">Organization</label>
               <div class="input-group input-group-sm">
                 <input class="form-control" [(ngModel)]="orgSearchText" placeholder="search organizations"/>
-                <button class="btn btn-outline-primary" type="button" (click)="searchOrganizations()">search</button>
+                <button class="btn btn-outline-primary" type="button" (click)="searchOrganizations()">Search</button>
               </div>
-              <div *ngIf="orgResults" class="table-responsive mt-2">
+              <div *ngIf="orgResults" class="table-responsive mt-2 scroll-table">
                 <table class="table table-sm align-middle">
-                  <thead><tr><th>name</th><th>id</th><th></th></tr></thead>
+                  <thead><tr><th>Name</th><th>ID</th><th></th></tr></thead>
                   <tbody>
                   <tr *ngFor="let e of orgResults.entry">
                     <td>{{ e.resource?.name }}</td>
                     <td>{{ e.resource?.id }}</td>
-                    <td><button class="btn btn-sm btn-outline-primary" (click)="selectOrganization(e.resource)">select</button></td>
+                    <td><button class="btn btn-sm btn-outline-primary" (click)="selectOrganization(e.resource)">Select</button></td>
                   </tr>
                   </tbody>
                 </table>
               </div>
               <div *ngIf="selectedOrg" class="mt-2">
-                <span class="badge text-bg-secondary">selected: {{ selectedOrg?.name }} ({{ selectedOrg?.id }})</span>
+                <span class="badge text-bg-secondary">Selected: {{ selectedOrg?.name }} ({{ selectedOrg?.id }})</span>
               </div>
             </div>
             <div class="col-md-6">
-              <div class="mb-2 fw-semibold small text-uppercase text-muted">purposes</div>
+              <div class="mb-2 fw-semibold small text-uppercase text-muted">Purposes</div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="p_treatment" [(ngModel)]="purposes.treatment">
                 <label class="form-check-label" for="p_treatment">Treatment (HIPAAConsentCD)</label>
@@ -61,10 +61,18 @@ type ResourceGroups = { [resourceType: string]: FhirResource[] };
                 <input class="form-check-input" type="checkbox" id="p_research" [(ngModel)]="purposes.research">
                 <label class="form-check-label" for="p_research">Research (RESEARCH)</label>
               </div>
+              <div class="mt-3">
+                <label class="form-label small mb-1">Consent Mode</label>
+                <select class="form-select form-select-sm" [(ngModel)]="consentMode">
+                  <option value="standard">Standard</option>
+                  <option value="mostRecent">Most Recent</option>
+                  <option value="highest">Highest Watermark</option>
+                </select>
+              </div>
             </div>
           </div>
           <div class="mt-3">
-            <button class="btn btn-primary" (click)="continueToPatients()" [disabled]="!selectedOrg">continue</button>
+            <button class="btn btn-primary" (click)="continueToPatients()" [disabled]="!selectedOrg">Continue</button>
           </div>
         </div>
       </div>
@@ -72,26 +80,26 @@ type ResourceGroups = { [resourceType: string]: FhirResource[] };
       <!-- step 2: patients available to org -->
       <div *ngIf="step==='patients'" class="card mb-3">
         <div class="card-header d-flex align-items-center">
-          <span class="fw-semibold">available patients</span>
+          <span class="fw-semibold">Available Patients</span>
           <span class="ms-auto small text-muted">org: {{ selectedOrg?.name }} ({{ selectedOrg?.id }})</span>
         </div>
         <div class="card-body">
-          <div *ngIf="patients.length === 0" class="text-muted small">no patients found</div>
+          <div *ngIf="patients.length === 0" class="text-muted small">No patients found</div>
           <div *ngIf="patients.length > 0" class="table-responsive">
             <table class="table table-sm align-middle">
-              <thead><tr><th>name</th><th>id</th><th>consents</th><th></th></tr></thead>
+              <thead><tr><th>Name</th><th>ID</th><th>Consents</th><th></th></tr></thead>
               <tbody>
               <tr *ngFor="let p of patients">
                 <td>{{ p.display }}</td>
                 <td>{{ p.id }}</td>
                 <td>{{ (consentsByPatient[p.id] || []).length }}</td>
-                <td><button class="btn btn-sm btn-outline-primary" (click)="selectPatient(p.id)">select</button></td>
+                <td><button class="btn btn-sm btn-outline-primary" (click)="selectPatient(p.id)">Select</button></td>
               </tr>
               </tbody>
             </table>
           </div>
           <div class="mt-2">
-            <button class="btn btn-outline-secondary" (click)="step='provider'">back</button>
+            <button class="btn btn-outline-secondary" (click)="step='provider'">Back</button>
           </div>
         </div>
       </div>
@@ -99,23 +107,24 @@ type ResourceGroups = { [resourceType: string]: FhirResource[] };
       <!-- step 3: patient view (allowed-only) -->
       <div *ngIf="step==='view'" class="card mb-3">
         <div class="card-header d-flex align-items-center gap-2">
-          <span class="fw-semibold">patient data (allowed only)</span>
+          <span class="fw-semibold">Patient Data (Allowed Only)</span>
           <span class="ms-auto small text-muted">patient: {{ selectedPatientDisplay }} ({{ selectedPatientId }})</span>
         </div>
         <div class="card-body">
           <div class="row g-3 align-items-center">
             <div class="col-md-6">
-              <label class="form-label small mb-1">consent</label>
-              <select class="form-select form-select-sm" [(ngModel)]="selectedConsentId" (ngModelChange)="applyConsent()">
+              <label class="form-label small mb-1">Consent</label>
+              <select class="form-select form-select-sm" [(ngModel)]="selectedConsentId" (ngModelChange)="applyConsent()" [disabled]="consentSelectorDisabled">
                 <option *ngFor="let c of patientConsents" [value]="c.id">{{ labelForConsent(c) }}</option>
               </select>
+              <div *ngIf="consentSelectorDisabled" class="muted-caption">Auto-applied by Consent Mode</div>
             </div>
             <div class="col-md-6 text-end">
-              <button class="btn btn-outline-success btn-sm" type="button" (click)="transferToServer()" [disabled]="!redactedBundle">transfer to server</button>
+              <button class="btn btn-outline-success btn-sm" type="button" (click)="transferToServer()" [disabled]="!redactedBundle">Transfer to Server</button>
             </div>
           </div>
           <hr />
-          <div *ngIf="!redactedBundle" class="text-muted small">select a consent to view data</div>
+          <div *ngIf="!redactedBundle" class="text-muted small">Select a consent to view data</div>
           <div *ngIf="redactedBundle">
             <div class="mb-2">
               <span class="badge text-bg-secondary">resources: {{ totalAllowedCount() }}</span>
@@ -165,6 +174,10 @@ type ResourceGroups = { [resourceType: string]: FhirResource[] };
   styles: [`
     :host { display: block; }
     .badge { font-size: .72rem; }
+    .scroll-table { max-height: 260px; overflow: auto; }
+    .muted-caption { font-size: .78rem; color: #6c757d; margin-top: .25rem; }
+    .table-sm th, .table-sm td { vertical-align: middle; }
+    .truncate { display: inline-block; max-width: 22rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
   `]
 })
 export class ProviderPortalComponent {
@@ -175,6 +188,7 @@ export class ProviderPortalComponent {
   orgResults: Bundle<Organization> | null = null;
   selectedOrg: Organization | null = null;
   purposes = { treatment: true, research: false };
+  consentMode: 'standard' | 'mostRecent' | 'highest' = 'standard';
 
   // step 2
   consentsRaw: Consent[] = [];
@@ -188,6 +202,7 @@ export class ProviderPortalComponent {
   selectedConsentId: string | null = null;
   redactedBundle: Bundle | null = null;
   grouped: ResourceGroups = {};
+  consentSelectorDisabled = false;
 
   constructor(private orgService: OrganizationService,
               private consentService: ConsentService,
@@ -226,13 +241,27 @@ export class ProviderPortalComponent {
         const entries = (b.entry || []).map(e => e.resource as Consent).filter(Boolean);
         const filtered = this.filterConsentsByPurpose(entries);
         this.consentsRaw = filtered;
-        this.consentsByPatient = {};
+        const allByPatient: { [patientId: string]: Consent[] } = {};
         filtered.forEach(c => {
           const ref = c.subject?.reference || '';
           const pid = ref.startsWith('Patient/') ? ref.substring('Patient/'.length) : '';
           if (!pid) return;
-          if (!this.consentsByPatient[pid]) this.consentsByPatient[pid] = [];
-          this.consentsByPatient[pid].push(c);
+          if (!allByPatient[pid]) allByPatient[pid] = [];
+          allByPatient[pid].push(c);
+        });
+        // apply consent mode
+        this.consentsByPatient = {};
+        Object.keys(allByPatient).forEach(pid => {
+          const list = allByPatient[pid];
+          if (this.consentMode === 'standard') {
+            this.consentsByPatient[pid] = list;
+          } else if (this.consentMode === 'mostRecent') {
+            // server returned sorted by lastUpdated desc; pick first
+            this.consentsByPatient[pid] = list.length ? [list[0]] : [];
+          } else {
+            const pick = this.pickHighestWatermark(list);
+            this.consentsByPatient[pid] = pick ? [pick] : [];
+          }
         });
         this.loadPatientSummaries(Object.keys(this.consentsByPatient));
       },
@@ -297,6 +326,7 @@ export class ProviderPortalComponent {
     this.selectedPatientDisplay = (this.patients.find(x => x.id === id)?.display) || id;
     this.patientConsents = (this.consentsByPatient[id] || []);
     this.selectedConsentId = this.patientConsents.length > 0 ? (this.patientConsents[0].id || null) : null;
+    this.consentSelectorDisabled = (this.consentMode !== 'standard');
     this.step = 'view';
     this.applyConsent();
   }
@@ -312,6 +342,43 @@ export class ProviderPortalComponent {
     return parts.join(' · ');
   }
 
+  private pickHighestWatermark(consents: Consent[]): Consent | null {
+    if (!consents || consents.length === 0) return null;
+    const decisionOf = (c: Consent) => ((c as any)?.decision || '').toString().toLowerCase();
+    const countLabels = (c: Consent) => {
+      const provs: any[] = ((c as any).provision || []) as any[];
+      let n = 0;
+      provs.forEach(p => n += ((p?.securityLabel || []).length));
+      return n;
+    };
+    const deny = consents.filter(c => decisionOf(c) === 'deny');
+    // 1) any deny with 0 labels
+    const denyZero = deny.find(c => countLabels(c) === 0);
+    if (denyZero) return denyZero;
+    // 2) among deny, fewest labels
+    if (deny.length > 0) {
+      let best = deny[0];
+      let bestN = countLabels(best);
+      for (let i = 1; i < deny.length; i++) {
+        const n = countLabels(deny[i]);
+        if (n < bestN) { best = deny[i]; bestN = n; }
+      }
+      return best;
+    }
+    // 3) among permit, most labels
+    const permit = consents.filter(c => decisionOf(c) === 'permit');
+    if (permit.length > 0) {
+      let best = permit[0];
+      let bestN = countLabels(best);
+      for (let i = 1; i < permit.length; i++) {
+        const n = countLabels(permit[i]);
+        if (n > bestN) { best = permit[i]; bestN = n; }
+      }
+      return best;
+    }
+    // fallback: first
+    return consents[0] || null;
+  }
   applyConsent() {
     if (!this.selectedPatientId || !this.selectedConsentId) {
       this.redactedBundle = null;
